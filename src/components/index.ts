@@ -17,7 +17,9 @@ export * from "./product";
 // GROUP 4: Commerce — complete
 export * from "./commerce";
 
-// GROUP 5–6: Uncomment as each group is completed
-// export * from "./admin";
-// export * from "./buildpc";
+// GROUP 5: Admin — complete
+export * from "./admin";
+
+// GROUP 6: Build PC — complete
+export * from "./buildpc";
 
