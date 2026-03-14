@@ -1,0 +1,810 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ONLINE PC STORE — CUSTOMER STOREFRONT
+ * Design System · Global Styles · Tailwind CSS v4
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Architecture:
+ *   @theme      — Design tokens → become Tailwind utility classes
+ *   :root       — Semantic CSS vars consumed by components
+ *   @layer base — HTML element resets + typography defaults
+ *   @layer components — Reusable class compositions
+ *
+ * Fonts loaded via Next.js in layout.tsx:
+ *   --font-inter          (CSS var name assigned in layout)
+ *   --font-jetbrains-mono (CSS var name assigned in layout)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+@import "tailwindcss";
+
+/* Activate tailwind.config.ts (optional — uncomment to use JS config) */
+/* @config "../tailwind.config.ts"; */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   §1 · DESIGN TOKENS  (@theme)
+       All vars here are automatically exposed as Tailwind utilities:
+       --color-primary-600  →  bg-primary-600 / text-primary-600 / etc.
+       --font-size-xl       →  text-xl
+       --radius-md          →  rounded-md
+       --shadow-card        →  shadow-card
+   ═══════════════════════════════════════════════════════════════════════════ */
+@theme {
+
+  /* ── BREAKPOINTS ──────────────────────────────────────────────────────── */
+  --breakpoint-sm:  640px;
+  --breakpoint-md:  768px;
+  --breakpoint-lg:  1024px;
+  --breakpoint-xl:  1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLOR: PRIMARY — Brand Blue
+     CTAs, links, focus rings, interactive elements, active nav states
+     Tailwind: bg-primary-600 · text-primary-600 · border-primary-300
+     ───────────────────────────────────────────────────────────────────── */
+  --color-primary-50:  #eff6ff;   /* Hover/highlight backgrounds             */
+  --color-primary-100: #dbeafe;   /* Selected state, light focus ring fill   */
+  --color-primary-200: #bfdbfe;   /* Active pill background                  */
+  --color-primary-300: #93c5fd;   /* Disabled button text, light border      */
+  --color-primary-400: #60a5fa;   /* Secondary button border, icon           */
+  --color-primary-500: #3b82f6;   /* Icons, accent strokes                   */
+  --color-primary-600: #2563eb;   /* ★ Primary CTA button bg                 */
+  --color-primary-700: #1d4ed8;   /* CTA hover state                         */
+  --color-primary-800: #1e40af;   /* CTA active/pressed, dark links          */
+  --color-primary-900: #1e3a8f;   /* High-contrast text on light bg          */
+  --color-primary-950: #172554;   /* Deepest blue emphasis                   */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLOR: SECONDARY — Slate
+     Text hierarchy, borders, backgrounds, neutral UI surfaces
+     Tailwind: bg-secondary-50 · text-secondary-700 · border-secondary-200
+     ───────────────────────────────────────────────────────────────────── */
+  --color-secondary-50:  #f8fafc;  /* Page background                        */
+  --color-secondary-100: #f1f5f9;  /* Card background, section fills         */
+  --color-secondary-200: #e2e8f0;  /* Borders, dividers, table lines         */
+  --color-secondary-300: #cbd5e1;  /* Disabled borders, input placeholder    */
+  --color-secondary-400: #94a3b8;  /* Placeholder text, muted icons          */
+  --color-secondary-500: #64748b;  /* Secondary text, metadata, labels       */
+  --color-secondary-600: #475569;  /* Supporting text, breadcrumbs           */
+  --color-secondary-700: #334155;  /* ★ Body text (primary reading)          */
+  --color-secondary-800: #1e293b;  /* Headings, strong emphasis              */
+  --color-secondary-900: #0f172a;  /* Page titles, maximum emphasis          */
+  --color-secondary-950: #020617;  /* Near-black, reserved for max contrast  */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLOR: ACCENT — Violet
+     Premium badges, featured product labels, promo highlights, sale tags
+     Tailwind: bg-accent-600 · text-accent-500 · border-accent-200
+     ───────────────────────────────────────────────────────────────────── */
+  --color-accent-50:  #f5f3ff;   /* Soft highlight background               */
+  --color-accent-100: #ede9fe;   /* Badge background, hover fill            */
+  --color-accent-200: #ddd6fe;   /* Light accent border                     */
+  --color-accent-300: #c4b5fd;   /* Light accent icon/text                  */
+  --color-accent-400: #a78bfa;   /* Accent icon, decorative                 */
+  --color-accent-500: #8b5cf6;   /* Featured label, highlight               */
+  --color-accent-600: #7c3aed;   /* ★ Premium/featured badge bg             */
+  --color-accent-700: #6d28d9;   /* Accent hover                            */
+  --color-accent-800: #5b21b6;   /* Accent active                           */
+  --color-accent-900: #4c1d95;   /* Dark accent emphasis                    */
+  --color-accent-950: #2e1065;   /* Deepest accent                          */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLOR: SUCCESS — Green
+     In stock, order completed, payment success, positive confirmations
+     Tailwind: bg-success-50 · text-success-600 · border-success-200
+     ───────────────────────────────────────────────────────────────────── */
+  --color-success-50:  #f0fdf4;   /* Banner bg, notification bg             */
+  --color-success-100: #dcfce7;   /* Badge background                       */
+  --color-success-200: #bbf7d0;   /* Badge border, divider                  */
+  --color-success-300: #86efac;   /* Light icon                             */
+  --color-success-400: #4ade80;   /* Icon fill                              */
+  --color-success-500: #22c55e;   /* Status dot, progress indicator         */
+  --color-success-600: #16a34a;   /* ★ "In Stock" label text               */
+  --color-success-700: #15803d;   /* Hover / emphasis                       */
+  --color-success-800: #166534;   /* Strong emphasis on light bg            */
+  --color-success-900: #14532d;   /* High-contrast success text             */
+  --color-success-950: #052e16;   /* Deepest green                          */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLOR: WARNING — Amber
+     Low stock alerts, pending status, expiring promotions, caution states
+     Tailwind: bg-warning-50 · text-warning-700 · border-warning-200
+     ───────────────────────────────────────────────────────────────────── */
+  --color-warning-50:  #fffbeb;   /* Banner bg                              */
+  --color-warning-100: #fef3c7;   /* Badge background                       */
+  --color-warning-200: #fde68a;   /* Badge border                           */
+  --color-warning-300: #fcd34d;   /* Light icon                             */
+  --color-warning-400: #fbbf24;   /* Icon fill                              */
+  --color-warning-500: #f59e0b;   /* Status dot                             */
+  --color-warning-600: #d97706;   /* ★ "Low Stock" label text              */
+  --color-warning-700: #b45309;   /* Hover / strong emphasis                */
+  --color-warning-800: #92400e;   /* Strong warning text                    */
+  --color-warning-900: #78350f;   /* High-contrast warning                  */
+  --color-warning-950: #451a03;   /* Deepest amber                          */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLOR: ERROR — Red
+     Payment failed, out of stock, form validation errors, destructive actions
+     Tailwind: bg-error-50 · text-error-600 · border-error-200
+     ───────────────────────────────────────────────────────────────────── */
+  --color-error-50:  #fef2f2;    /* Banner bg, field error bg               */
+  --color-error-100: #fee2e2;    /* Badge background                        */
+  --color-error-200: #fecaca;    /* Badge border, error field border        */
+  --color-error-300: #fca5a5;    /* Light icon                              */
+  --color-error-400: #f87171;    /* Icon fill                               */
+  --color-error-500: #ef4444;    /* Status dot, inline icon                 */
+  --color-error-600: #dc2626;    /* ★ "Out of Stock" / error text           */
+  --color-error-700: #b91c1c;    /* Hover / destructive button              */
+  --color-error-800: #991b1b;    /* Strong error emphasis                   */
+  --color-error-900: #7f1d1d;    /* High-contrast error text                */
+  --color-error-950: #450a0a;    /* Deepest red                             */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLOR: INFO — Cyan
+     Informational banners, tooltips, help text, neutral notifications
+     Tailwind: bg-info-50 · text-info-600 · border-info-200
+     ───────────────────────────────────────────────────────────────────── */
+  --color-info-50:  #ecfeff;     /* Banner bg                               */
+  --color-info-100: #cffafe;     /* Badge background                        */
+  --color-info-200: #a5f3fc;     /* Badge border                            */
+  --color-info-300: #67e8f9;     /* Light icon                              */
+  --color-info-400: #22d3ee;     /* Icon fill                               */
+  --color-info-500: #06b6d4;     /* Status dot                              */
+  --color-info-600: #0891b2;     /* ★ Informational text                    */
+  --color-info-700: #0e7490;     /* Hover / emphasis                        */
+  --color-info-800: #155e75;     /* Strong info text                        */
+  --color-info-900: #164e63;     /* High-contrast info                      */
+  --color-info-950: #083344;     /* Deepest cyan                            */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY — Font Families
+     Next.js injects: --font-inter, --font-jetbrains-mono via layout.tsx
+     ───────────────────────────────────────────────────────────────────── */
+  --font-sans: var(--font-inter, "Inter", system-ui, sans-serif);
+  --font-mono: var(--font-jetbrains-mono, "JetBrains Mono", Menlo, monospace);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY — Type Scale
+     Generates: text-xs · text-sm · text-base · text-lg … text-5xl
+     ───────────────────────────────────────────────────────────────────── */
+  --text-xs:   0.75rem;    /* 12px — badges, captions, timestamps, meta     */
+  --text-sm:   0.875rem;   /* 14px — secondary text, labels, table cells    */
+  --text-base: 1rem;       /* 16px — ★ body text, product descriptions      */
+  --text-lg:   1.125rem;   /* 18px — lead paragraphs, card subheadings      */
+  --text-xl:   1.25rem;    /* 20px — ★ product names, section labels        */
+  --text-2xl:  1.5rem;     /* 24px — ★ price display, card headings         */
+  --text-3xl:  1.875rem;   /* 30px — page section titles, category names    */
+  --text-4xl:  2.25rem;    /* 36px — hero headings, page titles             */
+  --text-5xl:  3rem;       /* 48px — hero display text, marketing splash    */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY — Line Heights
+     ───────────────────────────────────────────────────────────────────── */
+  --leading-none:    1;
+  --leading-tight:   1.1;    /* Display / hero text                         */
+  --leading-snug:    1.25;   /* Subheadings, card titles                    */
+  --leading-normal:  1.5;    /* Body paragraphs                             */
+  --leading-relaxed: 1.625;  /* Long-form content, product descriptions     */
+  --leading-loose:   2;      /* Widely spaced UI text                       */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY — Letter Spacing
+     ───────────────────────────────────────────────────────────────────── */
+  --tracking-tighter: -0.03em;   /* 5xl display headings                    */
+  --tracking-tight:   -0.02em;   /* 3xl–4xl large headings                  */
+  --tracking-normal:  0em;       /* Body text, UI elements                  */
+  --tracking-wide:    0.025em;   /* ★ spec labels (UPPERCASE)               */
+  --tracking-wider:   0.05em;    /* ALL CAPS micro-copy, tags               */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SPACING — 4px base unit (1 unit = 0.25rem = 4px)
+     Generates: p-1 · m-2 · gap-4 · space-x-6 · w-20 … etc.
+     ───────────────────────────────────────────────────────────────────── */
+  --spacing-1:  0.25rem;   /*  4px */
+  --spacing-2:  0.5rem;    /*  8px */
+  --spacing-3:  0.75rem;   /* 12px */
+  --spacing-4:  1rem;      /* 16px */
+  --spacing-5:  1.25rem;   /* 20px */
+  --spacing-6:  1.5rem;    /* 24px */
+  --spacing-7:  1.75rem;   /* 28px */
+  --spacing-8:  2rem;      /* 32px */
+  --spacing-9:  2.25rem;   /* 36px */
+  --spacing-10: 2.5rem;    /* 40px */
+  --spacing-12: 3rem;      /* 48px */
+  --spacing-14: 3.5rem;    /* 56px */
+  --spacing-16: 4rem;      /* 64px */
+  --spacing-20: 5rem;      /* 80px */
+  --spacing-24: 6rem;      /* 96px */
+  --spacing-28: 7rem;      /* 112px */
+  --spacing-32: 8rem;      /* 128px */
+
+  /* Semantic spacing aliases */
+  --spacing-section-gap:   5rem;    /* 80px — between major page sections   */
+  --spacing-card-padding:  1.5rem;  /* 24px — card internal padding         */
+  --spacing-form-gap:      1rem;    /* 16px — between form fields           */
+  --spacing-sidebar-width: 17.5rem; /* 280px — filter sidebar               */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     BORDER RADIUS
+     Generates: rounded-sm · rounded · rounded-md · rounded-lg … rounded-full
+     ───────────────────────────────────────────────────────────────────── */
+  --radius-none: 0px;       /* Tables, full-bleed images                    */
+  --radius-sm:   4px;       /* Tooltips, small chips, micro-badges          */
+  --radius:      8px;       /* ★ Buttons, inputs, dropdowns (default)       */
+  --radius-md:   12px;      /* ★ Cards, product panels                      */
+  --radius-lg:   16px;      /* Modals, drawers, large panels                */
+  --radius-xl:   20px;      /* Feature cards, marketing blocks              */
+  --radius-2xl:  24px;      /* Hero cards, large marketing sections         */
+  --radius-full: 9999px;    /* ★ Badges, pills, avatars, toggle switches    */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SHADOW SCALE
+     Generates: shadow-xs · shadow-sm · shadow-md … shadow-2xl
+     ───────────────────────────────────────────────────────────────────── */
+  --shadow-xs:
+    0 1px 2px rgba(0,0,0,0.04);
+
+  --shadow-sm:
+    0 1px 3px rgba(0,0,0,0.08),
+    0 1px 2px rgba(0,0,0,0.04);
+
+  --shadow-md:
+    0 4px 6px rgba(0,0,0,0.07),
+    0 2px 4px rgba(0,0,0,0.04);
+
+  --shadow-lg:
+    0 10px 15px rgba(0,0,0,0.08),
+    0 4px 6px rgba(0,0,0,0.04);
+
+  --shadow-xl:
+    0 20px 25px rgba(0,0,0,0.08),
+    0 8px 10px rgba(0,0,0,0.03);
+
+  --shadow-2xl:
+    0 25px 50px rgba(0,0,0,0.12);
+
+  --shadow-card:
+    0 4px 6px rgba(0,0,0,0.07),
+    0 2px 4px rgba(0,0,0,0.04);
+
+  --shadow-card-hover:
+    0 20px 25px rgba(0,0,0,0.08),
+    0 8px 10px rgba(0,0,0,0.03);
+
+  --shadow-modal:
+    0 25px 50px rgba(0,0,0,0.20),
+    0 12px 24px rgba(0,0,0,0.10);
+
+  --shadow-input-focus:
+    0 0 0 3px rgba(37,99,235,0.15);
+
+  --shadow-none: none;
+
+} /* end @theme */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   §2 · SEMANTIC CSS VARIABLES  (:root)
+       Named aliases for design tokens — use in component styles for
+       self-documenting, intent-driven code.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+
+  /* ── Page Layout ──────────────────────────────────────────────────────── */
+  --page-bg:            var(--color-secondary-50);    /* #f8fafc             */
+  --page-bg-white:      #ffffff;
+  --content-max-width:  1280px;                       /* 7xl container       */
+  --nav-height:         64px;
+
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --surface:            #ffffff;
+  --surface-subtle:     var(--color-secondary-100);  /* #f1f5f9             */
+  --surface-overlay:    rgba(15, 23, 42, 0.50);      /* Modal backdrop      */
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --text-primary:    var(--color-secondary-900);
+  --text-body:       var(--color-secondary-700);
+  --text-muted:      var(--color-secondary-500);
+  --text-disabled:   var(--color-secondary-400);
+  --text-inverse:    #ffffff;
+  --text-link:       var(--color-primary-600);
+  --text-link-hover: var(--color-primary-700);
+
+  /* ── Borders ─────────────────────────────────────────────────────────── */
+  --border:       var(--color-secondary-200);
+  --border-muted: var(--color-secondary-100);
+  --border-strong:var(--color-secondary-300);
+  --border-focus: var(--color-primary-500);
+
+  /* ── Product Card ─────────────────────────────────────────────────────── */
+  --card-bg:            #ffffff;
+  --card-border:        var(--color-secondary-200);
+  --card-radius:        var(--radius-md);    /* 12px */
+  --card-shadow:        var(--shadow-card);
+  --card-shadow-hover:  var(--shadow-card-hover);
+  --card-padding:       1.5rem;              /* 24px */
+
+  /* ── Typography: Product Name ────────────────────────────────────────── */
+  /* Usage: font-semibold text-xl leading-tight → applied via .product-name */
+  --product-name-size:   var(--text-xl);       /* 20px */
+  --product-name-weight: 600;
+  --product-name-lh:     var(--leading-tight);
+
+  /* ── Typography: Price Display ───────────────────────────────────────── */
+  /* Usage: font-bold text-2xl text-primary-600 → applied via .price-current */
+  --price-size:          var(--text-2xl);      /* 24px */
+  --price-weight:        700;
+  --price-color:         var(--color-primary-600);  /* #2563eb */
+  --price-original-color:var(--color-secondary-400);/* #94a3b8 */
+
+  /* ── Typography: Spec Label ──────────────────────────────────────────── */
+  /* Usage: font-medium text-sm text-slate-500 uppercase tracking-wide      */
+  --spec-label-size:     var(--text-sm);          /* 14px */
+  --spec-label-weight:   500;
+  --spec-label-color:    var(--color-secondary-500); /* #64748b */
+  --spec-label-tracking: var(--tracking-wide);       /* 0.025em */
+
+  /* ── Button ──────────────────────────────────────────────────────────── */
+  --btn-radius:           var(--radius);       /* 8px */
+  --btn-primary-bg:       var(--color-primary-600);
+  --btn-primary-hover:    var(--color-primary-700);
+  --btn-primary-active:   var(--color-primary-800);
+
+  /* ── Input ───────────────────────────────────────────────────────────── */
+  --input-radius:         var(--radius);       /* 8px */
+  --input-border:         var(--color-secondary-300);
+  --input-border-focus:   var(--color-primary-500);
+  --input-shadow-focus:   var(--shadow-input-focus);
+
+  /* ── Status ──────────────────────────────────────────────────────────── */
+  --status-in-stock:      var(--color-success-600);
+  --status-low-stock:     var(--color-warning-600);
+  --status-out-of-stock:  var(--color-error-600);
+  --status-coming-soon:   var(--color-info-600);
+
+  /* ── Animation ───────────────────────────────────────────────────────── */
+  --ease-fast:   150ms ease;
+  --ease-base:   200ms ease;
+  --ease-slow:   300ms ease-in-out;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   §3 · BASE ELEMENT STYLES  (@layer base)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer base {
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--page-bg);
+    color: var(--text-body);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    font-weight: 700;
+    line-height: var(--leading-tight);
+    letter-spacing: -0.02em;
+  }
+
+  h1 { font-size: var(--text-4xl); }
+  h2 { font-size: var(--text-3xl); }
+  h3 { font-size: var(--text-2xl); }
+  h4 { font-size: var(--text-xl);  }
+  h5 { font-size: var(--text-lg);  }
+  h6 { font-size: var(--text-base);}
+
+  p { margin-bottom: 1rem; line-height: var(--leading-relaxed); }
+  p:last-child { margin-bottom: 0; }
+
+  a {
+    color: var(--text-link);
+    text-decoration: none;
+    transition: color var(--ease-fast);
+  }
+  a:hover { color: var(--text-link-hover); }
+
+  /* Global keyboard focus ring — covers all interactive elements */
+  :focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Monospace: specs, SKUs, order numbers, prices in tables */
+  code, kbd, pre, samp {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  pre {
+    overflow-x: auto;
+    padding: 1rem;
+    background-color: var(--color-secondary-900);
+    color: var(--color-secondary-100);
+    border-radius: var(--radius);
+  }
+
+  img, video { max-width: 100%; height: auto; display: block; }
+
+  input, textarea, select, button { font-family: inherit; font-size: inherit; }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin-block: var(--spacing-6);
+  }
+
+  /* Remove default list styles in navigation contexts */
+  nav ul, nav ol { list-style: none; padding: 0; margin: 0; }
+
+  /* Smooth image rendering */
+  img { image-rendering: -webkit-optimize-contrast; }
+
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   §4 · COMPONENT CLASS COMPOSITIONS  (@layer components)
+       Pre-built patterns — combine with Tailwind utilities in JSX.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── LAYOUT ─────────────────────────────────────────────────────────── */
+
+  /* Container: max-w-7xl responsive padding
+     Usage: <div className="container-page">...</div>                      */
+  .container-page {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+    @media (width >= 640px)  { padding-inline: 1.5rem; }
+    @media (width >= 1024px) { padding-inline: 2rem;   }
+  }
+
+  /* Page section: 80px vertical rhythm
+     Usage: <section className="section">...</section>                     */
+  .section {
+    padding-block: var(--spacing-section-gap);
+  }
+
+  /* ── PRODUCT GRID ─────────────────────────────────────────────────── */
+  /* 1col → 2col (sm) → 3col (lg) → 4col (xl)
+     Usage: <div className="product-grid">...</div>                       */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+    @media (width >= 640px)  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (width >= 1024px) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (width >= 1280px) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  /* Catalog layout: sidebar + product content
+     Usage: <div className="catalog-layout"><aside>…</aside><main>…</main></div> */
+  .catalog-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    @media (width >= 1024px) {
+      grid-template-columns: 280px 1fr;
+    }
+  }
+
+  /* ── CARDS ───────────────────────────────────────────────────────── */
+
+  /* Base product card — hover lifts with shadow transition
+     Usage: <div className="product-card">...</div>                       */
+  .product-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: var(--card-padding);
+    overflow: hidden;
+    transition:
+      box-shadow var(--ease-slow),
+      transform var(--ease-slow);
+  }
+  .product-card:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  /* ── TYPOGRAPHY PATTERNS ────────────────────────────────────────── */
+
+  /* Product name: font-semibold text-xl leading-tight
+     Usage: <h3 className="product-name">Intel Core i9-14900K</h3>        */
+  .product-name {
+    font-size: var(--text-xl);          /* 20px                            */
+    font-weight: 600;                   /* semibold                        */
+    line-height: var(--leading-tight);  /* 1.1                             */
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
+  /* Current price: font-bold text-2xl text-primary-600
+     Usage: <span className="price-current">$599.00</span>                */
+  .price-current {
+    font-size: var(--text-2xl);         /* 24px                            */
+    font-weight: 700;                   /* bold                            */
+    color: var(--color-primary-600);    /* #2563eb                         */
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    font-family: var(--font-sans);
+  }
+
+  /* Original price (strikethrough): line-through text-slate-400
+     Usage: <span className="price-original">$699.00</span>               */
+  .price-original {
+    text-decoration: line-through;
+    color: var(--color-secondary-400);  /* #94a3b8                         */
+    font-size: var(--text-sm);          /* 14px                            */
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Spec label: font-medium text-sm text-slate-500 uppercase tracking-wide
+     Usage: <dt className="spec-label">Socket</dt>                        */
+  .spec-label {
+    font-size: var(--text-sm);               /* 14px                       */
+    font-weight: 500;                        /* medium                     */
+    color: var(--color-secondary-500);       /* #64748b                    */
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);    /* 0.025em                    */
+    font-family: var(--font-mono);
+  }
+
+  /* Spec value — paired with .spec-label in <dl>
+     Usage: <dd className="spec-value">LGA1700</dd>                       */
+  .spec-value {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-body);
+    font-family: var(--font-mono);
+  }
+
+  /* ── BUTTONS ─────────────────────────────────────────────────────── */
+
+  /* Primary CTA — Add to Cart, Buy Now, Checkout
+     Usage: <button className="btn-primary">Add to Cart</button>          */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: var(--color-primary-600);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    line-height: 1;
+    padding: 0.625rem 1.5rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      background-color var(--ease-fast),
+      box-shadow var(--ease-fast);
+  }
+  .btn-primary:hover  { background-color: var(--color-primary-700); }
+  .btn-primary:active { background-color: var(--color-primary-800); }
+  .btn-primary:focus-visible { box-shadow: var(--shadow-input-focus); }
+  .btn-primary:disabled {
+    background-color: var(--color-secondary-300);
+    color: var(--color-secondary-500);
+    cursor: not-allowed;
+  }
+
+  /* Secondary button — Compare, Wishlist, More Details
+     Usage: <button className="btn-secondary">Compare</button>            */
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: #ffffff;
+    color: var(--color-secondary-700);
+    font-weight: 500;
+    font-size: var(--text-sm);
+    line-height: 1;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-secondary-200);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      background-color var(--ease-fast),
+      border-color var(--ease-fast);
+  }
+  .btn-secondary:hover {
+    background-color: var(--color-secondary-50);
+    border-color: var(--color-secondary-300);
+  }
+
+  /* Ghost/text button
+     Usage: <button className="btn-ghost">View All</button>               */
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--color-primary-600);
+    font-weight: 500;
+    font-size: var(--text-sm);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: color var(--ease-fast), background-color var(--ease-fast);
+  }
+  .btn-ghost:hover {
+    color: var(--color-primary-700);
+    background-color: var(--color-primary-50);
+  }
+
+  /* ── FORM INPUTS ─────────────────────────────────────────────────── */
+
+  /* Text input, select, textarea
+     Usage: <input className="form-input" type="text" />                  */
+  .form-input {
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid var(--color-secondary-300);
+    border-radius: var(--radius);
+    color: var(--color-secondary-900);
+    font-size: var(--text-sm);
+    padding: 0.625rem 0.875rem;
+    transition:
+      border-color var(--ease-fast),
+      box-shadow var(--ease-fast);
+  }
+  .form-input::placeholder { color: var(--color-secondary-400); }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: var(--shadow-input-focus);
+  }
+  .form-input:disabled {
+    background-color: var(--color-secondary-50);
+    color: var(--color-secondary-400);
+    cursor: not-allowed;
+  }
+  .form-input[aria-invalid="true"] {
+    border-color: var(--color-error-500);
+    box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
+  }
+
+  /* Label
+     Usage: <label className="form-label">Product Name</label>            */
+  .form-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-secondary-700);
+    margin-bottom: 0.375rem;
+  }
+
+  /* Helper / error text under input
+     Usage: <p className="form-helper">Must be 8+ chars</p>               */
+  .form-helper { font-size: var(--text-xs); color: var(--color-secondary-500); margin-top: 0.25rem; }
+  .form-error  { font-size: var(--text-xs); color: var(--color-error-600);     margin-top: 0.25rem; }
+
+  /* ── BADGES ─────────────────────────────────────────────────────── */
+
+  /* Base badge — all status badges share this base
+     Usage: <span className="badge badge-success">In Stock</span>         */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    padding: 0.2rem 0.625rem;
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+    line-height: 1.4;
+  }
+  .badge-success { background-color: var(--color-success-100); color: var(--color-success-700); }
+  .badge-warning { background-color: var(--color-warning-100); color: var(--color-warning-700); }
+  .badge-error   { background-color: var(--color-error-100);   color: var(--color-error-700);   }
+  .badge-info    { background-color: var(--color-info-100);    color: var(--color-info-700);    }
+  .badge-accent  { background-color: var(--color-accent-100);  color: var(--color-accent-700);  }
+  .badge-neutral { background-color: var(--color-secondary-100); color: var(--color-secondary-600); }
+
+  /* ── ALERT BANNERS ───────────────────────────────────────────────── */
+
+  /* Usage: <div className="alert alert-info">Free shipping over $99</div> */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+  }
+  .alert-success { background-color: var(--color-success-50); border-color: var(--color-success-200); color: var(--color-success-800); }
+  .alert-warning { background-color: var(--color-warning-50); border-color: var(--color-warning-200); color: var(--color-warning-800); }
+  .alert-error   { background-color: var(--color-error-50);   border-color: var(--color-error-200);   color: var(--color-error-800);   }
+  .alert-info    { background-color: var(--color-info-50);    border-color: var(--color-info-200);    color: var(--color-info-800);    }
+
+  /* ── NAVIGATION ──────────────────────────────────────────────────── */
+
+  /* Site nav bar
+     Usage: <nav className="nav-bar">                                     */
+  .nav-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Nav link
+     Usage: <a className="nav-link" href="/category">Components</a>       */
+  .nav-link {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-secondary-600);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    transition: color var(--ease-fast), background-color var(--ease-fast);
+  }
+  .nav-link:hover { color: var(--color-primary-600); background-color: var(--color-primary-50); }
+  .nav-link[aria-current="page"] { color: var(--color-primary-600); background-color: var(--color-primary-50); font-weight: 600; }
+
+  /* ── TOOLTIPS ────────────────────────────────────────────────────── */
+
+  /* Usage: <div className="tooltip">Text</div>                           */
+  .tooltip {
+    background-color: var(--color-secondary-900);
+    color: #ffffff;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    padding: 0.375rem 0.625rem;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: var(--shadow-md);
+  }
+
+  /* ── SKELETON LOADING ────────────────────────────────────────────── */
+
+  /* Usage: <div className="skeleton w-full h-48 rounded-xl">             */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-secondary-100) 25%,
+      var(--color-secondary-200) 50%,
+      var(--color-secondary-100) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: var(--radius);
+  }
+
+  @keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+} /* end @layer components */
