@@ -119,8 +119,8 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
               DOT[size],
               "peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 peer-focus-visible:ring-offset-1",
               hasError
-                ? "border-error-400 peer-checked:border-error-500"
-                : "border-secondary-300 peer-checked:border-primary-600",
+                ? "border-error-400 peer-checked:border-error-500 peer-checked:[&_div]:scale-100"
+                : "border-secondary-300 peer-checked:border-primary-600 peer-checked:[&_div]:scale-100",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -128,13 +128,11 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
             {/* Inner dot — shown via peer-checked */}
             <div
               className={[
-                "rounded-full transition-all duration-150",
+                "rounded-full transition-all duration-150 scale-0",
                 DOT_INNER[size],
                 hasError
-                  ? "scale-0 bg-error-500 peer-checked:scale-100"
-                  : "scale-0 bg-primary-600",
-                // We can't use peer-checked on this inner div directly,
-                // so we rely on the JS checked state via the parent's class
+                  ? "bg-error-500"
+                  : "bg-primary-600",
               ].join(" ")}
             />
           </div>

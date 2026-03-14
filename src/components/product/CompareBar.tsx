@@ -6,7 +6,7 @@ import {
   ScaleIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
-import { formatVND } from "@/lib/format";
+import { formatVND } from "@/src/lib/format";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

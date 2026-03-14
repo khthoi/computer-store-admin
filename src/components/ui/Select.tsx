@@ -294,7 +294,7 @@ export function Select({
     [multiple, selectedValues, onChange, closeDropdown]
   );
 
-  const clearAll = (e: React.MouseEvent) => {
+  const clearAll = (e: { stopPropagation: () => void }) => {
     e.stopPropagation();
     onChange?.(multiple ? [] : "");
   };
@@ -373,25 +373,39 @@ export function Select({
             {multiple && selectedValues.length > 0 ? (
               selectedValues.map((v) => {
                 const opt = flat.find((o) => o.value === v);
-                return opt ? (
+                if (!opt) return null;
+
+                const removeValue = () => {
+                  onChange?.(selectedValues.filter((sv) => sv !== v));
+                };
+
+                return (
                   <span
                     key={v}
                     className="inline-flex items-center gap-1 rounded-sm bg-primary-100 px-1.5 py-0.5 text-xs font-medium text-primary-700"
                   >
                     {opt.label}
-                    <button
-                      type="button"
+                    <span
+                      role="button"
                       aria-label={`Remove ${opt.label}`}
+                      tabIndex={0}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onChange?.(selectedValues.filter((sv) => sv !== v));
+                        removeValue();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeValue();
+                        }
                       }}
                       className="rounded hover:text-primary-900 focus:outline-none"
                     >
                       <XMarkIcon className="size-3" aria-hidden="true" />
-                    </button>
+                    </span>
                   </span>
-                ) : null;
+                );
               })
             ) : (
               <span
@@ -412,7 +426,12 @@ export function Select({
                 aria-label="Clear selection"
                 tabIndex={0}
                 onClick={clearAll}
-                onKeyDown={(e) => e.key === "Enter" && clearAll(e as unknown as React.MouseEvent)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    clearAll(e);
+                  }
+                }}
                 className="rounded p-0.5 hover:text-secondary-600 focus:outline-none"
               >
                 <XMarkIcon className="size-4" aria-hidden="true" />

@@ -62,11 +62,11 @@ const SIZE_WITH_SUFFIX: Record<InputSize, string> = {
   lg: "pr-10",
 };
 
-/** Icon container size aligned to each input size */
+/** Icon size aligned to each input size (applied to direct SVG children) */
 const ICON_INSET: Record<InputSize, string> = {
-  sm: "size-3.5",
-  md: "size-4",
-  lg: "size-5",
+  sm: "[&>svg]:h-3.5 [&>svg]:w-3.5",
+  md: "[&>svg]:h-4 [&>svg]:w-4",
+  lg: "[&>svg]:h-5 [&>svg]:w-5",
 };
 
 const STATE_NORMAL =

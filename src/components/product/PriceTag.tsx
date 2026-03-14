@@ -1,4 +1,4 @@
-import { formatVND, discountPercent } from "@/lib/format";
+import { formatVND, discountPercent } from "@/src/lib/format";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
