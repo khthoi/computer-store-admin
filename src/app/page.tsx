@@ -6,17 +6,18 @@
  */
 
 import Link from "next/link";
-import Image from "next/image";
 import {
   ShieldCheckIcon,
   TruckIcon,
   ArrowPathIcon,
   PhoneIcon,
-  StarIcon,
 } from "@heroicons/react/24/solid";
 
 import { HeroSlider } from "@/src/components/home/HeroSlider";
 import { CategorySlider } from "@/src/components/home/CategorySlider";
+import type { ProductCardProps } from "@/src/components/product/ProductCard";
+import { ProductCarousel } from "@/src/components/product/ProductCarousel";
+import { ProductCardSkeleton } from "@/src/components/product/ProductCardSkeleton";
 
 // ─── Trust badges ─────────────────────────────────────────────────────────────
 
@@ -49,167 +50,210 @@ function TrustBadges() {
   );
 }
 
-// ─── Product card ─────────────────────────────────────────────────────────────
-
-interface Product {
-  id: number;
-  name: string;
-  specs: string;
-  price: string;
-  originalPrice?: string;
-  image: string;
-  badge?: string;
-  rating?: number;
-}
-
-function ProductCard({ product }: { product: Product }) {
-  const { name, specs, price, originalPrice, image, badge, rating } = product;
-
-  return (
-    <div className="group relative flex flex-col rounded-xl border border-secondary-200 bg-white overflow-hidden transition-shadow hover:shadow-md">
-      {/* Image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-secondary-50">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-          className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
-        />
-        {badge && (
-          <span className="absolute left-2 top-2 rounded bg-error-500 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none text-white">
-            {badge}
-          </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <p className="line-clamp-2 text-sm font-medium leading-snug text-secondary-900">
-          {name}
-        </p>
-        <p className="line-clamp-1 text-xs text-secondary-500">{specs}</p>
-
-        {/* Price row */}
-        <div className="mt-auto pt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-          <span className="text-sm font-bold text-primary-600">{price}</span>
-          {originalPrice && (
-            <span className="text-xs text-secondary-400 line-through">{originalPrice}</span>
-          )}
-        </div>
-
-        {/* Rating */}
-        {rating !== undefined && (
-          <div className="flex items-center gap-1">
-            <StarIcon className="h-3 w-3 text-warning-400" aria-hidden="true" />
-            <span className="text-xs font-medium text-secondary-600">{rating.toFixed(1)}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─── Mock datasets ─────────────────────────────────────────────────────────────
+// Prices are raw VND integers so ProductCard / PriceTag can format them.
 
-const LAPTOP_GAMING_PRODUCTS: Product[] = [
+type MockProduct = Omit<ProductCardProps, "onAddToCart" | "onCompare" | "onWishlistToggle">;
+
+const LAPTOP_GAMING_PRODUCTS: MockProduct[] = [
   {
-    id: 1,
+    id: "rog-strix-g16-2024",
     name: "ASUS ROG Strix G16 (2024)",
-    specs: "Core i9-14900HX · RTX 4070 · 16GB · 1TB",
-    price: "42.990.000₫",
-    originalPrice: "47.000.000₫",
-    image: "/icons/laptop-gaming.png",
+    brand: "ASUS",
+    href: "/products/rog-strix-g16-2024",
+    thumbnail: "/icons/laptop-gaming.png",
     badge: "Hot",
+    productCode: "LG01001",
+    price: 42_990_000,
+    originalPrice: 47_000_000,
     rating: 4.8,
+    reviewCount: 124,
+    stockStatus: "in-stock",
+    variants: [
+      {
+        key: "ram",
+        label: "RAM",
+        options: [
+          { value: "16gb", label: "16 GB", stock: 10 },
+          { value: "32gb", label: "32 GB", stock: 5, priceDelta: "+3.500.000₫" },
+        ],
+      },
+      {
+        key: "storage",
+        label: "Bộ nhớ",
+        options: [
+          { value: "1tb", label: "1 TB SSD", stock: 8 },
+          { value: "2tb", label: "2 TB SSD", stock: 3, priceDelta: "+2.500.000₫" },
+        ],
+      },
+    ],
   },
   {
-    id: 2,
+    id: "msi-katana-15-b13vgk",
     name: "MSI Katana 15 B13VGK",
-    specs: "Core i7-13620H · RTX 4070 · 16GB · 1TB",
-    price: "27.490.000₫",
-    originalPrice: "30.000.000₫",
-    image: "/icons/laptop-gaming.png",
+    brand: "MSI",
+    href: "/products/msi-katana-15-b13vgk",
+    thumbnail: "/icons/laptop-gaming.png",
     badge: "Sale",
+    productCode: "LG01002",
+    price: 27_490_000,
+    originalPrice: 30_000_000,
     rating: 4.6,
+    reviewCount: 89,
+    stockStatus: "in-stock",
+    variants: [
+      {
+        key: "ram",
+        label: "RAM",
+        options: [
+          { value: "16gb", label: "16 GB", stock: 12 },
+          { value: "32gb", label: "32 GB", stock: 4, priceDelta: "+3.000.000₫" },
+        ],
+      },
+    ],
   },
   {
-    id: 3,
+    id: "acer-predator-helios-16",
     name: "Acer Predator Helios 16",
-    specs: "Core i9-14900HX · RTX 4080 · 32GB · 2TB",
-    price: "56.990.000₫",
-    image: "/icons/laptop-gaming.png",
+    brand: "Acer",
+    href: "/products/acer-predator-helios-16",
+    thumbnail: "/icons/laptop-gaming.png",
+    productCode: "LG01003",
+    price: 56_990_000,
     rating: 4.7,
+    reviewCount: 56,
+    stockStatus: "in-stock",
   },
   {
-    id: 4,
+    id: "lenovo-legion-5-pro-gen9",
     name: "Lenovo Legion 5 Pro Gen 9",
-    specs: "Ryzen 7 7745HX · RTX 4060 · 16GB · 512GB",
-    price: "33.990.000₫",
-    originalPrice: "36.500.000₫",
-    image: "/icons/laptop-gaming.png",
+    brand: "Lenovo",
+    href: "/products/lenovo-legion-5-pro-gen9",
+    thumbnail: "/icons/laptop-gaming.png",
     badge: "New",
+    productCode: "LG01004",
+    price: 33_990_000,
+    originalPrice: 36_500_000,
     rating: 4.7,
+    reviewCount: 73,
+    stockStatus: "in-stock",
+    variants: [
+      {
+        key: "storage",
+        label: "Bộ nhớ",
+        options: [
+          { value: "512gb", label: "512 GB", stock: 7 },
+          { value: "1tb",   label: "1 TB",   stock: 3, priceDelta: "+1.500.000₫" },
+        ],
+      },
+    ],
   },
   {
-    id: 5,
+    id: "hp-omen-16-2024",
     name: "HP OMEN 16 (2024)",
-    specs: "Core i7-14700HX · RTX 4060 · 16GB · 1TB",
-    price: "31.490.000₫",
-    image: "/icons/laptop-gaming.png",
+    brand: "HP",
+    href: "/products/hp-omen-16-2024",
+    thumbnail: "/icons/laptop-gaming.png",
+    productCode: "LG01005",
+    price: 31_490_000,
     rating: 4.5,
+    reviewCount: 41,
+    stockStatus: "low-stock",
+    stockQuantity: 3,
   },
 ];
 
-const CPU_GPU_PRODUCTS: Product[] = [
+const CPU_GPU_PRODUCTS: MockProduct[] = [
   {
-    id: 6,
-    name: "Intel Core i7-14700K",
-    specs: "20 Cores · 28 Threads · LGA1700 · 125W",
-    price: "11.490.000₫",
-    originalPrice: "12.500.000₫",
-    image: "/icons/cpu-intel.png",
+    id: "intel-core-i7-14700k",
+    name: "CPU Intel Core i5-12400 - CPU tương thích (Upto 4.4Ghz, 6 nhân 12 luồng, 18MB Cache, 65W) - Socket Intel LGA 1700)",
+    brand: "Intel",
+    href: "/products/intel-core-i7-14700k",
+    thumbnail: "/icons/cpu-intel.png",
     badge: "Hot",
+    productCode: "CPU02001",
+    price: 11_490_000,
+    originalPrice: 12_500_000,
     rating: 4.9,
+    reviewCount: 312,
+    stockStatus: "in-stock",
+    variants: [
+      {
+        key: "bundle",
+        label: "Gói",
+        options: [
+          { value: "cpu-only",    label: "CPU only",           stock: 20 },
+          { value: "with-cooler", label: "+ Tản nhiệt",        stock: 8, priceDelta: "+890.000₫" },
+          { value: "with-board",  label: "+ Mainboard Z790",   stock: 4, priceDelta: "+4.500.000₫" },
+        ],
+      },
+    ],
   },
   {
-    id: 7,
+    id: "amd-ryzen-7-7800x3d",
     name: "AMD Ryzen 7 7800X3D",
-    specs: "8 Cores · 16 Threads · AM5 · 3D V-Cache",
-    price: "10.990.000₫",
-    image: "/icons/cpu-amd.jpg",
+    brand: "AMD",
+    href: "/products/amd-ryzen-7-7800x3d",
+    thumbnail: "/icons/cpu-amd.jpg",
+    productCode: "CPU02002",
+    price: 10_990_000,
     rating: 4.9,
+    reviewCount: 278,
+    stockStatus: "in-stock",
   },
   {
-    id: 8,
+    id: "nvidia-rtx-4070-super",
     name: "NVIDIA GeForce RTX 4070 Super",
-    specs: "12GB GDDR6X · PCIe 4.0 · DLSS 3.5",
-    price: "18.990.000₫",
-    originalPrice: "21.000.000₫",
-    image: "/icons/nvidia.png",
+    brand: "NVIDIA",
+    href: "/products/nvidia-rtx-4070-super",
+    thumbnail: "/icons/nvidia.png",
     badge: "Sale",
+    productCode: "GPU03001",
+    price: 18_990_000,
+    originalPrice: 21_000_000,
     rating: 4.8,
+    reviewCount: 195,
+    stockStatus: "in-stock",
+    variants: [
+      {
+        key: "model",
+        label: "Model",
+        options: [
+          { value: "msi",   label: "MSI Gaming X",  stock: 6 },
+          { value: "asus",  label: "ASUS TUF OC",   stock: 4, priceDelta: "+400.000₫" },
+          { value: "gigabyte", label: "Gigabyte OC", stock: 3 },
+        ],
+      },
+    ],
   },
   {
-    id: 9,
+    id: "amd-radeon-rx-7900-xtx",
     name: "AMD Radeon RX 7900 XTX",
-    specs: "24GB GDDR6 · PCIe 4.0 · 355W",
-    price: "22.490.000₫",
-    image: "/icons/amd.png",
+    brand: "AMD",
+    href: "/products/amd-radeon-rx-7900-xtx",
+    thumbnail: "/icons/amd.png",
+    productCode: "GPU03002",
+    price: 22_490_000,
     rating: 4.7,
+    reviewCount: 88,
+    stockStatus: "in-stock",
   },
   {
-    id: 10,
+    id: "intel-core-i9-14900ks",
     name: "Intel Core i9-14900KS",
-    specs: "24 Cores · 32 Threads · LGA1700 · 150W",
-    price: "17.990.000₫",
-    image: "/icons/cpu-intel.png",
+    brand: "Intel",
+    href: "/products/intel-core-i9-14900ks",
+    thumbnail: "/icons/cpu-intel.png",
     badge: "New",
+    productCode: "CPU02003",
+    price: 17_990_000,
     rating: 4.8,
+    reviewCount: 64,
+    stockStatus: "in-stock",
   },
 ];
 
-// ─── Product section — with real cards ───────────────────────────────────────
+// ─── Product section ──────────────────────────────────────────────────────────
 
 function ProductSection({
   title,
@@ -218,28 +262,29 @@ function ProductSection({
 }: {
   title: string;
   href?: string;
-  products: Product[];
+  products: MockProduct[];
 }) {
   return (
     <section aria-labelledby={`ps-${title}`} className="py-6 bg-secondary-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-5 flex items-center justify-between">
-          <h2 id={`ps-${title}`} className="text-lg font-bold text-secondary-900">{title}</h2>
-          <Link href={href} className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+          <h2 id={`ps-${title}`} className="text-lg font-bold text-secondary-900">
+            {title}
+          </h2>
+          <Link
+            href={href}
+            className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+          >
             Xem tất cả →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <ProductCarousel products={products} />
       </div>
     </section>
   );
 }
 
-// ─── Flash sale section — skeleton preserved ──────────────────────────────────
+// ─── Flash sale section — skeleton placeholder ────────────────────────────────
 
 function FlashSaleSection() {
   return (
@@ -249,19 +294,15 @@ function FlashSaleSection() {
           <h2 id="ps-flash" className="text-lg font-bold text-secondary-900">
             Flash Sale — Giảm đến 20% 🔥
           </h2>
-          <Link href="/khuyen-mai" className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors">
+          <Link
+            href="/khuyen-mai"
+            className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+          >
             Xem tất cả →
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="rounded-xl border border-secondary-200 bg-white p-3 flex flex-col gap-2">
-              <div className="aspect-square w-full rounded-lg bg-secondary-100 animate-pulse" />
-              <div className="h-3 w-3/4 rounded bg-secondary-100 animate-pulse" />
-              <div className="h-3 w-1/2 rounded bg-secondary-100 animate-pulse" />
-              <div className="h-4 w-2/3 rounded bg-primary-100 animate-pulse" />
-            </div>
-          ))}
+          <ProductCardSkeleton count={5} />
         </div>
       </div>
     </section>

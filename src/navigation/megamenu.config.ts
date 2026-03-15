@@ -54,6 +54,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "apple",
     label: "Sản phẩm Apple",
+    href: "/products/apple",
     panel: {
       columns: [
         [
@@ -122,6 +123,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "laptop-tablet",
     label: "Laptop, Tablet, Surface",
+    href: "/products/laptop-tablet",
     panel: {
       columns: [
         [
@@ -182,6 +184,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "laptop-gaming",
     label: "Laptop Gaming, Đồ Họa",
+    href: "/products/laptop-gaming",
     badge: "Hot",
     panel: {
       columns: [
@@ -368,6 +371,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "phu-kien",
     label: "Phụ Kiện Laptop, PC, Điện Thoại",
+    href: "/products/phu-kien",
     panel: {
       columns: [
         [
@@ -422,6 +426,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "pc-gaming",
     label: "PC - Chơi Game, Học Tập",
+    href: "/products/pc-gaming",
     panel: {
       columns: [
         [
@@ -494,6 +499,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "pc-van-phong",
     label: "PC - Văn Phòng, Đồ Họa",
+    href: "/products/pc-van-phong",
     panel: {
       columns: [
         [
@@ -540,6 +546,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "linh-kien",
     label: "Linh Kiện Máy Tính",
+    href: "/products/linh-kien",
     panel: {
       columns: [
         [
@@ -631,6 +638,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "tan-nhiet",
     label: "Tản Nhiệt, Fan, Đèn Led",
+    href: "/products/tan-nhiet",
     panel: {
       columns: [
         [
@@ -678,6 +686,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "man-hinh",
     label: "Màn Hình Máy Tính",
+    href: "/products/man-hinh",
     panel: {
       columns: [
         [
@@ -734,6 +743,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "phim-chuot",
     label: "Phím Chuột, Bàn, Ghế, Gear",
+    href: "/products/phim-chuot",
     panel: {
       columns: [
         [
@@ -783,6 +793,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "console",
     label: "PS5, Xbox, Nintendo, Game Pad",
+    href: "/products/console",
     panel: {
       columns: [
         [
@@ -837,6 +848,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "audio",
     label: "Loa, Tai Nghe, Mic, Webcam",
+    href: "/products/audio",
     panel: {
       columns: [
         [
@@ -894,6 +906,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "camera",
     label: "Camera, Chuông, Khóa, Cháy",
+    href: "/products/camera",
     panel: {
       columns: [
         [
@@ -935,6 +948,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "van-phong",
     label: "TB Văn Phòng, Hội Nghị",
+    href: "/products/van-phong",
     panel: {
       columns: [
         [
@@ -967,6 +981,7 @@ export const STORE_MEGA_MENU: SidebarMenuCategory[] = [
   {
     id: "mang-luu-tru",
     label: "TB Mạng, Lưu Trữ, Phần Mềm",
+    href: "/products/mang-luu-tru",
     panel: {
       columns: [
         [

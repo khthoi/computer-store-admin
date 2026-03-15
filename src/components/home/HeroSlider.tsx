@@ -8,9 +8,9 @@ import Image from "next/image";
 // ─── Slide data ───────────────────────────────────────────────────────────────
 
 const SLIDES = [
-  { src: "/image-slide/slide1.png", alt: "Banner khuyến mãi 1" },
-  { src: "/image-slide/slide2.png", alt: "Banner khuyến mãi 2" },
-  { src: "/image-slide/slide3.png", alt: "Banner khuyến mãi 3" },
+  { src: "/image-slide/slide01.jpg", alt: "Banner khuyến mãi 1" },
+  { src: "/image-slide/slide02.png", alt: "Banner khuyến mãi 2" },
+  { src: "/image-slide/slide03.png", alt: "Banner khuyến mãi 3" },
 ];
 
 const AUTO_PLAY_INTERVAL = 5000;

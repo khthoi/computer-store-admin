@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -588,53 +589,53 @@ export function SidebarMegaMenu({
         <ul role="list" className="flex flex-col py-1">
           {categories.map((cat) => {
             const isActive = cat.id === activeId;
+            const sharedClass = [
+              "flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors duration-150",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-400",
+              isActive
+                ? "bg-white font-medium text-primary-700 shadow-sm"
+                : "text-secondary-700 hover:bg-white hover:text-primary-600 cursor-pointer",
+            ].join(" ");
+
+            const iconNode = cat.icon && (
+              <span className="w-4 h-4 shrink-0 text-secondary-400" aria-hidden="true">
+                {cat.icon}
+              </span>
+            );
+
             return (
               <li key={cat.id}>
-                {cat.href && !cat.panel ? (
-                  <a
+                {cat.href ? (
+                  /* Has href — always a navigable link; hover still opens the panel */
+                  <Link
                     href={cat.href}
-                    className={[
-                      "flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors",
-                      isActive
-                        ? "bg-white font-medium text-primary-700 shadow-sm"
-                        : "text-secondary-700 hover:bg-white hover:text-secondary-900",
-                    ].join(" ")}
+                    className={sharedClass}
                     onMouseEnter={() => handleCategoryEnter(cat.id)}
                   >
-                    {cat.icon && (
-                      <span className="w-4 h-4 shrink-0 text-secondary-400" aria-hidden="true">
-                        {cat.icon}
-                      </span>
-                    )}
+                    {iconNode}
                     <span className="flex-1 truncate">{cat.label}</span>
                     {cat.badge && <BadgeChip text={cat.badge} />}
-                  </a>
+                    {cat.panel && (
+                      <ChevronRightIcon
+                        className={["w-4 h-4 shrink-0 transition-colors", isActive ? "text-primary-500" : "text-secondary-300"].join(" ")}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </Link>
                 ) : (
+                  /* No href — panel-only trigger, use button */
                   <button
                     type="button"
                     onMouseEnter={() => handleCategoryEnter(cat.id)}
                     onClick={() => handleCategoryEnter(cat.id)}
-                    className={[
-                      "flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors",
-                      isActive
-                        ? "bg-white font-medium text-primary-700 shadow-sm"
-                        : "text-secondary-700 hover:bg-white hover:text-secondary-900",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-400",
-                    ].join(" ")}
+                    className={sharedClass}
                     aria-expanded={isActive}
                   >
-                    {cat.icon && (
-                      <span className="w-4 h-4 shrink-0 text-secondary-400" aria-hidden="true">
-                        {cat.icon}
-                      </span>
-                    )}
+                    {iconNode}
                     <span className="flex-1 truncate text-left">{cat.label}</span>
                     {cat.badge && <BadgeChip text={cat.badge} />}
                     <ChevronRightIcon
-                      className={[
-                        "w-4 h-4 shrink-0 transition-colors",
-                        isActive ? "text-primary-500" : "text-secondary-300",
-                      ].join(" ")}
+                      className={["w-4 h-4 shrink-0 transition-colors", isActive ? "text-primary-500" : "text-secondary-300"].join(" ")}
                       aria-hidden="true"
                     />
                   </button>

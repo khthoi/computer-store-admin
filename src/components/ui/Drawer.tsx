@@ -41,6 +41,12 @@ export interface DrawerProps {
    * @default true
    */
   closeOnEscape?: boolean;
+  /**
+   * Show a drag-indicator pill at the top of the panel.
+   * Only visible when position="bottom".
+   * @default false
+   */
+  showDragIndicator?: boolean;
   /** Footer slot */
   footer?: ReactNode;
   children: ReactNode;
@@ -85,7 +91,7 @@ const TRANSLATE_CLOSED: Record<DrawerPosition, string> = {
 const PANEL_POSITION: Record<DrawerPosition, string> = {
   left: "inset-y-0 left-0 flex-col",
   right: "inset-y-0 right-0 flex-col",
-  bottom: "inset-x-0 bottom-0 flex-row rounded-t-lg",
+  bottom: "inset-x-0 bottom-0 flex-col rounded-t-2xl",
 };
 
 
@@ -118,6 +124,7 @@ export function Drawer({
   title,
   closeOnBackdrop = true,
   closeOnEscape = true,
+  showDragIndicator = false,
   footer,
   children,
 }: DrawerProps) {
@@ -267,6 +274,13 @@ export function Drawer({
           .filter(Boolean)
           .join(" ")}
       >
+        {/* Drag indicator — bottom drawer only */}
+        {showDragIndicator && isBottom && (
+          <div className="flex shrink-0 justify-center pt-3 pb-1" aria-hidden="true">
+            <div className="h-1 w-10 rounded-full bg-secondary-300" />
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-secondary-200 px-5 py-4">
           {title ? (

@@ -1,10 +1,24 @@
 "use client";
 
 import {
+  useFloating,
+  autoUpdate,
+  offset,
+  flip,
+  shift,
+  arrow,
+  useHover,
+  useFocus,
+  useDismiss,
+  useRole,
+  useInteractions,
+  useTransitionStyles,
+  FloatingPortal,
+  type Placement,
+} from "@floating-ui/react";
+import {
   cloneElement,
   isValidElement,
-  useCallback,
-  useId,
   useRef,
   useState,
   type ReactElement,
@@ -13,203 +27,173 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type TooltipPlacement =
-  | "top"
-  | "top-start"
-  | "top-end"
-  | "bottom"
-  | "bottom-start"
-  | "bottom-end"
-  | "left"
-  | "right";
+export type TooltipPlacement = Placement;
 
 export interface TooltipProps {
-  /** Tooltip content */
+  /** Tooltip text or JSX */
   content: ReactNode;
-  /** Placement relative to trigger
+  /**
+   * Preferred placement relative to the trigger.
+   * Auto-flips when near a viewport edge.
    * @default "top"
    */
   placement?: TooltipPlacement;
-  /** Delay before showing (ms)
-   * @default 300
+  /**
+   * Gap between trigger and tooltip panel (px).
+   * @default 8
+   */
+  offsetPx?: number;
+  /**
+   * Hover open delay (ms).
+   * @default 200
    */
   delay?: number;
-  /** Maximum width of the tooltip box (Tailwind max-w-* value)
-   * @default "max-w-xs"
-   */
+  /** Kept for API compatibility — ignored by Floating UI layout. */
   maxWidth?: string;
-  /** Disable the tooltip */
+  /** Disable the tooltip entirely */
   disabled?: boolean;
   /**
-   * The element that triggers the tooltip.
-   * Must be a single React element (accepts ref, onMouseEnter, etc.).
+   * Trigger element. Must be a single React element so Floating UI can
+   * attach its ref directly to the real DOM node (native HTML elements and
+   * `forwardRef` components both work).
    */
   children: ReactElement;
 }
 
-// ─── Placement style map ──────────────────────────────────────────────────────
-// Each placement defines:
-//   wrapper  — absolute position classes on the tooltip container
-//   arrow    — position + rotation classes for the arrow triangle
-
-const PLACEMENT: Record<
-  TooltipPlacement,
-  { wrapper: string; arrow: string }
-> = {
-  "top": {
-    wrapper: "bottom-full left-1/2 mb-2 -translate-x-1/2",
-    arrow:   "left-1/2 top-full -translate-x-1/2 border-t-secondary-800",
-  },
-  "top-start": {
-    wrapper: "bottom-full left-0 mb-2",
-    arrow:   "left-3 top-full border-t-secondary-800",
-  },
-  "top-end": {
-    wrapper: "bottom-full right-0 mb-2",
-    arrow:   "right-3 top-full border-t-secondary-800",
-  },
-  "bottom": {
-    wrapper: "top-full left-1/2 mt-2 -translate-x-1/2",
-    arrow:   "left-1/2 bottom-full -translate-x-1/2 border-b-secondary-800",
-  },
-  "bottom-start": {
-    wrapper: "top-full left-0 mt-2",
-    arrow:   "left-3 bottom-full border-b-secondary-800",
-  },
-  "bottom-end": {
-    wrapper: "top-full right-0 mt-2",
-    arrow:   "right-3 bottom-full border-b-secondary-800",
-  },
-  "left": {
-    wrapper: "right-full top-1/2 mr-2 -translate-y-1/2",
-    arrow:   "left-full top-1/2 -translate-y-1/2 border-l-secondary-800",
-  },
-  "right": {
-    wrapper: "left-full top-1/2 ml-2 -translate-y-1/2",
-    arrow:   "right-full top-1/2 -translate-y-1/2 border-r-secondary-800",
-  },
-};
-
-// Arrow border helpers: transparent borders except the directional one
-// create a CSS triangle. We use inline borderColor trick via Tailwind arbitrary.
-const ARROW_BORDERS: Record<string, string> = {
-  "border-t-secondary-800": "border-[6px] border-transparent border-t-[color:var(--color-secondary-800)]",
-  "border-b-secondary-800": "border-[6px] border-transparent border-b-[color:var(--color-secondary-800)]",
-  "border-l-secondary-800": "border-[6px] border-transparent border-l-[color:var(--color-secondary-800)]",
-  "border-r-secondary-800": "border-[6px] border-transparent border-r-[color:var(--color-secondary-800)]",
-};
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
- * Tooltip — hover/focus triggered hint with placement and delay.
+ * Tooltip — portal-rendered, Floating UI–positioned tooltip.
  *
- * Wraps a single child element. The child must accept `ref`, `onMouseEnter`,
- * `onMouseLeave`, `onFocus`, and `onBlur` props (all native HTML elements do).
+ * Renders into `document.body` via `FloatingPortal` so it can never be
+ * clipped by `overflow-hidden`, `transform`, `filter`, or z-index
+ * stacking contexts in ancestor elements.
  *
  * ```tsx
- * <Tooltip content="Add to wishlist" placement="top">
- *   <button aria-label="Wishlist"><HeartIcon /></button>
- * </Tooltip>
- *
- * <Tooltip content="Out of stock items cannot be added" placement="right" delay={0}>
- *   <span><Button disabled>Add to Cart</Button></span>
+ * <Tooltip content="Thêm vào giỏ hàng">
+ *   <button onClick={handleCart}>
+ *     <ShoppingCartIcon className="h-4 w-4" />
+ *   </button>
  * </Tooltip>
  * ```
  */
 export function Tooltip({
   content,
   placement = "top",
-  delay = 300,
-  maxWidth = "max-w-xs",
+  offsetPx = 8,
+  delay = 200,
   disabled = false,
   children,
 }: TooltipProps) {
-  const tooltipId = useId();
-  const [visible, setVisible] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [open, setOpen] = useState(false);
+  const arrowRef = useRef<HTMLDivElement>(null);
 
-  const show = useCallback(() => {
-    if (disabled) return;
-    clearTimeout(timerRef.current!);
-    if (delay > 0) {
-      timerRef.current = setTimeout(() => setVisible(true), delay);
-    } else {
-      setVisible(true);
-    }
-  }, [disabled, delay]);
-
-  const hide = useCallback(() => {
-    clearTimeout(timerRef.current!);
-    setVisible(false);
-  }, []);
-
-  if (!isValidElement(children)) return children;
-
-  const placement_ = PLACEMENT[placement];
-  const arrowKey = placement_.arrow
-    .split(" ")
-    .find((c) => c.startsWith("border-") && c.includes("secondary"));
-  const arrowClasses = arrowKey ? ARROW_BORDERS[arrowKey] ?? "" : "";
-
-  // Inject event handlers into the child element
-  const trigger = cloneElement(children as ReactElement<Record<string, unknown>>, {
-    onMouseEnter: show,
-    onMouseLeave: hide,
-    onFocus: show,
-    onBlur: hide,
-    "aria-describedby": visible ? tooltipId : undefined,
+  const {
+    refs,
+    floatingStyles,
+    context,
+    middlewareData,
+    placement: resolvedPlacement,
+  } = useFloating({
+    open,
+    onOpenChange: disabled ? undefined : setOpen,
+    placement,
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      offset(offsetPx),
+      flip({ fallbackAxisSideDirection: "start", padding: 6 }),
+      shift({ padding: 6 }),
+      arrow({ element: arrowRef }),
+    ],
   });
 
+  const hover = useHover(context, { move: false, delay: { open: delay, close: 0 } });
+  const focus = useFocus(context);
+  const dismiss = useDismiss(context);
+  const role = useRole(context, { role: "tooltip" });
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    hover,
+    focus,
+    dismiss,
+    role,
+  ]);
+
+  // Fade + slight translate animation
+  const { isMounted, styles: transitionStyles } = useTransitionStyles(context, {
+    initial: { opacity: 0, transform: "scale(0.94)" },
+    open:    { opacity: 1, transform: "scale(1)" },
+    close:   { opacity: 0, transform: "scale(0.94)" },
+    duration: 120,
+  });
+
+  // Arrow positioning — point towards the trigger element
+  const arrowX = middlewareData.arrow?.x;
+  const arrowY = middlewareData.arrow?.y;
+  const arrowSide = {
+    top:    "bottom",
+    right:  "left",
+    bottom: "top",
+    left:   "right",
+  }[resolvedPlacement.split("-")[0]] as "top" | "right" | "bottom" | "left";
+
+  // Inject ref + interaction props directly into the child element so
+  // Floating UI measures the real DOM node — not a wrapper with zero size.
+  const trigger = isValidElement(children)
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+        ref: refs.setReference,
+        ...getReferenceProps(),
+      })
+    : children;
+
   return (
-    <div className="relative inline-flex">
+    <>
       {trigger}
 
-      {visible && content && (
-        <div
-          id={tooltipId}
-          role="tooltip"
-          className={[
-            "pointer-events-none absolute z-50 whitespace-normal break-words rounded bg-secondary-800 px-2.5 py-1.5",
-            "text-xs font-medium text-white shadow-md",
-            maxWidth,
-            placement_.wrapper,
-          ].join(" ")}
-        >
-          {content}
+      {/* Portal — escapes any overflow-hidden / transform / z-index parent */}
+      <FloatingPortal>
+        {isMounted && !disabled && content && (
+          <div
+            ref={refs.setFloating}
+            style={{ ...floatingStyles, zIndex: 9999 }}
+            {...getFloatingProps()}
+            className="pointer-events-none"
+          >
+            <div
+              style={transitionStyles}
+              className="rounded-md bg-secondary-900 px-2.5 py-1.5 text-[11px] font-medium leading-none text-white shadow-lg"
+            >
+              {content}
+            </div>
 
-          {/* Arrow */}
-          <span
-            aria-hidden="true"
-            className={[
-              "absolute size-0",
-              placement_.arrow
-                .split(" ")
-                .filter((c) => !c.startsWith("border-"))
-                .join(" "),
-              arrowClasses,
-            ].join(" ")}
-          />
-        </div>
-      )}
-    </div>
+            {/* Arrow */}
+            <div
+              ref={arrowRef}
+              aria-hidden="true"
+              className="absolute h-2 w-2 rotate-45 bg-secondary-900"
+              style={{
+                left: arrowX != null ? `${arrowX}px` : "",
+                top:  arrowY != null ? `${arrowY}px` : "",
+                // Push arrow to the edge facing the trigger
+                [arrowSide]: "-4px",
+              }}
+            />
+          </div>
+        )}
+      </FloatingPortal>
+    </>
   );
 }
 
 /*
  * ─── Prop Table ───────────────────────────────────────────────────────────────
  *
- * Name       Type                Default   Description
- * ──────────────────────────────────────────────────────────────────────────────
- * content    ReactNode           required  Tooltip text/content
- * placement  TooltipPlacement    "top"     Where the tooltip appears
- * delay      number              300       Show delay in milliseconds
- * maxWidth   string              "max-w-xs" Tailwind max-w-* class
- * disabled   boolean             false     Suppress the tooltip
- * children   ReactElement        required  Trigger element (must accept event props)
- *
- * TooltipPlacement values:
- *   "top" | "top-start" | "top-end"
- *   "bottom" | "bottom-start" | "bottom-end"
- *   "left" | "right"
+ * Name       Type              Default  Description
+ * ────────────────────────────────────────────────────────────────────────────
+ * content    ReactNode         required Tooltip text / JSX
+ * placement  Placement         "top"    Preferred side; auto-flips near edges
+ * offsetPx   number            8        Gap between trigger and panel (px)
+ * delay      number            200      Hover open delay (ms)
+ * disabled   boolean           false    Suppress tooltip entirely
+ * children   ReactNode         required The element that triggers the tooltip
  */

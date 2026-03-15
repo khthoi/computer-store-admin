@@ -1,0 +1,139 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ProductCard, type ProductCardProps } from "./ProductCard";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type SlideProduct = Omit<ProductCardProps, "onAddToCart" | "onCompare" | "onWishlistToggle">;
+
+export interface ProductCarouselProps {
+  products: SlideProduct[];
+  /** If true, show a skeleton row while data is loading */
+  loading?: boolean;
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+/**
+ * ProductCarousel — infinite-loop horizontal slider of ProductCard items.
+ *
+ * Responsive visible counts (controlled via CSS flex-basis):
+ *   Mobile  → 2   (basis-[calc(100%/2-…)])
+ *   Tablet  → 3   (sm:basis-[calc(100%/3-…)])
+ *   Desktop → 4   (lg:basis-[calc(100%/4-…)])
+ *   Wide    → 5   (xl:basis-[calc(100%/5-…)])
+ *
+ * Uses Embla Carousel with loop:true for seamless infinite looping.
+ * Drag (mouse) and swipe (touch) are enabled by default in Embla.
+ */
+export function ProductCarousel({ products }: ProductCarouselProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    slidesToScroll: 1,
+    dragFree: false,
+  });
+
+  const [canScrollPrev, setCanScrollPrev] = useState(true);
+  const [canScrollNext, setCanScrollNext] = useState(true);
+
+  const updateButtons = useCallback(() => {
+    if (!emblaApi) return;
+    // With loop:true these are always true, but we track state
+    // for potential future non-loop usage.
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    updateButtons();
+    emblaApi.on("select", updateButtons);
+    emblaApi.on("reInit", updateButtons);
+    return () => {
+      emblaApi.off("select", updateButtons);
+      emblaApi.off("reInit", updateButtons);
+    };
+  }, [emblaApi, updateButtons]);
+
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  if (products.length === 0) return null;
+
+  return (
+    <div className="relative group/carousel">
+      {/* ── Viewport ── */}
+      <div ref={emblaRef} className="overflow-hidden">
+        <div className="flex touch-pan-y items-stretch gap-3">
+          {products.map((product) => (
+            <div
+              key={product.id}
+              /*
+               * flex-basis controls how many cards are visible per breakpoint.
+               * gap-3 = 12px total gap; distributed across visible items via calc.
+               *
+               *  mobile  → 2 visible: calc(50%    - 6px)
+               *  sm      → 3 visible: calc(33.33% - 8px)
+               *  lg      → 4 visible: calc(25%    - 9px)
+               *  xl      → 5 visible: calc(20%    - 10px)
+               */
+              className="min-w-0 shrink-0 grow-0
+                basis-[calc(50%-6px)]
+                sm:basis-[calc(33.333%-8px)]
+                lg:basis-[calc(25%-9px)]
+                xl:basis-[calc(20%-10px)]
+                h-full"
+            >
+              <ProductCard {...product} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Previous button ── */}
+      <button
+        type="button"
+        aria-label="Sản phẩm trước"
+        onClick={scrollPrev}
+        disabled={!canScrollPrev}
+        className={[
+          // Centered vertically on the card image area (~50% of card height)
+          "absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10",
+          "flex h-9 w-9 items-center justify-center rounded-full",
+          "bg-white border border-secondary-200 shadow-md text-secondary-600",
+          "transition-all duration-150",
+          "opacity-0 group-hover/carousel:opacity-100",
+          "hover:bg-primary-50 hover:border-primary-300 hover:text-primary-600",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400",
+          "disabled:opacity-30 disabled:cursor-not-allowed",
+        ].join(" ")}
+      >
+        <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+      </button>
+
+      {/* ── Next button ── */}
+      <button
+        type="button"
+        aria-label="Sản phẩm tiếp theo"
+        onClick={scrollNext}
+        disabled={!canScrollNext}
+        className={[
+          "absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10",
+          "flex h-9 w-9 items-center justify-center rounded-full",
+          "bg-white border border-secondary-200 shadow-md text-secondary-600",
+          "transition-all duration-150",
+          "opacity-0 group-hover/carousel:opacity-100",
+          "hover:bg-primary-50 hover:border-primary-300 hover:text-primary-600",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400",
+          "disabled:opacity-30 disabled:cursor-not-allowed",
+        ].join(" ")}
+      >
+        <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}

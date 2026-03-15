@@ -33,9 +33,9 @@ function SingleSkeleton() {
       {/* Thumbnail */}
       <Shimmer className="aspect-square w-full rounded-none" />
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex flex-1 flex-col gap-2 p-3">
         {/* Brand badge */}
-        <Shimmer className="h-5 w-16" />
+        <Shimmer className="h-4 w-14 rounded" />
 
         {/* Product name — two lines */}
         <div className="flex flex-col gap-1.5">
@@ -43,23 +43,29 @@ function SingleSkeleton() {
           <Shimmer className="h-4 w-3/4" />
         </div>
 
+        {/* Description */}
+        <Shimmer className="h-3 w-2/3" />
+
         {/* Rating */}
         <div className="flex items-center gap-2">
-          <Shimmer className="h-4 w-24" />
-          <Shimmer className="h-4 w-10" />
+          <Shimmer className="h-3 w-20" />
+          <Shimmer className="h-3 w-8" />
         </div>
 
         {/* Price */}
-        <div className="flex flex-col gap-1">
-          <Shimmer className="h-6 w-32" />
-          <Shimmer className="h-4 w-24" />
+        <div className="flex flex-col gap-1 mt-auto">
+          <Shimmer className="h-5 w-28" />
+          <Shimmer className="h-3 w-20" />
         </div>
 
         {/* Stock badge */}
-        <Shimmer className="h-5 w-20 rounded-full" />
+        <Shimmer className="h-4 w-16 rounded-full" />
 
-        {/* Add to cart button */}
-        <Shimmer className="mt-auto h-10 w-full rounded-lg" />
+        {/* Action row — two icon buttons */}
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-secondary-100 mt-1">
+          <Shimmer className="h-9 w-9 rounded-lg" />
+          <Shimmer className="h-9 w-9 rounded-lg" />
+        </div>
       </div>
     </div>
   );
@@ -74,9 +80,9 @@ function SingleSkeleton() {
  * // Single placeholder
  * <ProductCardSkeleton />
  *
- * // Grid of 4 placeholders
- * <div className="grid grid-cols-4 gap-4">
- *   <ProductCardSkeleton count={4} />
+ * // Grid of 5 placeholders
+ * <div className="grid grid-cols-5 gap-3">
+ *   <ProductCardSkeleton count={5} />
  * </div>
  * ```
  */
@@ -95,18 +101,9 @@ export function ProductCardSkeleton({
           className={className}
         >
           <SingleSkeleton />
-          <span className="sr-only">Loading…</span>
+          <span className="sr-only">Đang tải…</span>
         </div>
       ))}
     </>
   );
 }
-
-/*
- * ─── Prop Table ───────────────────────────────────────────────────────────────
- *
- * Name       Type    Default  Description
- * ──────────────────────────────────────────────────────────────────────────────
- * count      number  1        Number of skeleton cards to render
- * className  string  ""       Extra classes applied to each wrapper div
- */

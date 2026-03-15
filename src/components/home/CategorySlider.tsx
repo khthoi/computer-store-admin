@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
-import Image from "next/image";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 // ─── Category data ─────────────────────────────────────────────────────────────
@@ -15,17 +14,19 @@ interface Category {
 }
 
 const CATEGORIES: Category[] = [
-  { label: "CPU Intel",    href: "/products/cpu-intel",    icon: "/icons/cpu-intel.png" },
-  { label: "CPU AMD",      href: "/products/cpu-amd",      icon: "/icons/cpu-amd.jpg"   },
-  { label: "GPU NVIDIA",   href: "/products/gpu-nvidia",   icon: "/icons/nvidia.png"    },
-  { label: "GPU AMD",      href: "/products/gpu-amd",      icon: "/icons/amd.png"       },
-  { label: "RAM",          href: "/products/ram",          icon: "/icons/ram-pc.jpg"    },
-  { label: "SSD NVMe",     href: "/products/ssd-nvme",     icon: "/icons/ssd-nvme.jpg"  },
-  { label: "SSD SATA",     href: "/products/ssd-sata",     icon: "/icons/ssd-sata.jpg"  },
-  { label: "HDD",          href: "/products/hdd",          icon: "/icons/hdd.jpg"       },
-  { label: "Bàn phím",     href: "/products/ban-phim",     icon: "/icons/keyboard.jpg"  },
-  { label: "Chuột",        href: "/products/chuot",        icon: "/icons/mouse.png"     },
-  { label: "Màn hình",     href: "/products/man-hinh",     icon: "/icons/monitor.jpg"   },
+  { label: "CPU", href: "/products/cpu", icon: "/svg/computer-components-microprocessor.svg" },
+  { label: "GPU", href: "/products/gpu", icon: "/svg/computer-components-graphics.svg" },
+  { label: "RAM", href: "/products/ram", icon: "/svg/computer-components-ram-memory.svg" },
+  { label: "SSD", href: "/products/ssd", icon: "/svg/computer-components-ssd.svg" },
+  { label: "MAINBOARD", href: "/products/mainboard", icon: "/svg/computer-components-motherboard.svg" },
+  { label: "PSU", href: "/products/psu", icon: "/svg/computer-components-power-supply.svg" },
+  { label: "CASE", href: "/products/case", icon: "/svg/computer-components-casing-materials.svg" },
+  { label: "MÀN HÌNH", href: "/products/man-hinh", icon: "/svg/computer-components-monitor.svg" },
+  { label: "CHUỘT", href: "/products/mices", icon: "/svg/computer-components-computer-mouse.svg" },
+  { label: "MÁY TÍNH BỘ", href: "/products/computer", icon: "/svg/computer-components-computer-desktop.svg" },
+  { label: "LAPTOP", href: "/products/laptop", icon: "/svg/computer-components-laptop.svg" },
+  { label: "BÀN PHÍM", href: "/products/keyboard", icon: "/svg/computer-components-keyboard.svg" },
+  { label: "TAI NGHE", href: "/products/headphones", icon: "/svg/computer-components-earphones.svg" },
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -80,7 +81,7 @@ export function CategorySlider() {
         {/* ── Header row ── */}
         <div className="mb-4 flex items-center justify-between">
           <h2 id="quick-cat-heading" className="text-lg font-bold text-secondary-900">
-            Danh mục nổi bật
+            Các sản phẩm phổ biến
           </h2>
           <div className="flex items-center gap-1">
             <button
@@ -125,14 +126,12 @@ export function CategorySlider() {
                   className="group flex flex-col items-center justify-center gap-2 rounded-xl p-3 text-center transition-all duration-200 hover:bg-black/5 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                 >
                   {/* Icon container — fixed square */}
-                  <div className="relative h-12 w-12 sm:h-14 sm:w-14 overflow-hidden rounded-lg bg-secondary-50 shrink-0">
-                    <Image
+                  <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-lg bg-primary-50 shrink-0">
+                    <img
                       src={cat.icon}
                       alt=""
-                      fill
-                      sizes="64px"
-                      className="object-cover"
                       aria-hidden="true"
+                      className="h-7 w-7 sm:h-8 sm:w-8"
                     />
                   </div>
 
