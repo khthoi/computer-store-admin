@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Header } from "@/src/components/layout/Header";
+import { Footer } from "@/src/components/layout/Footer";
 
 /**
  * CUSTOMER STOREFRONT — Root Layout
@@ -31,11 +33,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | PC Store",
-    default: "PC Store — Computer & Hardware Retail",
+    template: "%s | TechStore",
+    default: "TechStore — Linh Kiện Máy Tính Chính Hãng",
   },
   description:
-    "Shop CPUs, GPUs, motherboards, memory, storage, and complete PC builds. Fast shipping, expert support.",
+    "Mua CPU, GPU, RAM, SSD, laptop gaming và linh kiện máy tính chính hãng. Giao hàng toàn quốc, bảo hành 24 tháng.",
 };
 
 export default function RootLayout({
@@ -44,8 +46,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html lang="vi" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className="antialiased bg-secondary-50">
+        {/*
+         * Header — sticky top bar + main header + category navbar.
+         * Pass cartCount and user from your auth/cart context here
+         * once those are wired up, e.g.:
+         *   cartCount={session?.cartCount}
+         *   user={session?.user ?? null}
+         */}
+        <Header cartCount={0} user={null} />
+
+        {/* Page content */}
+        <main id="main-content" className="min-h-[calc(100vh-theme(spacing.40))]">
+          {children}
+        </main>
+
+        <Footer />
+      </body>
     </html>
   );
 }

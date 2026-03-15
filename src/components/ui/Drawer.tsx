@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
@@ -75,15 +76,15 @@ const BOTTOM_SIZE: Record<DrawerSize, string> = {
 
 // Slide-in/out transforms per position
 const TRANSLATE_CLOSED: Record<DrawerPosition, string> = {
-  left:   "-translate-x-full",
-  right:  "translate-x-full",
+  left: "-translate-x-full",
+  right: "translate-x-full",
   bottom: "translate-y-full",
 };
 
 // Panel placement classes per position
 const PANEL_POSITION: Record<DrawerPosition, string> = {
-  left:   "inset-y-0 left-0 flex-col",
-  right:  "inset-y-0 right-0 flex-col",
+  left: "inset-y-0 left-0 flex-col",
+  right: "inset-y-0 right-0 flex-col",
   bottom: "inset-x-0 bottom-0 flex-row rounded-t-lg",
 };
 
@@ -124,6 +125,45 @@ export function Drawer({
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const isBottom = position === "bottom";
+  const [isMounted, setIsMounted] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isContainerVisible, setIsContainerVisible] = useState(false);
+
+  // ── Client-side mount check ───────────────────────────────────────────────
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // ── Handle opening and closing animations ─────────────────────────────────
+
+  useEffect(() => {
+    if (isOpen) {
+      // Opening: mount first, then make visible (triggers slide-in)
+      setShouldRender(true);
+      setIsContainerVisible(true);
+      // Use requestAnimationFrame to ensure DOM is ready before animation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true);
+        });
+      });
+    } else {
+      // Closing: trigger slide-out first, then hide container, then unmount
+      setIsVisible(false);
+      const hideTimer = setTimeout(() => {
+        setIsContainerVisible(false);
+      }, 300); // wait for slide-out to complete
+      const unmountTimer = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => {
+        clearTimeout(hideTimer);
+        clearTimeout(unmountTimer);
+      };
+    }
+  }, [isOpen]);
 
   // ── Focus management ──────────────────────────────────────────────────────
 
@@ -187,14 +227,14 @@ export function Drawer({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (typeof document === "undefined") return null;
+  if (!isMounted || !shouldRender) return null;
 
   return createPortal(
     <div
       className={[
         "fixed inset-0 z-50",
         // Visibility: keep in DOM for CSS transition to work
-        isOpen ? "visible" : "invisible",
+        isContainerVisible ? "visible" : "invisible",
       ].join(" ")}
       onKeyDown={handleKeyDown}
     >
@@ -204,7 +244,7 @@ export function Drawer({
         onClick={closeOnBackdrop ? onClose : undefined}
         className={[
           "absolute inset-0 bg-secondary-900/50 backdrop-blur-sm transition-opacity duration-300",
-          isOpen ? "opacity-100" : "opacity-0",
+          isVisible ? "opacity-100" : "opacity-0",
         ].join(" ")}
       />
 
@@ -222,7 +262,7 @@ export function Drawer({
             ? `w-full ${BOTTOM_SIZE[size]}`
             : `h-full ${SIDE_SIZE[size]}`,
           // Slide in/out
-          isOpen ? "translate-x-0 translate-y-0" : TRANSLATE_CLOSED[position],
+          isVisible ? "translate-x-0 translate-y-0" : TRANSLATE_CLOSED[position],
         ]
           .filter(Boolean)
           .join(" ")}

@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useRef,
+  useState,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
@@ -104,6 +105,13 @@ export function Modal({
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // ── Client-side mount check ───────────────────────────────────────────────
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // ── Focus management ──────────────────────────────────────────────────────
 
@@ -177,7 +185,7 @@ export function Modal({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (!isOpen || typeof document === "undefined") return null;
+  if (!isOpen || !isMounted) return null;
 
   return createPortal(
     <div

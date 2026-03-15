@@ -1,0 +1,541 @@
+"use client";
+
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Bars3Icon,
+  ChevronDownIcon,
+  CpuChipIcon,
+  HeartIcon,
+  MagnifyingGlassIcon,
+  PhoneIcon,
+  ScaleIcon,
+  ShoppingCartIcon,
+  TruckIcon,
+  UserIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+
+import { Drawer } from "@/src/components/ui";
+import { SidebarMegaMenu } from "@/src/components/navigation";
+import { STORE_MEGA_MENU } from "@/src/navigation/megamenu.config";
+import { Navbar } from "./Navbar";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface HeaderUser {
+  name: string;
+  email?: string;
+}
+
+export interface HeaderProps {
+  /** Cart item count — badge hidden when 0 */
+  cartCount?: number;
+  /** Wishlist item count — badge hidden when 0 */
+  wishlistCount?: number;
+  /** Authenticated user; null/undefined shows Sign In link */
+  user?: HeaderUser | null;
+}
+
+// ─── TopBar ───────────────────────────────────────────────────────────────────
+
+const ANNOUNCEMENTS = [
+  "Miễn phí giao hàng toàn quốc cho đơn từ 500k",
+  "🔥 Flash Sale GPU — Giảm đến 20% hôm nay",
+  "Bảo hành chính hãng 24 tháng — Đổi trả 30 ngày",
+];
+
+function TopBar() {
+  return (
+    <div className="bg-primary-600 text-white">
+      <div className="container mx-auto flex h-8 max-w-screen-xl items-center justify-between gap-4 px-4">
+        {/* Left: Announcement */}
+        <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs">
+          <TruckIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <span className="hidden sm:block truncate">{ANNOUNCEMENTS[0]}</span>
+          <span className="sm:hidden text-[11px]">Freeship đơn từ 500k</span>
+          <span className="hidden sm:inline mx-1 text-primary-400" aria-hidden="true">|</span>
+          <span className="hidden md:block font-medium text-yellow-300 truncate">
+            {ANNOUNCEMENTS[1]}
+          </span>
+        </div>
+
+        {/* Right: Quick links */}
+        <nav aria-label="Top bar links" className="flex shrink-0 items-center gap-2 text-xs">
+          <a
+            href="/support"
+            className="hidden sm:flex items-center gap-1 text-primary-100 hover:text-white transition-colors"
+          >
+            <PhoneIcon className="w-3 h-3" aria-hidden="true" />
+            Hỗ trợ khách hàng
+          </a>
+          <span className="hidden sm:inline text-primary-400" aria-hidden="true">|</span>
+          <a
+            href="/orders/track"
+            className="hidden sm:inline text-primary-100 hover:text-white transition-colors"
+          >
+            Tra cứu đơn hàng
+          </a>
+          <span className="text-primary-400" aria-hidden="true">|</span>
+          <a href="/auth/login" className="text-primary-100 hover:text-white transition-colors">Đăng nhập</a>
+          <span className="text-primary-400" aria-hidden="true">/</span>
+          <a href="/auth/register" className="text-primary-100 hover:text-white transition-colors">Đăng ký</a>
+        </nav>
+      </div>
+    </div>
+  );
+}
+
+// ─── SearchBox ────────────────────────────────────────────────────────────────
+
+function SearchBox() {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
+
+  function submit(q: string) {
+    const trimmed = q.trim();
+    if (trimmed) router.push(`/products?search=${encodeURIComponent(trimmed)}`);
+  }
+
+  function handleFormSubmit(e: FormEvent) {
+    e.preventDefault();
+    submit(query);
+  }
+
+  function clearQuery() {
+    setQuery("");
+    inputRef.current?.focus();
+  }
+
+  return (
+    <form
+      role="search"
+      aria-label="Tìm kiếm sản phẩm"
+      onSubmit={handleFormSubmit}
+      className="flex w-full max-w-xl"
+    >
+      <div className="relative flex w-full items-center">
+        <label htmlFor="site-search" className="sr-only">
+          Tìm kiếm
+        </label>
+        <input
+          ref={inputRef}
+          id="site-search"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Nhập tên sản phẩm, từ khoá cần tìm..."
+          autoComplete="off"
+          className="peer w-full rounded-l-lg border border-r-0 border-secondary-300 bg-white py-2.5 pl-4 pr-8 text-sm text-secondary-900 placeholder-secondary-400 transition-shadow focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 [&::-webkit-search-cancel-button]:appearance-none"
+        />
+        {query && (
+          <button
+            type="button"
+            aria-label="Xóa tìm kiếm"
+            onClick={clearQuery}
+            className="absolute right-2 text-secondary-400 hover:text-secondary-600 transition-colors"
+          >
+            <XMarkIcon className="w-4 h-4" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      <button
+        type="submit"
+        aria-label="Tìm kiếm"
+        className="flex shrink-0 items-center gap-1.5 rounded-r-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+      >
+        <MagnifyingGlassIcon className="w-4 h-4" aria-hidden="true" />
+      </button>
+    </form>
+  );
+}
+
+// ─── SocialIcons ──────────────────────────────────────────────────────────────
+// Inline SVG icons — same paths as Footer.tsx but used here without exporting.
+
+function FacebookSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  );
+}
+
+function TikTokSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+    </svg>
+  );
+}
+
+function YouTubeSvg({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+    </svg>
+  );
+}
+
+const SOCIAL_LINKS = [
+  { label: "Facebook", href: "https://facebook.com", Icon: FacebookSvg, hoverClass: "hover:text-blue-600 hover:border-blue-200" },
+  { label: "TikTok",   href: "https://tiktok.com",   Icon: TikTokSvg,   hoverClass: "hover:text-secondary-900 hover:border-secondary-400" },
+  { label: "YouTube",  href: "https://youtube.com",  Icon: YouTubeSvg,  hoverClass: "hover:text-red-600 hover:border-red-200" },
+] as const;
+
+function SocialIcons() {
+  return (
+    <div
+      className="hidden lg:flex shrink-0 items-center gap-2"
+      aria-label="Mạng xã hội"
+    >
+      {SOCIAL_LINKS.map(({ label, href, Icon, hoverClass }) => (
+        <a
+          key={label}
+          href={href}
+          aria-label={label}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={[
+            "flex h-8 w-8 items-center justify-center rounded-full border border-secondary-200 text-secondary-400 transition-colors",
+            hoverClass,
+          ].join(" ")}
+        >
+          <Icon className="w-3.5 h-3.5" />
+        </a>
+      ))}
+    </div>
+  );
+}
+
+// ─── ActionIcons ──────────────────────────────────────────────────────────────
+
+function ActionIcons({
+  cartCount = 0,
+  wishlistCount = 0,
+  user = null,
+  compact = false,
+}: Pick<HeaderProps, "cartCount" | "wishlistCount" | "user"> & { compact?: boolean }) {
+  const firstName = user?.name.split(" ").pop() ?? "";
+
+  return (
+    <div
+      className="flex shrink-0 items-center gap-5"
+      role="toolbar"
+      aria-label="Công cụ và tài khoản"
+    >
+      {/* Build PC — always visible; critical CTA */}
+      <Link
+        href="/build-pc"
+        className="hidden md:flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-1 shrink-0"
+      >
+        <CpuChipIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+        Build PC
+      </Link>
+
+      {/* So sánh — visible in both normal and compact */}
+      <Link
+        href="/compare"
+        aria-label="So sánh sản phẩm"
+        className="hidden md:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
+      >
+        <ScaleIcon className="w-5 h-5" />
+        <span className="text-[10px] font-medium leading-none">So sánh</span>
+      </Link>
+
+      {/* Wishlist — visible in both normal and compact */}
+      <Link
+        href="/wishlist"
+        aria-label={`Danh sách yêu thích${wishlistCount > 0 ? `, ${wishlistCount} sản phẩm` : ""}`}
+        className="relative hidden md:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
+      >
+        <HeartIcon className="w-5 h-5" />
+        {wishlistCount > 0 && (
+          <span
+            aria-hidden="true"
+            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-error-500 text-[9px] font-bold text-white"
+          >
+            {wishlistCount > 9 ? "9+" : wishlistCount}
+          </span>
+        )}
+        <span className="text-[10px] font-medium leading-none">Yêu thích</span>
+      </Link>
+
+      {/* Account — always visible; critical action */}
+      <Link
+        href={user ? "/account" : "/auth/login"}
+        aria-label={user ? `Tài khoản: ${user.name}` : "Đăng nhập"}
+        className="hidden sm:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
+      >
+        <UserIcon className="w-5 h-5" />
+        <span className="text-[10px] font-medium leading-none max-w-[56px] truncate">
+          {user ? firstName : "Tài khoản"}
+        </span>
+      </Link>
+
+      {/* Cart — always visible */}
+      <Link
+        href="/cart"
+        aria-label={`Giỏ hàng${cartCount > 0 ? `, ${cartCount} sản phẩm` : ""}`}
+        className="relative flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
+      >
+        <ShoppingCartIcon className="w-5 h-5" />
+        {cartCount > 0 && (
+          <span
+            aria-hidden="true"
+            className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white"
+          >
+            {cartCount > 99 ? "99+" : cartCount}
+          </span>
+        )}
+        <span className="text-[10px] font-medium leading-none">Giỏ hàng</span>
+      </Link>
+    </div>
+  );
+}
+
+// ─── CompactCategoryTrigger ───────────────────────────────────────────────────
+// Renders only the trigger button + mobile drawer.
+// Desktop dropdown state and panel are owned by Header (see below) so the panel
+// can be anchored to the full container width — identical to Navbar.tsx.
+
+interface CompactCategoryTriggerProps {
+  megaOpen: boolean;
+  onTriggerEnter: () => void;
+  onTriggerLeave: () => void;
+  onToggle: () => void;
+}
+
+function CompactCategoryTrigger({
+  megaOpen,
+  onTriggerEnter,
+  onTriggerLeave,
+  onToggle,
+}: CompactCategoryTriggerProps) {
+  // Mobile drawer state stays local — independent of the desktop panel width.
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  return (
+    <>
+      {/* ── Mobile: open drawer ── */}
+      <button
+        type="button"
+        aria-label="Mở danh mục sản phẩm"
+        onClick={() => setDrawerOpen(true)}
+        className="lg:hidden flex items-center gap-2 px-3 py-2 text-sm font-medium text-secondary-700 rounded-md border border-secondary-200 bg-white hover:text-primary-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 shrink-0"
+      >
+        <Bars3Icon className="w-4 h-4" aria-hidden="true" />
+      </button>
+
+      {/* ── Desktop: trigger button only — panel rendered at container level ── */}
+      <div
+        className="hidden lg:block shrink-0"
+        onMouseEnter={onTriggerEnter}
+        onMouseLeave={onTriggerLeave}
+      >
+        <button
+          type="button"
+          aria-haspopup="true"
+          aria-expanded={megaOpen}
+          onClick={onToggle}
+          className={[
+            "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md border bg-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400",
+            megaOpen
+              ? "border-primary-300 text-primary-600"
+              : "border-secondary-200 text-secondary-700 hover:text-primary-600",
+          ].join(" ")}
+        >
+          <Bars3Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+          Danh mục
+          <ChevronDownIcon
+            className={[
+              "w-3.5 h-3.5 shrink-0 transition-transform duration-150",
+              megaOpen ? "rotate-180" : "",
+            ].join(" ")}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+
+      {/* ── Mobile drawer ── */}
+      <Drawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        position="left"
+        size="md"
+        title="Danh mục sản phẩm"
+      >
+        <div className="h-full overflow-hidden -mx-4 -mt-2">
+          <SidebarMegaMenu
+            categories={STORE_MEGA_MENU}
+            defaultActiveId="laptop-gaming"
+            height={680}
+            className="rounded-none border-0 shadow-none w-full"
+          />
+        </div>
+      </Drawer>
+    </>
+  );
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+
+/**
+ * Header — full sticky site header for the customer storefront.
+ *
+ * Scroll behavior:
+ *  - Before scroll (< 80px): TopBar + full MainHeader (h-16) + Navbar
+ *  - After scroll (≥ 80px):  Compact MainHeader only (h-14) with category
+ *    trigger replacing Navbar; TopBar, social icons, and most action icons hidden.
+ *
+ * Full layout zones:
+ *  1. TopBar       — thin announcement strip (bg-primary-600)
+ *  2. MainHeader   — [Logo] | [Search] | [Social Icons] | [Build PC + Icons]
+ *  3. Navbar       — category bar with mega menu
+ *
+ * Compact layout:
+ *  2. MainHeader   — [☰ Danh mục] [Logo] | [Search] | [Cart]
+ */
+export function Header({ cartCount = 0, wishlistCount = 0, user = null }: HeaderProps) {
+  const [scrolled, setScrolled] = useState(false);
+
+  // ── Compact mega-menu state ──────────────────────────────────────────────────
+  // Owned here (not inside CompactCategoryTrigger) so the panel can be rendered
+  // as a sibling of the three layout zones, anchored to the container's full
+  // left-0 right-0 width — identical positioning logic to Navbar.tsx.
+  const [compactMegaOpen, setCompactMegaOpen] = useState(false);
+  const compactCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function openCompactMega() {
+    if (compactCloseTimer.current) clearTimeout(compactCloseTimer.current);
+    setCompactMegaOpen(true);
+  }
+  function closeCompactMegaDelayed() {
+    compactCloseTimer.current = setTimeout(() => setCompactMegaOpen(false), 180);
+  }
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 80);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Close compact mega menu when leaving compact mode (scrolling back to top).
+  useEffect(() => {
+    if (!scrolled) setCompactMegaOpen(false);
+  }, [scrolled]);
+
+  return (
+    <header className="sticky top-0 z-50 w-full">
+
+      {/* 1 — TopBar: hidden when compact */}
+      {!scrolled && <TopBar />}
+
+      {/* 2 — Main header */}
+      <div className="bg-white border-b border-secondary-200 shadow-sm">
+        {/*
+         * `relative` makes this container the positioning anchor for the compact
+         * mega-menu panel below, matching exactly the technique used in Navbar.tsx.
+         * Both dropdowns now use identical left-0 right-0 top-full logic.
+         */}
+        <div
+          className={[
+            "container mx-auto flex max-w-screen-xl items-center justify-between gap-4 px-4 transition-[height] duration-200 relative",
+            scrolled ? "h-14" : "h-16",
+          ].join(" ")}
+        >
+
+          {/* ── Left zone: [Compact trigger?] + Logo ── */}
+          <div className="flex shrink-0 items-center gap-3">
+            {scrolled && (
+              <CompactCategoryTrigger
+                megaOpen={compactMegaOpen}
+                onTriggerEnter={openCompactMega}
+                onTriggerLeave={closeCompactMegaDelayed}
+                onToggle={() => setCompactMegaOpen((v) => !v)}
+              />
+            )}
+
+            <Link
+              href="/"
+              aria-label="TechStore — Trang chủ"
+              className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+            >
+              <div
+                aria-hidden="true"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600 text-white text-sm font-extrabold tracking-tight"
+              >
+                PC
+              </div>
+              <div className="hidden sm:block leading-tight">
+                <p className="text-base font-extrabold tracking-tight text-secondary-900">
+                  Tech<span className="text-primary-600">Store</span>
+                </p>
+                {!scrolled && (
+                  <p className="text-[10px] text-secondary-500 leading-none">
+                    Linh kiện chính hãng
+                  </p>
+                )}
+              </div>
+            </Link>
+          </div>
+
+          {/* ── Center zone: Search ── */}
+          <div className="flex flex-1 justify-center px-2">
+            <SearchBox />
+          </div>
+
+          {/* ── Right zone: Social icons + separator + Action icons ── */}
+          <div className="flex shrink-0 items-center gap-4">
+            {!scrolled && (
+              <>
+                <SocialIcons />
+                <div className="hidden lg:block h-8 w-px bg-secondary-200 shrink-0" aria-hidden="true" />
+              </>
+            )}
+            <ActionIcons
+              cartCount={cartCount}
+              wishlistCount={wishlistCount}
+              user={user}
+              compact={scrolled}
+            />
+          </div>
+
+          {/* ── Compact mega-menu panel — full container width ── */}
+          {/*
+           * Sibling of the three layout zones, anchored to the `relative` container.
+           * `left-0 right-0` gives it exactly the same width as the navbar dropdown.
+           * `pt-2` is an invisible hover-bridge: the mouse enters the padding area
+           * (which fires onMouseEnter) before reaching the visible panel, so the
+           * 180ms close timer is cancelled and the menu stays open.
+           */}
+          {scrolled && compactMegaOpen && (
+            <div
+              role="region"
+              aria-label="Tất cả danh mục sản phẩm"
+              className="absolute left-0 right-0 top-full z-[200] pt-2"
+              onMouseEnter={openCompactMega}
+              onMouseLeave={closeCompactMegaDelayed}
+            >
+              <SidebarMegaMenu
+                categories={STORE_MEGA_MENU}
+                defaultActiveId="laptop-gaming"
+                height={500}
+                className="w-full shadow-2xl border-secondary-200"
+              />
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* 3 — Navbar: hidden when compact */}
+      {!scrolled && <Navbar />}
+
+    </header>
+  );
+}

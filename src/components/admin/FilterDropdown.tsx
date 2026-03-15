@@ -7,6 +7,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronDownIcon,
   XMarkIcon,
@@ -73,19 +74,60 @@ export function FilterDropdown({
 }: FilterDropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [position, setPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => {
     setOpen(false);
     setQuery("");
+    setPosition(null);
   }, []);
+
+  // Calculate dropdown position
+  useEffect(() => {
+    if (!open || !containerRef.current) {
+      setPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        // For fixed positioning, use viewport coordinates directly (no scroll offset needed)
+        setPosition({
+          top: rect.bottom + 6, // mt-1.5 = 6px gap
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(updatePosition);
+
+    // Update position on scroll/resize
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open]);
 
   // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) close();
+      const target = e.target as Node;
+      if (
+        !containerRef.current?.contains(target) &&
+        !dropdownRef.current?.contains(target)
+      ) {
+        close();
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -162,107 +204,119 @@ export function FilterDropdown({
         />
       </button>
 
-      {/* Dropdown */}
-      {open && (
-        <div className="absolute left-0 top-full z-50 mt-1.5 min-w-[200px] rounded-xl border border-secondary-200 bg-white shadow-lg">
-          {/* Search */}
-          {searchable && (
-            <div className="border-b border-secondary-100 px-3 py-2">
-              <div className="relative">
-                <MagnifyingGlassIcon
-                  className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-secondary-400"
-                  aria-hidden="true"
-                />
-                <input
-                  ref={searchRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search…"
-                  className="w-full rounded-md border border-secondary-200 py-1.5 pl-7 pr-2 text-xs focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-200"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Options */}
-          <ul
-            role="listbox"
-            aria-multiselectable="true"
-            aria-label={`${label} filter options`}
-            className={["overflow-y-auto py-1", maxHeight].join(" ")}
+      {/* Dropdown - rendered via portal to escape overflow constraints */}
+      {open &&
+        position &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="fixed z-[9999] min-w-[200px] rounded-xl border border-secondary-200 bg-white shadow-lg"
+            style={{
+              top: `${position.top}px`,
+              left: `${position.left}px`,
+              width: `${Math.max(position.width, 200)}px`,
+            }}
           >
-            {filtered.length === 0 ? (
-              <li className="px-3 py-2 text-xs text-secondary-400">
-                No options found
-              </li>
-            ) : (
-              filtered.map((option) => {
-                const isSelected = selected.includes(option.value);
-                return (
-                  <li
-                    key={option.value}
-                    role="option"
-                    aria-selected={isSelected}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggle(option.value)}
-                      className={[
-                        "flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors",
-                        isSelected
-                          ? "bg-primary-50 text-primary-700"
-                          : "text-secondary-700 hover:bg-secondary-50",
-                        "focus-visible:outline-none focus-visible:bg-secondary-50",
-                      ].join(" ")}
-                    >
-                      {/* Checkbox visual */}
-                      <span
-                        className={[
-                          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-                          isSelected
-                            ? "border-primary-600 bg-primary-600"
-                            : "border-secondary-300 bg-white",
-                        ].join(" ")}
-                        aria-hidden="true"
-                      >
-                        {isSelected && (
-                          <CheckIcon className="w-2.5 h-2.5 text-white" />
-                        )}
-                      </span>
-
-                      <span className="flex-1 text-left">{option.label}</span>
-
-                      {option.count !== undefined && (
-                        <span className="text-xs text-secondary-400">
-                          ({option.count})
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                );
-              })
+            {/* Search */}
+            {searchable && (
+              <div className="border-b border-secondary-100 px-3 py-2">
+                <div className="relative">
+                  <MagnifyingGlassIcon
+                    className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-secondary-400"
+                    aria-hidden="true"
+                  />
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search…"
+                    className="w-full rounded-md border border-secondary-200 py-1.5 pl-7 pr-2 text-xs focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-200"
+                  />
+                </div>
+              </div>
             )}
-          </ul>
 
-          {/* Footer: clear + count */}
-          {hasSelection && (
-            <div className="flex items-center justify-between border-t border-secondary-100 px-3 py-2">
-              <span className="text-xs text-secondary-500">
-                {selectedCount} selected
-              </span>
-              <button
-                type="button"
-                onClick={clearAll}
-                className="flex items-center gap-1 text-xs text-error-600 hover:underline focus-visible:outline-none"
-              >
-                <XMarkIcon className="w-3 h-3" aria-hidden="true" />
-                Clear
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+            {/* Options */}
+            <ul
+              role="listbox"
+              aria-multiselectable="true"
+              aria-label={`${label} filter options`}
+              className={["overflow-y-auto py-1", maxHeight].join(" ")}
+            >
+              {filtered.length === 0 ? (
+                <li className="px-3 py-2 text-xs text-secondary-400">
+                  No options found
+                </li>
+              ) : (
+                filtered.map((option) => {
+                  const isSelected = selected.includes(option.value);
+                  return (
+                    <li
+                      key={option.value}
+                      role="option"
+                      aria-selected={isSelected}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggle(option.value)}
+                        className={[
+                          "flex w-full items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                          isSelected
+                            ? "bg-primary-50 text-primary-700"
+                            : "text-secondary-700 hover:bg-secondary-50",
+                          "focus-visible:outline-none focus-visible:bg-secondary-50",
+                        ].join(" ")}
+                      >
+                        {/* Checkbox visual */}
+                        <span
+                          className={[
+                            "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+                            isSelected
+                              ? "border-primary-600 bg-primary-600"
+                              : "border-secondary-300 bg-white",
+                          ].join(" ")}
+                          aria-hidden="true"
+                        >
+                          {isSelected && (
+                            <CheckIcon className="w-2.5 h-2.5 text-white" />
+                          )}
+                        </span>
+
+                        <span className="flex-1 text-left">{option.label}</span>
+
+                        {option.count !== undefined && (
+                          <span className="text-xs text-secondary-400">
+                            ({option.count})
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
+
+            {/* Footer: clear + count */}
+            {hasSelection && (
+              <div className="flex items-center justify-between border-t border-secondary-100 px-3 py-2">
+                <span className="text-xs text-secondary-500">
+                  {selectedCount} selected
+                </span>
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="flex items-center gap-1 text-xs text-error-600 hover:underline focus-visible:outline-none"
+                >
+                  <XMarkIcon className="w-3 h-3" aria-hidden="true" />
+                  Clear
+                </button>
+              </div>
+            )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

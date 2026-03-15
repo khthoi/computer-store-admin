@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   Bars3Icon,
   XMarkIcon,
@@ -96,13 +97,49 @@ export function Navbar({
 }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [userMenuPosition, setUserMenuPosition] = useState<{ top: number; right: number } | null>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Calculate user menu dropdown position
+  useEffect(() => {
+    if (!userMenuOpen || !userMenuRef.current) {
+      setUserMenuPosition(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const rect = userMenuRef.current?.getBoundingClientRect();
+      if (rect) {
+        setUserMenuPosition({
+          top: rect.bottom + 8, // mt-2 = 8px gap
+          right: window.innerWidth - rect.right,
+        });
+      }
+    };
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(updatePosition);
+
+    // Update position on scroll/resize
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [userMenuOpen]);
 
   // Close user menu on outside click
   useEffect(() => {
     if (!userMenuOpen) return;
     const handler = (e: MouseEvent) => {
-      if (!userMenuRef.current?.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        !userMenuRef.current?.contains(target) &&
+        !userMenuDropdownRef.current?.contains(target)
+      ) {
         setUserMenuOpen(false);
       }
     };
@@ -228,57 +265,66 @@ export function Navbar({
                   />
                 </button>
 
-                {/* User dropdown */}
-                {userMenuOpen && (
-                  <div
-                    role="menu"
-                    aria-label="User menu"
-                    className="absolute right-0 top-full mt-2 min-w-[180px] rounded-md border border-secondary-200 bg-white py-1 shadow-lg"
-                  >
-                    {/* User info header */}
-                    <div className="border-b border-secondary-100 px-4 py-2">
-                      <p className="text-sm font-medium text-secondary-900 truncate">{user.name}</p>
-                      {user.email && (
-                        <p className="text-xs text-secondary-500 truncate">{user.email}</p>
-                      )}
-                    </div>
-
-                    {userMenuItems.map((item, i) => (
-                      <div key={i} role="menuitem">
-                        {item.href ? (
-                          <a
-                            href={item.href}
-                            onClick={closeAll}
-                            className={[
-                              "block px-4 py-2 text-sm transition-colors hover:bg-secondary-50",
-                              item.isDanger
-                                ? "text-error-600 hover:bg-error-50"
-                                : "text-secondary-700",
-                            ].join(" ")}
-                          >
-                            {item.label}
-                          </a>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              item.onClick?.();
-                              closeAll();
-                            }}
-                            className={[
-                              "w-full px-4 py-2 text-left text-sm transition-colors hover:bg-secondary-50",
-                              item.isDanger
-                                ? "text-error-600 hover:bg-error-50"
-                                : "text-secondary-700",
-                            ].join(" ")}
-                          >
-                            {item.label}
-                          </button>
+                {/* User dropdown - rendered via portal */}
+                {userMenuOpen &&
+                  userMenuPosition &&
+                  typeof document !== "undefined" &&
+                  createPortal(
+                    <div
+                      ref={userMenuDropdownRef}
+                      role="menu"
+                      aria-label="User menu"
+                      className="fixed z-[9999] min-w-[180px] rounded-md border border-secondary-200 bg-white py-1 shadow-lg"
+                      style={{
+                        top: `${userMenuPosition.top}px`,
+                        right: `${userMenuPosition.right}px`,
+                      }}
+                    >
+                      {/* User info header */}
+                      <div className="border-b border-secondary-100 px-4 py-2">
+                        <p className="text-sm font-medium text-secondary-900 truncate">{user.name}</p>
+                        {user.email && (
+                          <p className="text-xs text-secondary-500 truncate">{user.email}</p>
                         )}
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      {userMenuItems.map((item, i) => (
+                        <div key={i} role="menuitem">
+                          {item.href ? (
+                            <a
+                              href={item.href}
+                              onClick={closeAll}
+                              className={[
+                                "block px-4 py-2 text-sm transition-colors hover:bg-secondary-50",
+                                item.isDanger
+                                  ? "text-error-600 hover:bg-error-50"
+                                  : "text-secondary-700",
+                              ].join(" ")}
+                            >
+                              {item.label}
+                            </a>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                item.onClick?.();
+                                closeAll();
+                              }}
+                              className={[
+                                "w-full px-4 py-2 text-left text-sm transition-colors hover:bg-secondary-50",
+                                item.isDanger
+                                  ? "text-error-600 hover:bg-error-50"
+                                  : "text-secondary-700",
+                              ].join(" ")}
+                            >
+                              {item.label}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>,
+                    document.body
+                  )}
               </>
             ) : (
               <a

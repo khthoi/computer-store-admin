@@ -6,6 +6,16 @@ export type { NavbarProps, NavLink, NavUser, NavUserMenuItem } from "./Navbar";
 export { MegaMenu } from "./MegaMenu";
 export type { MegaMenuProps, MegaMenuTrigger, MegaMenuColumn, MegaMenuItem } from "./MegaMenu";
 
+export { SidebarMegaMenu } from "./MegaMenu";
+export type {
+  SidebarMegaMenuProps,
+  SidebarMenuCategory,
+  SidebarMenuPanel,
+  SidebarMenuSection,
+  SidebarMenuLink,
+  SidebarMenuBrand,
+} from "./MegaMenu";
+
 export { Breadcrumb } from "./Breadcrumb";
 export type { BreadcrumbProps, BreadcrumbItem } from "./Breadcrumb";
 

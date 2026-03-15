@@ -10,6 +10,7 @@ import {
   type ChangeEvent,
   type KeyboardEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   MagnifyingGlassIcon,
   XMarkIcon,
@@ -102,6 +103,8 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
 
     const [open, setOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Merge forwarded ref with internal
     const setInputRef = useCallback(
@@ -113,11 +116,46 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       [ref]
     );
 
+    // Calculate dropdown position
+    useEffect(() => {
+      if (!open || !containerRef.current) {
+        setDropdownPosition(null);
+        return;
+      }
+
+      const updatePosition = () => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (rect) {
+          setDropdownPosition({
+            top: rect.bottom + 6, // mt-1.5 = 6px gap
+            left: rect.left,
+            width: rect.width,
+          });
+        }
+      };
+
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(updatePosition);
+
+      // Update position on scroll/resize
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }, [open]);
+
     // Close dropdown on outside click
     useEffect(() => {
       if (!open) return;
       const handler = (e: MouseEvent) => {
-        if (!containerRef.current?.contains(e.target as Node)) {
+        const target = e.target as Node;
+        if (
+          !containerRef.current?.contains(target) &&
+          !dropdownRef.current?.contains(target)
+        ) {
           setOpen(false);
         }
       };
@@ -253,14 +291,23 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           )}
         </div>
 
-        {/* Dropdown */}
-        {dropdownVisible && (
-          <div
-            id={listboxId}
-            role="listbox"
-            aria-label={showRecent ? "Recent searches" : "Suggestions"}
-            className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[240px] overflow-hidden rounded-lg border border-secondary-200 bg-white shadow-lg"
-          >
+        {/* Dropdown - rendered via portal */}
+        {dropdownVisible &&
+          dropdownPosition &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <div
+              ref={dropdownRef}
+              id={listboxId}
+              role="listbox"
+              aria-label={showRecent ? "Recent searches" : "Suggestions"}
+              className="fixed z-[9999] min-w-[240px] overflow-hidden rounded-lg border border-secondary-200 bg-white shadow-lg"
+              style={{
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${Math.max(dropdownPosition.width, 240)}px`,
+              }}
+            >
             {/* Section heading */}
             <p className="px-3 pt-2.5 pb-1 text-xs font-semibold uppercase tracking-wider text-secondary-400">
               {showRecent ? "Recent searches" : "Suggestions"}
@@ -358,9 +405,10 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
               })}
             </ul>
 
-            <div className="pb-1" />
-          </div>
-        )}
+              <div className="pb-1" />
+            </div>,
+            document.body
+          )}
       </div>
     );
   }
