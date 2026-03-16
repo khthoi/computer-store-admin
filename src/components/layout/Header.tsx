@@ -398,8 +398,21 @@ function CompactCategoryTrigger({
  * Compact layout:
  *  2. MainHeader   — [☰ Danh mục] [Logo] | [Search] | [Cart]
  */
+// ── Scroll thresholds ──────────────────────────────────────────────────────────
+// Two separate values create a hysteresis band that prevents rapid toggling
+// when the user hovers near the collapse point.
+//
+//   Scrolling DOWN: collapse when window.scrollY crosses SCROLL_COMPACT  (140 px)
+//   Scrolling UP:   restore  when window.scrollY drops below SCROLL_RESTORE (80 px)
+//
+// This means the header only changes state once the user moves clearly in one
+// direction, not when they drift back and forth near the threshold.
+const SCROLL_COMPACT  = 200; // px → switch to compact
+const SCROLL_RESTORE  =  120; // px → switch back to full
+
 export function Header({ cartCount = 0, wishlistCount = 0, user = null }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
+  const rafRef = useRef<number>(0);
 
   // ── Compact mega-menu state ──────────────────────────────────────────────────
   // Owned here (not inside CompactCategoryTrigger) so the panel can be rendered
@@ -417,11 +430,29 @@ export function Header({ cartCount = 0, wishlistCount = 0, user = null }: Header
   }
 
   useEffect(() => {
+    // Sync on mount so a page reload while already scrolled shows the right state.
+    setScrolled(window.scrollY > SCROLL_COMPACT);
+
     function onScroll() {
-      setScrolled(window.scrollY > 80);
+      // rAF coalesces burst scroll events into one state update per frame.
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        // Hysteresis: only flip state when crossing the appropriate threshold
+        // in the correct direction — prevents toggling near the boundary.
+        setScrolled((prev) => {
+          if (!prev && y > SCROLL_COMPACT)  return true;
+          if ( prev && y < SCROLL_RESTORE)  return false;
+          return prev; // no change — avoid re-render
+        });
+      });
     }
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   // Close compact mega menu when leaving compact mode (scrolling back to top).
@@ -444,7 +475,7 @@ export function Header({ cartCount = 0, wishlistCount = 0, user = null }: Header
          */}
         <div
           className={[
-            "container mx-auto flex max-w-screen-xl items-center justify-between gap-4 px-4 transition-[height] duration-200 relative",
+            "container mx-auto flex max-w-screen-xl items-center justify-between gap-4 px-4 transition-all duration-300 ease-in-out relative",
             scrolled ? "h-14" : "h-16",
           ].join(" ")}
         >
@@ -524,7 +555,6 @@ export function Header({ cartCount = 0, wishlistCount = 0, user = null }: Header
               <SidebarMegaMenu
                 categories={STORE_MEGA_MENU}
                 defaultActiveId="laptop-gaming"
-                height={500}
                 className="w-full shadow-2xl border-secondary-200"
               />
             </div>

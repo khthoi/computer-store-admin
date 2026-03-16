@@ -435,7 +435,7 @@ function FlyoutItem({ item }: { item: SidebarMenuLink }) {
   }, []);
 
   const linkCls =
-    "flex items-center justify-between py-1 text-sm text-secondary-600 transition-colors hover:text-primary-700 focus-visible:outline-none focus-visible:text-primary-700";
+    "flex items-center justify-between py-0.5 text-xs text-secondary-600 transition-colors hover:text-primary-700 focus-visible:outline-none focus-visible:text-primary-700";
 
   if (!hasSub) {
     return (
@@ -489,18 +489,18 @@ function FlyoutItem({ item }: { item: SidebarMenuLink }) {
 
 function SectionBlock({ section }: { section: SidebarMenuSection }) {
   return (
-    <div className="mb-5">
+    <div className="mb-3">
       {/* Section heading */}
-      <div className="mb-1.5 flex items-center gap-1">
+      <div className="mb-1 flex items-center gap-1">
         {section.headingHref ? (
           <a
             href={section.headingHref}
-            className="text-sm font-semibold text-primary-700 hover:underline transition-colors"
+            className="text-xs font-semibold text-primary-700 hover:underline transition-colors"
           >
             {section.heading}
           </a>
         ) : (
-          <span className="text-sm font-semibold text-primary-700">
+          <span className="text-xs font-semibold text-primary-700">
             {section.heading}
           </span>
         )}
@@ -540,7 +540,7 @@ function SectionBlock({ section }: { section: SidebarMenuSection }) {
 export function SidebarMegaMenu({
   categories,
   defaultActiveId,
-  height = 480,
+  height,
   className = "",
 }: SidebarMegaMenuProps) {
   const [activeId, setActiveId] = useState<string | null>(
@@ -586,11 +586,11 @@ export function SidebarMegaMenu({
         aria-label="Product categories"
         className="w-56 shrink-0 overflow-y-auto border-r border-secondary-100 bg-secondary-50"
       >
-        <ul role="list" className="flex flex-col py-1">
+        <ul role="list" className="flex flex-col">
           {categories.map((cat) => {
             const isActive = cat.id === activeId;
             const sharedClass = [
-              "flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors duration-150",
+              "flex w-full items-center gap-2 px-3 py-1.5 text-xs transition-colors duration-150",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-400",
               isActive
                 ? "bg-white font-medium text-primary-700 shadow-sm"
@@ -699,7 +699,7 @@ export function SidebarMegaMenu({
           </div>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-secondary-400">Chọn danh mục để xem sản phẩm</p>
+            <p className="text-xs text-secondary-400">Chọn danh mục để xem sản phẩm</p>
           </div>
         )}
       </div>

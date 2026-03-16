@@ -193,7 +193,6 @@ export function Navbar() {
               <SidebarMegaMenu
                 categories={STORE_MEGA_MENU}
                 defaultActiveId="laptop-gaming"
-                height={500}
                 className="w-full shadow-2xl border-secondary-200"
               />
             </div>

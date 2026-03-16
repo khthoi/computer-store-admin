@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/src/components/layout/Header";
 import { Footer } from "@/src/components/layout/Footer";
+import { SideBanners } from "@/src/components/layout/SideBanners";
 
 /**
  * CUSTOMER STOREFRONT — Root Layout
@@ -56,6 +57,9 @@ export default function RootLayout({
          *   user={session?.user ?? null}
          */}
         <Header cartCount={0} user={null} />
+
+        {/* Side banners — fixed, visible on ≥ 1536 px viewports only */}
+        <SideBanners />
 
         {/* Page content */}
         <main id="main-content" className="min-h-[calc(100vh-theme(spacing.40))]">
