@@ -62,7 +62,7 @@ export interface ProductCardProps {
 // ─── Icon action button ────────────────────────────────────────────────────────
 
 interface IconActionButtonProps {
-  label: string;
+  label?: string;
   onClick: (e: React.MouseEvent) => void;
   disabled?: boolean;
   active?: boolean;
@@ -77,7 +77,6 @@ function IconActionButton({
   children,
 }: IconActionButtonProps) {
   return (
-    <Tooltip content={label} placement="top" disabled={disabled}>
       <button
         type="button"
         aria-label={label}
@@ -95,7 +94,6 @@ function IconActionButton({
       >
         {children}
       </button>
-    </Tooltip>
   );
 }
 
@@ -137,6 +135,9 @@ export const ProductCard = memo(function ProductCard({
   const [wishlisted, setWishlisted] = useState(isWishlisted);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerAction, setDrawerAction] = useState<DrawerActionType>("cart");
+  // Keep drawer in the React tree after first open so the close animation
+  // can complete before Drawer.tsx unmounts its own portal.
+  const [drawerEverOpened, setDrawerEverOpened] = useState(false);
 
   const isOutOfStock = stockStatus === "out-of-stock";
 
@@ -147,6 +148,7 @@ export const ProductCard = memo(function ProductCard({
       e.preventDefault();
       e.stopPropagation();
       setDrawerAction(action);
+      setDrawerEverOpened(true);
       setDrawerOpen(true);
     },
     []
@@ -311,8 +313,10 @@ export const ProductCard = memo(function ProductCard({
         </div>
       </article>
 
-      {/* Lazy drawer — only mounted after first click */}
-      {drawerOpen && (
+      {/* Lazy drawer — mounted on first click, then kept alive so the
+          close animation (300 ms slide-out) can finish before Drawer.tsx
+          unmounts its own portal. isOpen drives animation, not mounting. */}
+      {drawerEverOpened && (
         <ProductVariantDrawer
           isOpen={drawerOpen}
           onClose={() => setDrawerOpen(false)}

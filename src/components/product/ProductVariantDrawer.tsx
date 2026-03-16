@@ -127,9 +127,8 @@ export const ProductVariantDrawer = memo(function ProductVariantDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={handleClose}
-      position="bottom"
-      size="lg"
-      showDragIndicator
+      position="right"
+      size="xl"
       closeOnBackdrop
       title={
         actionType === "cart"
