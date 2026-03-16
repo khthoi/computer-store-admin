@@ -75,7 +75,7 @@ function TopBar() {
             href="/orders/track"
             className="hidden sm:inline text-primary-100 hover:text-white transition-colors"
           >
-            Tra cứu đơn hàng
+            Đơn hàng của tôi
           </a>
           <span className="text-primary-400" aria-hidden="true">|</span>
           <a href="/auth/login" className="text-primary-100 hover:text-white transition-colors">Đăng nhập</a>
