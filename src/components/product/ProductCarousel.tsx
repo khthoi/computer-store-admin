@@ -13,7 +13,24 @@ export interface ProductCarouselProps {
   products: SlideProduct[];
   /** If true, show a skeleton row while data is loading */
   loading?: boolean;
+  /**
+   * Number of cards visible at the widest breakpoint (2xl ≥ 1536 px).
+   * Breakpoint ladder: mobile→2 · sm→3 · lg→4 · xl→5 · 2xl→itemsPerView
+   * Default: 6
+   */
+  itemsPerView?: 4 | 5 | 6;
 }
+
+// ─── Slide basis lookup ───────────────────────────────────────────────────────
+// Tailwind requires static class strings — no template literals.
+// mobile(2) and sm(3) are fixed; lg(4) and xl(5) are fixed stepping-stones;
+// the 2xl column is the only breakpoint that changes with itemsPerView.
+
+const SLIDE_CLASSES: Record<4 | 5 | 6, string> = {
+  4: "min-w-0 shrink-0 grow-0 h-full basis-[calc(50%-6px)] sm:basis-[calc(33.333%-8px)] lg:basis-[calc(25%-9px)] xl:basis-[calc(25%-9px)]",
+  5: "min-w-0 shrink-0 grow-0 h-full basis-[calc(50%-6px)] sm:basis-[calc(33.333%-8px)] lg:basis-[calc(25%-9px)] xl:basis-[calc(20%-10px)]",
+  6: "min-w-0 shrink-0 grow-0 h-full basis-[calc(50%-6px)] sm:basis-[calc(33.333%-8px)] lg:basis-[calc(25%-9px)] xl:basis-[calc(20%-10px)] 2xl:basis-[calc(16.667%-10px)]",
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -21,15 +38,17 @@ export interface ProductCarouselProps {
  * ProductCarousel — infinite-loop horizontal slider of ProductCard items.
  *
  * Responsive visible counts (controlled via CSS flex-basis):
- *   Mobile  → 2   (basis-[calc(100%/2-…)])
- *   Tablet  → 3   (sm:basis-[calc(100%/3-…)])
- *   Desktop → 4   (lg:basis-[calc(100%/4-…)])
- *   Wide    → 5   (xl:basis-[calc(100%/5-…)])
+ *   Mobile  → 2   always
+ *   sm      → 3   always
+ *   lg      → 4   always
+ *   xl      → 5   always
+ *   2xl     → itemsPerView (4 | 5 | 6 — default 6)
  *
  * Uses Embla Carousel with loop:true for seamless infinite looping.
  * Drag (mouse) and swipe (touch) are enabled by default in Embla.
  */
-export function ProductCarousel({ products }: ProductCarouselProps) {
+export function ProductCarousel({ products, itemsPerView = 6 }: ProductCarouselProps) {
+  const slideClass = SLIDE_CLASSES[itemsPerView];
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
@@ -81,12 +100,7 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
                *  lg      → 4 visible: calc(25%    - 9px)
                *  xl      → 5 visible: calc(20%    - 10px)
                */
-              className="min-w-0 shrink-0 grow-0
-                basis-[calc(50%-6px)]
-                sm:basis-[calc(33.333%-8px)]
-                lg:basis-[calc(25%-9px)]
-                xl:basis-[calc(20%-10px)]
-                h-full"
+              className={slideClass}
             >
               <ProductCard {...product} />
             </div>

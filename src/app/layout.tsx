@@ -56,15 +56,29 @@ export default function RootLayout({
          *   cartCount={session?.cartCount}
          *   user={session?.user ?? null}
          */}
-        <Header cartCount={0} user={null} />
+        <Header cartCount={2} wishlistCount={2} compareCount={2} user={null} />
 
-        {/* Side banners — fixed, visible on ≥ 1536 px viewports only */}
-        <SideBanners />
+        {/*
+         * 3-column grid at 2xl+ (≥ 1536 px):
+         *   [240px side banner] [1fr main content] [240px side banner]
+         *
+         * SideBanners renders two <aside> fragments with explicit col-start-1
+         * and col-start-3 so CSS Grid places them correctly despite DOM order.
+         * <main> takes col-start-2 (the 1fr center column).
+         *
+         * Below 2xl: SideBanners children are hidden (display:none), the grid
+         * declaration is inactive, and <main> fills the full viewport width.
+         */}
+        <div className="2xl:grid 2xl:grid-cols-[240px_1fr_240px]">
+          <SideBanners />
 
-        {/* Page content */}
-        <main id="main-content" className="min-h-[calc(100vh-theme(spacing.40))]">
-          {children}
-        </main>
+          <main
+            id="main-content"
+            className="min-h-[calc(100vh-theme(spacing.40))] 2xl:col-start-2 min-w-0"
+          >
+            {children}
+          </main>
+        </div>
 
         <Footer />
       </body>

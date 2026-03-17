@@ -31,7 +31,7 @@ const TRUST_ITEMS = [
 function TrustBadges() {
   return (
     <section aria-label="Cam kết dịch vụ" className="bg-white border-b border-secondary-100">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-12xl 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-2">
         <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-secondary-100">
           {TRUST_ITEMS.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex items-center gap-3 px-4 py-4 sm:px-6 sm:py-5">
@@ -161,6 +161,21 @@ const LAPTOP_GAMING_PRODUCTS: MockProduct[] = [
     stockStatus: "low-stock",
     stockQuantity: 3,
   },
+  {
+    id: "dell-alienware-x15-r2",
+    name: "Dell Alienware x15 R2",
+    brand: "Dell",
+    href: "/products/dell-alienware-x15-r2",
+    thumbnail: "/icons/laptop-gaming.png",
+    badge: "Hot",
+    productCode: "LG01006",
+    price: 48_990_000,
+    originalPrice: 55_000_000,
+    rating: 4.8,
+    reviewCount: 67,
+    stockStatus: "in-stock",
+    stockQuantity: 6,
+  }
 ];
 
 const CPU_PRODUCTS: MockProduct[] = [
@@ -846,7 +861,7 @@ function ProductSection({
 }) {
   return (
     <section aria-labelledby={`ps-${title}`} className="py-6 bg-secondary-50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-12xl 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">
         <div className="mb-5 flex items-center justify-between">
           <h2 id={`ps-${title}`} className="text-lg font-bold text-secondary-900">
             {title}
@@ -869,7 +884,7 @@ function ProductSection({
 function FlashSaleSection() {
   return (
     <section aria-labelledby="ps-flash" className="py-6 bg-secondary-50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-12xl 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">
         <div className="mb-5 flex items-center justify-between">
           <h2 id="ps-flash" className="text-lg font-bold text-secondary-900">
             Flash Sale — Giảm đến 20% 🔥
@@ -881,9 +896,7 @@ function FlashSaleSection() {
             Xem tất cả →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          <ProductCardSkeleton count={5} />
-        </div>
+        <ProductCardSkeleton itemsPerView={6} />
       </div>
     </section>
   );

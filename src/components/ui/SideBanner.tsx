@@ -37,14 +37,14 @@ export function SideBanner({
   image,
   alt,
   href = "/",
-  width = 280,
+  width = 200,
   height = 720,
 }: SideBannerProps) {
   return (
     <Link
       href={href}
       aria-label={alt}
-      className="block overflow-hidden rounded-xl shadow-lg transition-transform duration-300 ease-out hover:scale-[1.03]"
+      className="block overflow-hidden rounded-sm shadow-lg transition-transform duration-300 ease-out hover:scale-[1.03]"
       style={{ width }}
     >
       <div

@@ -10,6 +10,7 @@ import {
   Bars3Icon,
   ArrowRightIcon,
   SparklesIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 
 // ─── Section registry ─────────────────────────────────────────────────────────
@@ -87,6 +88,15 @@ const SECTIONS = [
     count: "MegaMenu · Breadcrumb · Pagination · Search",
     accent: "bg-indigo-50 text-indigo-600 border-indigo-100",
   },
+  {
+    href: "/ui-demo/build-pc",
+    icon: WrenchScrewdriverIcon,
+    title: "Build PC",
+    description:
+      "Custom PC builder interface with component selection, socket compatibility checking, and an add-to-cart flow.",
+    count: "PCPartSelector · PCBuildSummary · CompatibilityAlert",
+    accent: "bg-orange-50 text-orange-600 border-orange-100",
+  },
 ] as const;
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -137,7 +147,7 @@ export default function UIDemoIndexPage() {
       </header>
 
       {/* ── Section grid ── */}
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="mx-auto px-6 py-12">
         <h2 className="mb-6 text-sm font-semibold uppercase tracking-widest text-secondary-400">
           Demo Sections
         </h2>

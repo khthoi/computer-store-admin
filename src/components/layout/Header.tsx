@@ -10,7 +10,7 @@ import {
   HeartIcon,
   MagnifyingGlassIcon,
   PhoneIcon,
-  ScaleIcon,
+  ArrowsRightLeftIcon,
   ShoppingCartIcon,
   TruckIcon,
   UserIcon,
@@ -34,6 +34,8 @@ export interface HeaderProps {
   cartCount?: number;
   /** Wishlist item count — badge hidden when 0 */
   wishlistCount?: number;
+  /** Compare item count — badge hidden when 0 */
+  compareCount?: number;
   /** Authenticated user; null/undefined shows Sign In link */
   user?: HeaderUser | null;
 }
@@ -49,7 +51,7 @@ const ANNOUNCEMENTS = [
 function TopBar() {
   return (
     <div className="bg-primary-600 text-white">
-      <div className="container mx-auto flex h-8 max-w-screen-xl items-center justify-between gap-4 px-4">
+      <div className="mx-auto flex h-8 max-w-[1400px] items-center justify-between gap-4 px-4">
         {/* Left: Announcement */}
         <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs">
           <TruckIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
@@ -114,7 +116,7 @@ function SearchBox() {
       role="search"
       aria-label="Tìm kiếm sản phẩm"
       onSubmit={handleFormSubmit}
-      className="flex w-full max-w-xl"
+      className="flex w-full mxx-auto max-w-md lg:max-w-lg 2xl:max-w-full"
     >
       <div className="relative flex w-full items-center">
         <label htmlFor="site-search" className="sr-only">
@@ -181,8 +183,8 @@ function YouTubeSvg({ className }: { className?: string }) {
 
 const SOCIAL_LINKS = [
   { label: "Facebook", href: "https://facebook.com", Icon: FacebookSvg, hoverClass: "hover:text-blue-600 hover:border-blue-200" },
-  { label: "TikTok",   href: "https://tiktok.com",   Icon: TikTokSvg,   hoverClass: "hover:text-secondary-900 hover:border-secondary-400" },
-  { label: "YouTube",  href: "https://youtube.com",  Icon: YouTubeSvg,  hoverClass: "hover:text-red-600 hover:border-red-200" },
+  { label: "TikTok", href: "https://tiktok.com", Icon: TikTokSvg, hoverClass: "hover:text-secondary-900 hover:border-secondary-400" },
+  { label: "YouTube", href: "https://youtube.com", Icon: YouTubeSvg, hoverClass: "hover:text-red-600 hover:border-red-200" },
 ] as const;
 
 function SocialIcons() {
@@ -216,8 +218,9 @@ function ActionIcons({
   cartCount = 0,
   wishlistCount = 0,
   user = null,
+  compareCount = 0,
   compact = false,
-}: Pick<HeaderProps, "cartCount" | "wishlistCount" | "user"> & { compact?: boolean }) {
+}: Pick<HeaderProps, "cartCount" | "wishlistCount" | "compareCount" | "user"> & { compact?: boolean }) {
   const firstName = user?.name.split(" ").pop() ?? "";
 
   return (
@@ -238,10 +241,22 @@ function ActionIcons({
       {/* So sánh — visible in both normal and compact */}
       <Link
         href="/compare"
-        aria-label="So sánh sản phẩm"
+        aria-label={`So sánh sản phẩm${compareCount > 0 ? `, ${compareCount} sản phẩm` : ""}`}
         className="hidden md:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
       >
-        <ScaleIcon className="w-5 h-5" />
+        {/* relative wraps the icon only — badge is positioned against the icon,
+            not the full link (icon + label), so all badges land identically */}
+        <div className="relative">
+          <ArrowsRightLeftIcon className="w-5 h-5" />
+          {compareCount > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-[9px] font-bold text-white"
+            >
+              {compareCount > 9 ? "9+" : compareCount}
+            </span>
+          )}
+        </div>
         <span className="text-[10px] font-medium leading-none">So sánh</span>
       </Link>
 
@@ -249,17 +264,19 @@ function ActionIcons({
       <Link
         href="/wishlist"
         aria-label={`Danh sách yêu thích${wishlistCount > 0 ? `, ${wishlistCount} sản phẩm` : ""}`}
-        className="relative hidden md:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
+        className="hidden md:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
       >
-        <HeartIcon className="w-5 h-5" />
-        {wishlistCount > 0 && (
-          <span
-            aria-hidden="true"
-            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-error-500 text-[9px] font-bold text-white"
-          >
-            {wishlistCount > 9 ? "9+" : wishlistCount}
-          </span>
-        )}
+        <div className="relative">
+          <HeartIcon className="w-5 h-5" />
+          {wishlistCount > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full bg-accent-500 text-[9px] font-bold text-white"
+            >
+              {wishlistCount > 9 ? "9+" : wishlistCount}
+            </span>
+          )}
+        </div>
         <span className="text-[10px] font-medium leading-none">Yêu thích</span>
       </Link>
 
@@ -279,17 +296,19 @@ function ActionIcons({
       <Link
         href="/cart"
         aria-label={`Giỏ hàng${cartCount > 0 ? `, ${cartCount} sản phẩm` : ""}`}
-        className="relative flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
+        className="hidden md:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
       >
-        <ShoppingCartIcon className="w-5 h-5" />
-        {cartCount > 0 && (
-          <span
-            aria-hidden="true"
-            className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white"
-          >
-            {cartCount > 99 ? "99+" : cartCount}
-          </span>
-        )}
+        <div className="relative">
+          <ShoppingCartIcon className="w-5 h-5" />
+          {cartCount > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full bg-error-500 text-[9px] font-bold text-white"
+            >
+              {cartCount > 99 ? "99+" : cartCount}
+            </span>
+          )}
+        </div>
         <span className="text-[10px] font-medium leading-none">Giỏ hàng</span>
       </Link>
     </div>
@@ -407,10 +426,10 @@ function CompactCategoryTrigger({
 //
 // This means the header only changes state once the user moves clearly in one
 // direction, not when they drift back and forth near the threshold.
-const SCROLL_COMPACT  = 200; // px → switch to compact
-const SCROLL_RESTORE  =  120; // px → switch back to full
+const SCROLL_COMPACT = 200; // px → switch to compact
+const SCROLL_RESTORE = 120; // px → switch back to full
 
-export function Header({ cartCount = 0, wishlistCount = 0, user = null }: HeaderProps) {
+export function Header({ cartCount = 0, wishlistCount = 0, compareCount = 0, user = null }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const rafRef = useRef<number>(0);
 
@@ -441,8 +460,8 @@ export function Header({ cartCount = 0, wishlistCount = 0, user = null }: Header
         // Hysteresis: only flip state when crossing the appropriate threshold
         // in the correct direction — prevents toggling near the boundary.
         setScrolled((prev) => {
-          if (!prev && y > SCROLL_COMPACT)  return true;
-          if ( prev && y < SCROLL_RESTORE)  return false;
+          if (!prev && y > SCROLL_COMPACT) return true;
+          if (prev && y < SCROLL_RESTORE) return false;
           return prev; // no change — avoid re-render
         });
       });
@@ -475,7 +494,7 @@ export function Header({ cartCount = 0, wishlistCount = 0, user = null }: Header
          */}
         <div
           className={[
-            "container mx-auto flex max-w-screen-xl items-center justify-between gap-4 px-4 transition-all duration-300 ease-in-out relative",
+            "mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 transition-all duration-300 ease-in-out relative",
             scrolled ? "h-14" : "h-16",
           ].join(" ")}
         >
@@ -531,6 +550,7 @@ export function Header({ cartCount = 0, wishlistCount = 0, user = null }: Header
             <ActionIcons
               cartCount={cartCount}
               wishlistCount={wishlistCount}
+              compareCount={compareCount}
               user={user}
               compact={scrolled}
             />

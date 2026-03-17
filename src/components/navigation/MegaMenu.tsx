@@ -421,7 +421,7 @@ function FlyoutItem({ item }: { item: SidebarMenuLink }) {
   }
 
   function closeSub() {
-    timerRef.current = setTimeout(() => setPos(null), 150);
+    timerRef.current = setTimeout(() => setPos(null), 50);
   }
 
   function cancelClose() {
@@ -543,26 +543,39 @@ export function SidebarMegaMenu({
   height,
   className = "",
 }: SidebarMegaMenuProps) {
-  const [activeId, setActiveId] = useState<string | null>(
-    defaultActiveId ?? categories[0]?.id ?? null
-  );
+  const fallbackId = defaultActiveId ?? categories[0]?.id ?? null;
+  const [activeId, setActiveId] = useState<string | null>(fallbackId);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const switchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeCategory = categories.find((c) => c.id === activeId) ?? null;
   const panel = activeCategory?.panel ?? null;
 
   function handleCategoryEnter(id: string) {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    setActiveId(id);
+    // Short delay prevents accidental switches during diagonal mouse movement
+    // from sidebar → panel. 50ms is imperceptible but filters stray hover events.
+    if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
+    switchTimerRef.current = setTimeout(() => setActiveId(id), 50);
   }
 
   function handleContainerLeave() {
-    closeTimerRef.current = setTimeout(() => setActiveId(null), 200);
+    if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
+    // Reset to default category instead of null — eliminates blank panel flash.
+    closeTimerRef.current = setTimeout(() => setActiveId(fallbackId), 200);
   }
 
   function handleContainerEnter() {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
   }
+
+  // Clean up all timers on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+      if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
+    };
+  }, []);
 
   // Panel layout: content columns + optional brands column
   const contentCols = panel?.columns ?? [];

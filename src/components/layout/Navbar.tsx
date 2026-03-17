@@ -24,17 +24,19 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: "Laptop",       href: "/products/laptop" },
-  { label: "PC Gaming",    href: "/products/pc-gaming" },
-  { label: "CPU",          href: "/products/cpu" },
-  { label: "GPU",          href: "/products/gpu" },
-  { label: "RAM",          href: "/products/ram" },
-  { label: "SSD",          href: "/products/ssd" },
-  { label: "Màn Hình",     href: "/products/man-hinh" },
-  { label: "Gaming Gear",  href: "/products/gaming-gear" },
-  { label: "Linh Kiện",    href: "/products/linh-kien" },
-  { label: "Phụ Kiện",     href: "/products/phu-kien" },
-  { label: "Khuyến Mãi",   href: "/khuyen-mai", badge: "Hot", highlight: true },
+  { label: "Laptop", href: "/products/laptop" },
+  { label: "PC Gaming", href: "/products/pc-gaming" },
+  { label: "CPU", href: "/products/cpu" },
+  { label: "GPU", href: "/products/gpu" },
+  { label: "RAM", href: "/products/ram" },
+  { label: "SSD", href: "/products/ssd" },
+  { label: "PSU", href: "/products/psu" },
+  { label: "Mainboard", href: "/products/mainboard" },
+  { label: "Màn Hình", href: "/products/man-hinh" },
+  { label: "Gaming Gear", href: "/products/gaming-gear" },
+  { label: "Linh Kiện", href: "/products/linh-kien" },
+  { label: "Phụ Kiện", href: "/products/phu-kien" },
+  { label: "Khuyến Mãi", href: "/khuyen-mai", badge: "Hot!", highlight: true },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -76,7 +78,7 @@ export function Navbar() {
          * The panel uses `left-0 right-0` to fill the exact same width as this container,
          * matching the header layout precisely.
          */}
-        <div className="container mx-auto max-w-screen-xl px-4 relative">
+        <div className="mx-auto max-w-[1400px] px-4 relative">
 
           {/* ── Nav row ── */}
           <div className="flex h-12 items-center gap-0">

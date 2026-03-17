@@ -8,6 +8,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronDownIcon,
   XMarkIcon,
@@ -63,6 +64,12 @@ export interface SelectProps {
   helperText?: string;
   errorMessage?: string;
   size?: SelectSize;
+  /**
+   * Override the dropdown panel width.
+   * By default the panel matches the trigger width.
+   * Accepts any CSS width value, e.g. "320px", "auto", "min-content".
+   */
+  dropdownWidth?: string;
   id?: string;
   className?: string;
 }
@@ -200,6 +207,7 @@ export function Select({
   helperText,
   errorMessage,
   size = "md",
+  dropdownWidth,
   id: idProp,
   className = "",
 }: SelectProps) {
@@ -213,10 +221,17 @@ export function Select({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    flipUp: boolean;
+  } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Normalise value to array for uniform internal handling
   const selectedValues: string[] = multiple
@@ -266,11 +281,49 @@ export function Select({
     triggerRef.current?.focus();
   }, []);
 
-  // Close on outside click
+  // ── Position the portal dropdown relative to trigger ──────────────────────
+  useEffect(() => {
+    if (!open || !triggerRef.current) {
+      setDropdownPos(null);
+      return;
+    }
+
+    function updatePosition() {
+      const rect = triggerRef.current!.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const flipUp = spaceBelow < 280 && rect.top > spaceBelow;
+
+      setDropdownPos({
+        top: flipUp ? rect.top : rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        flipUp,
+      });
+    }
+
+    // Initial position
+    updatePosition();
+
+    // Update on scroll (any ancestor) and resize
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open]);
+
+  // Close on outside click — must check both container AND portal dropdown
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) closeDropdown();
+      const target = e.target as Node;
+      if (
+        !containerRef.current?.contains(target) &&
+        !dropdownRef.current?.contains(target)
+      ) {
+        closeDropdown();
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -446,74 +499,87 @@ export function Select({
           </span>
         </button>
 
-        {/* Dropdown panel */}
-        {open && (
-          <div
-            id={listboxId}
-            role="listbox"
-            aria-multiselectable={multiple}
-            aria-label={label}
-            tabIndex={-1}
-            onKeyDown={handleDropdownKeyDown}
-            className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border border-secondary-200 bg-white shadow-lg"
-          >
-            {searchable && (
-              <div className="border-b border-secondary-100 p-2">
-                <input
-                  ref={searchRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setActiveIndex(-1);
-                  }}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  placeholder="Search…"
-                  className="w-full rounded border border-secondary-200 bg-secondary-50 px-2 py-1.5 text-sm placeholder:text-secondary-400 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500/15"
-                />
-              </div>
-            )}
-
-            <ul role="presentation" className="max-h-60 overflow-auto py-1">
-              {filtered.length === 0 ? (
-                <li className="px-3 py-2 text-sm text-secondary-400">
-                  No results found
-                </li>
-              ) : isGrouped(displayOptions) ? (
-                (displayOptions as SelectOptionGroup[]).map((group) => (
-                  <li key={group.label} role="presentation">
-                    <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-secondary-400">
-                      {group.label}
-                    </p>
-                    <ul>
-                      {group.options.map((opt) => (
-                        <OptionItem
-                          key={opt.value}
-                          option={opt}
-                          isSelected={selectedValues.includes(opt.value)}
-                          isActive={activeIndex === filtered.indexOf(opt)}
-                          multiple={multiple}
-                          onSelect={selectOption}
-                        />
-                      ))}
-                    </ul>
-                  </li>
-                ))
-              ) : (
-                (displayOptions as SelectOption[]).map((opt) => (
-                  <OptionItem
-                    key={opt.value}
-                    option={opt}
-                    isSelected={selectedValues.includes(opt.value)}
-                    isActive={activeIndex === filtered.indexOf(opt)}
-                    multiple={multiple}
-                    onSelect={selectOption}
+        {/* Dropdown panel — rendered via portal to escape overflow/z-index stacking */}
+        {open &&
+          dropdownPos &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <div
+              ref={dropdownRef}
+              id={listboxId}
+              role="listbox"
+              aria-multiselectable={multiple}
+              aria-label={label}
+              tabIndex={-1}
+              onKeyDown={handleDropdownKeyDown}
+              className="fixed z-[9999] rounded-md border border-secondary-200 bg-white shadow-lg"
+              style={{
+                top: dropdownPos.flipUp ? undefined : `${dropdownPos.top}px`,
+                bottom: dropdownPos.flipUp
+                  ? `${window.innerHeight - dropdownPos.top + 4}px`
+                  : undefined,
+                left: `${dropdownPos.left}px`,
+                width: dropdownWidth ?? `${dropdownPos.width}px`,
+              }}
+            >
+              {searchable && (
+                <div className="border-b border-secondary-100 p-2">
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setActiveIndex(-1);
+                    }}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    placeholder="Search…"
+                    className="w-full rounded border border-secondary-200 bg-secondary-50 px-2 py-1.5 text-sm placeholder:text-secondary-400 focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500/15"
                   />
-                ))
+                </div>
               )}
-            </ul>
-          </div>
-        )}
+
+              <ul role="presentation" className="max-h-60 overflow-auto py-1">
+                {filtered.length === 0 ? (
+                  <li className="px-3 py-2 text-sm text-secondary-400">
+                    No results found
+                  </li>
+                ) : isGrouped(displayOptions) ? (
+                  (displayOptions as SelectOptionGroup[]).map((group) => (
+                    <li key={group.label} role="presentation">
+                      <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-secondary-400">
+                        {group.label}
+                      </p>
+                      <ul>
+                        {group.options.map((opt) => (
+                          <OptionItem
+                            key={opt.value}
+                            option={opt}
+                            isSelected={selectedValues.includes(opt.value)}
+                            isActive={activeIndex === filtered.indexOf(opt)}
+                            multiple={multiple}
+                            onSelect={selectOption}
+                          />
+                        ))}
+                      </ul>
+                    </li>
+                  ))
+                ) : (
+                  (displayOptions as SelectOption[]).map((opt) => (
+                    <OptionItem
+                      key={opt.value}
+                      option={opt}
+                      isSelected={selectedValues.includes(opt.value)}
+                      isActive={activeIndex === filtered.indexOf(opt)}
+                      multiple={multiple}
+                      onSelect={selectOption}
+                    />
+                  ))
+                )}
+              </ul>
+            </div>,
+            document.body
+          )}
       </div>
 
       {hasError && (

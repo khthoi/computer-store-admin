@@ -58,7 +58,7 @@ const PROMO_BANNERS = [
 export function HeroSlider() {
   return (
     <section aria-label="Banner khuyến mãi" className="bg-secondary-50 py-4">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">
         <div className="flex flex-col gap-3">
 
           {/* ── Large hero banner ── */}

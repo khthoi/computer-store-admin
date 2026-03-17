@@ -81,7 +81,7 @@ export function Tooltip({
   content,
   placement = "top",
   offsetPx = 8,
-  delay = 200,
+  delay = 50,
   disabled = false,
   children,
 }: TooltipProps) {
@@ -122,8 +122,8 @@ export function Tooltip({
   // Fade + slight translate animation
   const { isMounted, styles: transitionStyles } = useTransitionStyles(context, {
     initial: { opacity: 0, transform: "scale(0.94)" },
-    open:    { opacity: 1, transform: "scale(1)" },
-    close:   { opacity: 0, transform: "scale(0.94)" },
+    open: { opacity: 1, transform: "scale(1)" },
+    close: { opacity: 0, transform: "scale(0.94)" },
     duration: 120,
   });
 
@@ -131,19 +131,19 @@ export function Tooltip({
   const arrowX = middlewareData.arrow?.x;
   const arrowY = middlewareData.arrow?.y;
   const arrowSide = {
-    top:    "bottom",
-    right:  "left",
+    top: "bottom",
+    right: "left",
     bottom: "top",
-    left:   "right",
+    left: "right",
   }[resolvedPlacement.split("-")[0]] as "top" | "right" | "bottom" | "left";
 
   // Inject ref + interaction props directly into the child element so
   // Floating UI measures the real DOM node — not a wrapper with zero size.
   const trigger = isValidElement(children)
     ? cloneElement(children as ReactElement<Record<string, unknown>>, {
-        ref: refs.setReference,
-        ...getReferenceProps(),
-      })
+      ref: refs.setReference,
+      ...getReferenceProps(),
+    })
     : children;
 
   return (
@@ -157,7 +157,7 @@ export function Tooltip({
             ref={refs.setFloating}
             style={{ ...floatingStyles, zIndex: 9999 }}
             {...getFloatingProps()}
-            className="pointer-events-none"
+            className="pointer-events-auto"
           >
             <div
               style={transitionStyles}
@@ -165,19 +165,6 @@ export function Tooltip({
             >
               {content}
             </div>
-
-            {/* Arrow */}
-            <div
-              ref={arrowRef}
-              aria-hidden="true"
-              className="absolute h-2 w-2 rotate-45 bg-secondary-900"
-              style={{
-                left: arrowX != null ? `${arrowX}px` : "",
-                top:  arrowY != null ? `${arrowY}px` : "",
-                // Push arrow to the edge facing the trigger
-                [arrowSide]: "-4px",
-              }}
-            />
           </div>
         )}
       </FloatingPortal>

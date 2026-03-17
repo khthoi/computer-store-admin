@@ -193,7 +193,7 @@ export const ProductCard = memo(function ProductCard({
     <>
       <article
         className={[
-          "group relative flex h-full min-h-[420px] flex-col overflow-hidden rounded-xl border border-secondary-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md",
+          "group relative flex h-full min-h-[420px] flex-col mb-2 overflow-hidden rounded-xl border border-secondary-200 bg-white shadow-sm transition-shadow duration-200 hover:shadow-md",
           className,
         ]
           .filter(Boolean)

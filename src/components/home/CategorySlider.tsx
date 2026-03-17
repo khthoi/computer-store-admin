@@ -76,7 +76,7 @@ export function CategorySlider() {
 
   return (
     <section aria-labelledby="quick-cat-heading" className="py-6 bg-white border-b border-secondary-100">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-12xl px-4 sm:px-6 lg:px-8">
 
         {/* ── Header row ── */}
         <div className="mb-4 flex items-center justify-between">
