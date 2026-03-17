@@ -1,16 +1,15 @@
 "use client";
 
 import {
-  ReactPortal,
   useCallback,
   useEffect,
   useId,
   useRef,
-  useState,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -55,7 +54,7 @@ export interface DrawerProps {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),' +
+  "a[href],button:not([disabled]),input:not([disabled]),select:not([disabled])," +
   'textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -64,7 +63,6 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
-// Panel size for left/right drawers
 const SIDE_SIZE: Record<DrawerSize, string> = {
   sm: "w-72",
   md: "w-80",
@@ -72,7 +70,6 @@ const SIDE_SIZE: Record<DrawerSize, string> = {
   xl: "w-[30rem]",
 };
 
-// Panel height for bottom drawer
 const BOTTOM_SIZE: Record<DrawerSize, string> = {
   sm: "max-h-[30vh]",
   md: "max-h-[50vh]",
@@ -80,38 +77,50 @@ const BOTTOM_SIZE: Record<DrawerSize, string> = {
   xl: "max-h-[90vh]",
 };
 
-// Slide-in/out transforms per position
-const TRANSLATE_CLOSED: Record<DrawerPosition, string> = {
-  left: "-translate-x-full",
-  right: "translate-x-full",
-  bottom: "translate-y-full",
-};
-
-// Panel placement classes per position
 const PANEL_POSITION: Record<DrawerPosition, string> = {
   left: "inset-y-0 left-0 flex-col",
   right: "inset-y-0 right-0 flex-col",
   bottom: "inset-x-0 bottom-0 flex-col rounded-t-2xl",
 };
 
+// ─── Framer Motion variants ───────────────────────────────────────────────────
+
+const OVERLAY_VARIANTS = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+};
+
+// Each position defines where the panel starts (hidden) and ends (visible).
+const PANEL_VARIANTS: Record<DrawerPosition, Variants> = {
+  left: {
+    hidden: { x: "-100%" },
+    visible: { x: 0 },
+  },
+  right: {
+    hidden: { x: "100%" },
+    visible: { x: 0 },
+  },
+  bottom: {
+    hidden: { y: "100%" },
+    visible: { y: 0 },
+  },
+};
+
+const TRANSITION = { duration: 0.3, ease: "easeInOut" } as const;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
  * Drawer — slide-in panel from any edge, with overlay, focus trap, and portal.
  *
+ * Animation is fully delegated to Framer Motion:
+ *   • `AnimatePresence` handles mount/unmount and plays the exit animation
+ *     before removing the element — no manual timing, no RAF, no state flags.
+ *   • Overlay: opacity 0 → 1 → 0
+ *   • Panel: translates in from its edge, reverses on close
+ *
  * ```tsx
- * const [cartOpen, setCartOpen] = useState(false);
- *
- * <Button onClick={() => setCartOpen(true)}>Open Cart</Button>
- *
- * <Drawer
- *   isOpen={cartOpen}
- *   onClose={() => setCartOpen(false)}
- *   title="Your Cart"
- *   position="right"
- *   footer={<Button fullWidth>Checkout</Button>}
- * >
+ * <Drawer isOpen={open} onClose={() => setOpen(false)} title="Cart" position="right">
  *   <CartItem ... />
  * </Drawer>
  * ```
@@ -132,77 +141,38 @@ export function Drawer({
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const isBottom = position === "bottom";
-  const [isMounted, setIsMounted] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isContainerVisible, setIsContainerVisible] = useState(false);
-
-  // ── Client-side mount check ───────────────────────────────────────────────
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // ── Handle opening and closing animations ─────────────────────────────────
-
-  useEffect(() => {
-    if (isOpen) {
-      // Opening: mount first, then make visible (triggers slide-in)
-      setShouldRender(true);
-      setIsContainerVisible(true);
-      // Use requestAnimationFrame to ensure DOM is ready before animation
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsVisible(true);
-        });
-      });
-    } else {
-      // Closing: trigger slide-out first, then hide container, then unmount
-      setIsVisible(false);
-      const hideTimer = setTimeout(() => {
-        setIsContainerVisible(false);
-      }, 300); // wait for slide-out to complete
-      const unmountTimer = setTimeout(() => {
-        setShouldRender(false);
-      }, 300);
-      return () => {
-        clearTimeout(hideTimer);
-        clearTimeout(unmountTimer);
-      };
-    }
-  }, [isOpen]);
 
   // ── Focus management ──────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!isOpen) return;
-    previousFocusRef.current = document.activeElement as HTMLElement;
-    const timer = setTimeout(() => {
-      const focusables = panelRef.current
-        ? getFocusableElements(panelRef.current)
-        : [];
-      focusables[0]?.focus();
-    }, 20);
-    return () => clearTimeout(timer);
-  }, [isOpen]);
+    if (!isOpen) {
+      previousFocusRef.current?.focus();
+      return;
+    }
 
-  useEffect(() => {
-    if (isOpen) return;
-    previousFocusRef.current?.focus();
+    previousFocusRef.current = document.activeElement as HTMLElement;
+
+    // Defer focus until Framer Motion has finished mounting the panel.
+    const id = setTimeout(() => {
+      const els = panelRef.current ? getFocusableElements(panelRef.current) : [];
+      els[0]?.focus();
+    }, 16);
+
+    return () => clearTimeout(id);
   }, [isOpen]);
 
   // ── Scroll lock ───────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!isOpen) return;
-    const original = document.body.style.overflow;
+    const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = original;
+      document.body.style.overflow = prev;
     };
   }, [isOpen]);
 
-  // ── Keyboard handling ─────────────────────────────────────────────────────
+  // ── Keyboard: Escape + focus trap ────────────────────────────────────────
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
@@ -211,11 +181,13 @@ export function Drawer({
         onClose();
         return;
       }
+
       if (e.key === "Tab" && panelRef.current) {
         const focusables = getFocusableElements(panelRef.current);
         if (focusables.length === 0) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
+
         if (e.shiftKey) {
           if (document.activeElement === first) {
             e.preventDefault();
@@ -234,86 +206,96 @@ export function Drawer({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (!isMounted || !shouldRender) return null;
+  if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div
-      className={[
-        "fixed inset-0 z-50",
-        // Visibility: keep in DOM for CSS transition to work
-        isContainerVisible ? "visible" : "invisible",
-      ].join(" ")}
-      onKeyDown={handleKeyDown}
-    >
-      {/* Overlay */}
-      <div
-        aria-hidden="true"
-        onClick={closeOnBackdrop ? onClose : undefined}
-        className={[
-          "absolute inset-0 bg-secondary-900/50 backdrop-blur-sm transition-opacity duration-300",
-          isVisible ? "opacity-100" : "opacity-0",
-        ].join(" ")}
-      />
+    // AnimatePresence watches its direct children's presence in the React tree.
+    // When `isOpen` becomes false the children unmount — but AnimatePresence
+    // keeps them alive until the `exit` animation completes, automatically.
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50"
+          onKeyDown={handleKeyDown}
+        >
+          {/* ── Overlay ── */}
+          <motion.div
+            aria-hidden="true"
+            variants={OVERLAY_VARIANTS}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={TRANSITION}
+            onClick={closeOnBackdrop ? onClose : undefined}
+            className="absolute inset-0 bg-secondary-900/50 backdrop-blur-sm"
+          />
 
-      {/* Panel */}
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={title ? titleId : undefined}
-        className={[
-          "absolute flex bg-white shadow-xl transition-transform duration-300 ease-in-out",
-          PANEL_POSITION[position],
-          // Size: width for side drawers, height cap for bottom
-          isBottom
-            ? `w-full ${BOTTOM_SIZE[size]}`
-            : `h-full ${SIDE_SIZE[size]}`,
-          // Slide in/out
-          isVisible ? "translate-x-0 translate-y-0" : TRANSLATE_CLOSED[position],
-        ]
-          .filter(Boolean)
-          .join(" ")}
-      >
-        {/* Drag indicator — bottom drawer only */}
-        {showDragIndicator && isBottom && (
-          <div className="flex shrink-0 justify-center pt-3 pb-1" aria-hidden="true">
-            <div className="h-1 w-10 rounded-full bg-secondary-300" />
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-secondary-200 px-5 py-4">
-          {title ? (
-            <h2
-              id={titleId}
-              className="text-base font-semibold text-secondary-900"
-            >
-              {title}
-            </h2>
-          ) : (
-            <span />
-          )}
-          <button
-            type="button"
-            aria-label="Close drawer"
-            onClick={onClose}
-            className="flex size-8 items-center justify-center rounded text-secondary-400 transition-colors hover:bg-secondary-100 hover:text-secondary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          {/* ── Panel ── */}
+          <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? titleId : undefined}
+            variants={PANEL_VARIANTS[position]}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={TRANSITION}
+            className={[
+              "absolute flex bg-white shadow-xl",
+              PANEL_POSITION[position],
+              isBottom
+                ? `w-full ${BOTTOM_SIZE[size]}`
+                : `h-full ${SIDE_SIZE[size]}`,
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
-            <XMarkIcon className="size-5" aria-hidden="true" />
-          </button>
+            {/* Drag indicator — bottom drawer only */}
+            {showDragIndicator && isBottom && (
+              <div
+                className="flex shrink-0 justify-center pb-1 pt-3"
+                aria-hidden="true"
+              >
+                <div className="h-1 w-10 rounded-full bg-secondary-300" />
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-secondary-200 px-5 py-4">
+              {title ? (
+                <h2
+                  id={titleId}
+                  className="text-base font-semibold text-secondary-900"
+                >
+                  {title}
+                </h2>
+              ) : (
+                <span />
+              )}
+              <button
+                type="button"
+                aria-label="Close drawer"
+                onClick={onClose}
+                className="flex size-8 items-center justify-center rounded text-secondary-400 transition-colors hover:bg-secondary-100 hover:text-secondary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              >
+                <XMarkIcon className="size-5" aria-hidden="true" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
+
+            {/* Footer */}
+            {footer && (
+              <div className="shrink-0 border-t border-secondary-200 px-5 py-4">
+                {footer}
+              </div>
+            )}
+          </motion.div>
         </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-5 py-5">{children}</div>
-
-        {/* Footer */}
-        {footer && (
-          <div className="shrink-0 border-t border-secondary-200 px-5 py-4">
-            {footer}
-          </div>
-        )}
-      </div>
-    </div>,
+      )}
+    </AnimatePresence>,
     document.body
   );
 }
@@ -330,6 +312,7 @@ export function Drawer({
  * title            string                    —         Heading text
  * closeOnBackdrop  boolean                   true      Close on overlay click
  * closeOnEscape    boolean                   true      Close on Escape key
+ * showDragIndicator boolean                  false     Pill handle (bottom only)
  * footer           ReactNode                 —         Bottom action area
  * children         ReactNode                 required  Drawer body content
  */

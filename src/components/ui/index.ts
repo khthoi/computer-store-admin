@@ -21,6 +21,9 @@ export type { RadioProps, RadioGroupProps, RadioSize } from "./Radio";
 export { Toggle } from "./Toggle";
 export type { ToggleProps, ToggleSize } from "./Toggle";
 
+export { Slider } from "./Slider";
+export type { SliderProps, SliderSize } from "./Slider";
+
 export { Badge } from "./Badge";
 export type { BadgeProps, BadgeVariant, BadgeSize } from "./Badge";
 

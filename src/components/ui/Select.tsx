@@ -70,6 +70,13 @@ export interface SelectProps {
    * Accepts any CSS width value, e.g. "320px", "auto", "min-content".
    */
   dropdownWidth?: string;
+  /**
+   * Whether to display selected values inside the trigger button.
+   * - `true` (default): selected labels / chips are shown in the trigger.
+   * - `false`: the trigger always shows the placeholder text. Useful when the
+   *   selection is communicated elsewhere (e.g. an active-filter bar).
+   */
+  showSelectedInTrigger?: boolean;
   id?: string;
   className?: string;
 }
@@ -208,6 +215,7 @@ export function Select({
   errorMessage,
   size = "md",
   dropdownWidth,
+  showSelectedInTrigger = true,
   id: idProp,
   className = "",
 }: SelectProps) {
@@ -423,7 +431,7 @@ export function Select({
         >
           {/* Value display area */}
           <span className="flex min-w-0 flex-1 flex-wrap gap-1">
-            {multiple && selectedValues.length > 0 ? (
+            {showSelectedInTrigger && multiple && selectedValues.length > 0 ? (
               selectedValues.map((v) => {
                 const opt = flat.find((o) => o.value === v);
                 if (!opt) return null;
@@ -463,10 +471,19 @@ export function Select({
             ) : (
               <span
                 className={
-                  selectedValues.length === 0 ? "text-secondary-400" : ""
+                  !showSelectedInTrigger || selectedValues.length === 0
+                    ? "text-secondary-400"
+                    : ""
                 }
               >
-                {multiple ? placeholder : triggerLabel}
+                {/* When showSelectedInTrigger=false: always show placeholder.
+                    When multiple + nothing selected: placeholder.
+                    When single: show selected label or placeholder. */}
+                {!showSelectedInTrigger
+                  ? placeholder
+                  : multiple
+                    ? placeholder
+                    : triggerLabel}
               </span>
             )}
           </span>
@@ -612,7 +629,9 @@ export function Select({
  * label         string                       —           Label above the trigger
  * helperText    string                       —           Hint below; hidden on error
  * errorMessage  string                       —           Validation error message
- * size          "sm"|"md"|"lg"               "md"        Trigger height
- * id            string                       auto        HTML id for label linkage
- * className     string                       ""          Extra classes on trigger
+ * size                 "sm"|"md"|"lg"     "md"   Trigger height
+ * dropdownWidth        string             —      CSS width of the dropdown panel
+ * showSelectedInTrigger boolean           true   Display selected values inside trigger
+ * id                   string             auto   HTML id for label linkage
+ * className            string             ""     Extra classes on trigger
  */

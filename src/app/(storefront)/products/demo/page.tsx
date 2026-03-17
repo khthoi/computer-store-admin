@@ -12,24 +12,22 @@ import {
   ShoppingCartIcon,
   HeartIcon,
   ArrowsRightLeftIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/24/solid";
 
 import {
-  Accordion,
   Badge,
   Button,
-  Checkbox,
   Drawer,
-  Input,
   Select,
+  Slider,
   Toggle,
 } from "@/src/components/ui";
-import { Breadcrumb, FilterBar, Pagination } from "@/src/components/navigation";
+import { Breadcrumb, Pagination } from "@/src/components/navigation";
 import {
-  ProductCard,
+  ProductCardList,
   CompareBar,
-  ProductCardSkeleton,
   type CompareProduct,
 } from "@/src/components/product";
 
@@ -43,6 +41,12 @@ import {
   type FilterValue,
 } from "./_config";
 import { CPU_INTEL_PRODUCTS } from "./_mock-data";
+
+// ─── Configurable Items Per Row ─────────────────────────────────────────────
+// Change this constant to adjust product columns — no UI needed.
+// Accepted values: 3 | 4 | 5 | 6  (ProductCardList handles responsive breakpoints)
+
+const ITEMS_PER_ROW = 6 as const;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -62,7 +66,7 @@ function isFilterActive(value: FilterValue | undefined): boolean {
   if (typeof value === "string") return value !== "";
   if (Array.isArray(value)) {
     if (value.length === 0) return false;
-    if (typeof value[0] === "number") return true; // range
+    if (typeof value[0] === "number") return true;
     return value.length > 0;
   }
   return false;
@@ -81,8 +85,12 @@ function buildActiveFilters(
 
     switch (def.type) {
       case "dropdown": {
-        const opt = def.options?.find((o) => o.value === val);
-        if (opt) chips.push({ key: def.key, label: opt.label, group: def.label });
+        // Stored as string[] (multi-select). Emit one chip per selected value.
+        const arr = Array.isArray(val) ? (val as string[]) : val ? [val as string] : [];
+        for (const v of arr) {
+          const opt = def.options?.find((o) => o.value === v);
+          if (opt) chips.push({ key: `${def.key}:${v}`, label: opt.label, group: def.label });
+        }
         break;
       }
       case "checkbox": {
@@ -176,126 +184,245 @@ function SubCategorySlider({
   );
 }
 
-// ─── Range Filter ────────────────────────────────────────────────────────────
+// ─── Horizontal Filter Bar ──────────────────────────────────────────────────
 
-function RangeFilter({
+function HorizontalFilterBar({
+  config,
+  filters,
+  onChange,
+}: {
+  config: CategoryConfig;
+  filters: FilterState;
+  onChange: (key: string, value: FilterValue | undefined) => void;
+}) {
+  return (
+    <div className="rounded-xl border border-secondary-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-secondary-100">
+        <FunnelIcon className="w-4 h-4 text-secondary-500" />
+        <span className="text-sm font-semibold text-secondary-800">
+          Bộ lọc tìm kiếm
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {config.filters.map((def) => (
+          <HorizontalFilterItem
+            key={def.key}
+            def={def}
+            value={filters[def.key]}
+            onChange={(v) => onChange(def.key, v)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HorizontalFilterItem({
   def,
   value,
   onChange,
 }: {
   def: FilterDefinition;
-  value: [number, number] | undefined;
-  onChange: (v: [number, number]) => void;
+  value: FilterValue | undefined;
+  onChange: (v: FilterValue | undefined) => void;
 }) {
-  const min = def.min ?? 0;
-  const max = def.max ?? 100;
-  const step = def.step ?? 1;
-  const current = value ?? [min, max];
+  switch (def.type) {
+    case "dropdown":
+      return (
+        <div className="min-w-0">
+          <label className="mb-1 block text-xs font-medium text-secondary-600">
+            {def.label}
+          </label>
+          <Select
+            options={def.options ?? []}
+            value={(value as string[]) ?? []}
+            onChange={(v) => {
+              const arr = v as string[];
+              onChange(arr.length > 0 ? arr : undefined);
+            }}
+            multiple
+            clearable
+            showSelectedInTrigger={false}
+            placeholder="Tất cả"
+            size="sm"
+          />
+        </div>
+      );
 
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Input
-          type="number"
-          value={current[0]}
-          onChange={(e) => {
-            const v = Number(e.target.value);
-            if (v >= min && v <= current[1]) onChange([v, current[1]]);
-          }}
-          size="sm"
-          className="flex-1"
-          aria-label={`${def.label} từ`}
-        />
-        <span className="text-secondary-400 text-xs shrink-0">—</span>
-        <Input
-          type="number"
-          value={current[1]}
-          onChange={(e) => {
-            const v = Number(e.target.value);
-            if (v >= current[0] && v <= max) onChange([current[0], v]);
-          }}
-          size="sm"
-          className="flex-1"
-          aria-label={`${def.label} đến`}
-        />
-      </div>
-      {/* Visual range bar */}
-      <div className="relative h-1.5 rounded-full bg-secondary-200">
-        <div
-          className="absolute h-full rounded-full bg-primary-500"
-          style={{
-            left: `${((current[0] - min) / (max - min)) * 100}%`,
-            right: `${100 - ((current[1] - min) / (max - min)) * 100}%`,
-          }}
-        />
-      </div>
-      <div className="flex justify-between text-[10px] text-secondary-400">
-        <span>
-          {def.unit === "₫" ? formatVND(min) : `${min} ${def.unit ?? ""}`}
-        </span>
-        <span>
-          {def.unit === "₫" ? formatVND(max) : `${max} ${def.unit ?? ""}`}
-        </span>
-      </div>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => onChange(current)}
-        className="w-full"
-      >
-        Áp dụng
-      </Button>
-    </div>
-  );
+    case "checkbox":
+      return (
+        <div className="min-w-0">
+          <label className="mb-1 block text-xs font-medium text-secondary-600">
+            {def.label}
+          </label>
+          <Select
+            options={def.options ?? []}
+            value={(value as string[]) ?? []}
+            onChange={(v) => {
+              const arr = v as string[];
+              onChange(arr.length > 0 ? arr : undefined);
+            }}
+            placeholder="Tất cả"
+            multiple
+            clearable
+            showSelectedInTrigger={false}
+            size="sm"
+          />
+        </div>
+      );
+
+    case "range":
+      return (
+        <div className="min-w-0 col-span-2 sm:col-span-1 lg:col-span-2 xl:col-span-1">
+          <label className="mb-1 block text-xs font-medium text-secondary-600">
+            {def.label}
+          </label>
+          <div className="space-y-1">
+            <Slider
+              min={def.min ?? 0}
+              max={def.max ?? 100}
+              step={def.step ?? 1}
+              value={(value as [number, number]) ?? [def.min ?? 0, def.max ?? 100]}
+              onChange={(v: number | [number, number]) => onChange(v as [number, number])}
+              range
+              size="sm"
+              unit={def.unit}
+              formatValue={
+                def.unit === "₫"
+                  ? (v: number) => formatVND(v)
+                  : def.unit
+                    ? (v: number) => `${v} ${def.unit}`
+                    : undefined
+              }
+              showTooltip
+            />
+            <div className="flex justify-between text-[10px] text-secondary-400">
+              <span>
+                {def.unit === "₫"
+                  ? formatVND(def.min ?? 0)
+                  : `${def.min ?? 0} ${def.unit ?? ""}`}
+              </span>
+              <span>
+                {def.unit === "₫"
+                  ? formatVND(def.max ?? 100)
+                  : `${def.max ?? 100} ${def.unit ?? ""}`}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "toggle":
+      return (
+        <div className="flex items-end min-w-0 my-auto">
+          <Toggle
+            label={def.label}
+            checked={(value as boolean) ?? false}
+            onChange={(e) => onChange(e.target.checked || undefined)}
+            size="sm"
+            description={def.description}
+          />
+        </div>
+      );
+
+    case "rating":
+      return (
+        <div className="min-w-0">
+          <label className="mb-1 block text-xs font-medium text-secondary-600">
+            {def.label}
+          </label>
+          <Select
+            options={[
+              { value: "5", label: "5 sao" },
+              { value: "4", label: "Từ 4 sao" },
+              { value: "3", label: "Từ 3 sao" },
+              { value: "2", label: "Từ 2 sao" },
+              { value: "1", label: "Từ 1 sao" },
+            ]}
+            value={value !== undefined ? String(value) : ""}
+            onChange={(v) => {
+              const str = v as string;
+              onChange(str ? Number(str) : undefined);
+            }}
+            placeholder="Tất cả"
+            clearable
+            size="sm"
+          />
+        </div>
+      );
+
+    default:
+      return null;
+  }
 }
 
-// ─── Rating Filter ───────────────────────────────────────────────────────────
+// ─── Active Filters Panel ───────────────────────────────────────────────────
 
-function RatingFilter({
-  value,
-  onChange,
+function ActiveFiltersPanel({
+  chips,
+  onRemove,
+  onClearAll,
+  onApply,
 }: {
-  value: number | undefined;
-  onChange: (v: number | undefined) => void;
+  chips: { key: string; label: string; group: string }[];
+  onRemove: (key: string) => void;
+  onClearAll: () => void;
+  onApply: () => void;
 }) {
-  const levels = [5, 4, 3, 2, 1];
+  if (chips.length === 0) return null;
 
   return (
-    <div className="space-y-1">
-      {levels.map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onChange(value === n ? undefined : n)}
-          className={[
-            "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400",
-            value === n
-              ? "bg-primary-50 text-primary-700"
-              : "text-secondary-600 hover:bg-secondary-50",
-          ].join(" ")}
-        >
-          <span className="flex items-center gap-0.5">
-            {Array.from({ length: 5 }, (_, i) => (
-              <StarIcon
-                key={i}
-                className={[
-                  "w-3.5 h-3.5",
-                  i < n ? "text-warning-400" : "text-secondary-200",
-                ].join(" ")}
-              />
-            ))}
+    <div className="rounded-xl border border-secondary-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start gap-4 flex-wrap">
+        {/* Chips */}
+        <div className="flex flex-1 items-center gap-2 flex-wrap min-w-0">
+          <span className="text-xs font-medium text-secondary-500 shrink-0">
+            Đang lọc:
           </span>
-          <span>{n === 5 ? "5 sao" : `Từ ${n} sao`}</span>
-        </button>
-      ))}
+          {chips.map((chip) => (
+            <span
+              key={chip.key}
+              className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700"
+            >
+              {chip.group && (
+                <span className="text-primary-400">{chip.group}:</span>
+              )}
+              {chip.label}
+              <button
+                type="button"
+                onClick={() => onRemove(chip.key)}
+                className="ml-0.5 rounded-full p-0.5 text-primary-400 hover:bg-primary-100 hover:text-primary-600 transition-colors"
+                aria-label={`Xóa bộ lọc ${chip.label}`}
+              >
+                <XMarkIcon className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onClearAll}
+            className="text-error-600 hover:text-error-700 hover:bg-error-50"
+          >
+            Xóa tất cả
+          </Button>
+          <Button size="sm" onClick={onApply}>
+            Áp dụng
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ─── Filter Sidebar Content ──────────────────────────────────────────────────
+// ─── Mobile Filter Sidebar Content (Accordion) ─────────────────────────────
 
-function FilterSidebarContent({
+function MobileFilterContent({
   config,
   filters,
   onChange,
@@ -308,97 +435,8 @@ function FilterSidebarContent({
 }) {
   const hasActive = config.filters.some((d) => isFilterActive(filters[d.key]));
 
-  const accordionItems = config.filters.map((def) => ({
-    value: def.key,
-    label: (
-      <span className="flex items-center gap-2 text-sm font-medium text-secondary-800">
-        {def.label}
-        {isFilterActive(filters[def.key]) && (
-          <span className="h-1.5 w-1.5 rounded-full bg-primary-500" />
-        )}
-      </span>
-    ),
-    children: renderFilterContent(def),
-  }));
-
-  function renderFilterContent(def: FilterDefinition) {
-    switch (def.type) {
-      case "dropdown":
-        return (
-          <Select
-            options={def.options ?? []}
-            value={(filters[def.key] as string) ?? ""}
-            onChange={(v) => onChange(def.key, (v as string) || undefined)}
-            placeholder="Tất cả"
-            dropdownWidth="300px"
-            clearable
-            size="sm"
-          />
-        );
-
-      case "checkbox":
-        return (
-          <div className="space-y-1.5 max-h-48 overflow-y-auto">
-            {def.options?.map((opt) => {
-              const selected = (filters[def.key] as string[]) ?? [];
-              const checked = selected.includes(opt.value);
-              return (
-                <Checkbox
-                  key={opt.value}
-                  label={
-                    opt.count !== undefined
-                      ? `${opt.label} (${opt.count})`
-                      : opt.label
-                  }
-                  checked={checked}
-                  onChange={() => {
-                    const next = checked
-                      ? selected.filter((v) => v !== opt.value)
-                      : [...selected, opt.value];
-                    onChange(def.key, next.length > 0 ? next : undefined);
-                  }}
-                  size="sm"
-                />
-              );
-            })}
-          </div>
-        );
-
-      case "range":
-        return (
-          <RangeFilter
-            def={def}
-            value={filters[def.key] as [number, number] | undefined}
-            onChange={(v) => onChange(def.key, v)}
-          />
-        );
-
-      case "toggle":
-        return (
-          <Toggle
-            label={def.label}
-            checked={(filters[def.key] as boolean) ?? false}
-            onChange={(e) => onChange(def.key, e.target.checked || undefined)}
-            size="sm"
-          />
-        );
-
-      case "rating":
-        return (
-          <RatingFilter
-            value={filters[def.key] as number | undefined}
-            onChange={(v) => onChange(def.key, v)}
-          />
-        );
-
-      default:
-        return null;
-    }
-  }
-
   return (
     <div className="space-y-4">
-      {/* Clear all */}
       {hasActive && (
         <Button
           size="sm"
@@ -411,12 +449,23 @@ function FilterSidebarContent({
         </Button>
       )}
 
-      <Accordion
-        items={accordionItems}
-        multiple
-        defaultValue={config.filters.slice(0, 4).map((f) => f.key)}
-        variant="ghost"
-      />
+      <div className="space-y-4">
+        {config.filters.map((def) => (
+          <div key={def.key} className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-secondary-800">
+              {def.label}
+              {isFilterActive(filters[def.key]) && (
+                <span className="h-1.5 w-1.5 rounded-full bg-primary-500" />
+              )}
+            </div>
+            <HorizontalFilterItem
+              def={def}
+              value={filters[def.key]}
+              onChange={(v) => onChange(def.key, v)}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -487,7 +536,7 @@ function ProductListCard({
 
         {/* Price */}
         <div className="mt-auto flex items-baseline gap-2">
-          <span className="text-lg font-bold text-error-600">
+          <span className="text-base font-bold text-primary-600">
             {formatVND(product.price)}
           </span>
           {product.originalPrice && (
@@ -500,7 +549,7 @@ function ProductListCard({
                 {Math.round(
                   ((product.originalPrice - product.price) /
                     product.originalPrice) *
-                  100
+                    100
                 )}
                 %
               </Badge>
@@ -606,10 +655,8 @@ export default function ProductCategoryDemoPage() {
 
   const handleRemoveChip = useCallback(
     (chipKey: string) => {
-      // chipKey format: "filterKey" or "filterKey:optionValue"
       const [filterKey, optionValue] = chipKey.split(":");
       if (optionValue) {
-        // Remove single checkbox option
         setFilters((prev) => {
           const arr = (prev[filterKey] as string[]) ?? [];
           const next = arr.filter((v) => v !== optionValue);
@@ -630,6 +677,12 @@ export default function ProductCategoryDemoPage() {
     []
   );
 
+  const handleApplyFilters = useCallback(() => {
+    // In a real app, this would trigger an API call with current filters
+    // For demo, just reset pagination
+    setPage(1);
+  }, []);
+
   // ── Compare handlers ──
   const handleCompare = useCallback((id: string) => {
     setCompareList((prev) => {
@@ -649,7 +702,6 @@ export default function ProductCategoryDemoPage() {
 
   // Simulate filtering (in real app this goes to API)
   const filteredProducts = useMemo(() => {
-    // For demo, just return all products (real filtering would be server-side)
     return CPU_INTEL_PRODUCTS;
   }, []);
 
@@ -702,14 +754,22 @@ export default function ProductCategoryDemoPage() {
           <p className="text-sm text-secondary-600">{config.description}</p>
         )}
 
-        {/* ── Active filter chips ── */}
-        {activeFilters.length > 0 && (
-          <FilterBar
-            filters={activeFilters}
-            onRemove={handleRemoveChip}
-            onClearAll={handleClearFilters}
+        {/* ── Horizontal filter bar (below sub-categories) ── */}
+        <div className="hidden lg:block">
+          <HorizontalFilterBar
+            config={config}
+            filters={filters}
+            onChange={handleFilterChange}
           />
-        )}
+        </div>
+
+        {/* ── Active filter chips + Apply / Clear ── */}
+        <ActiveFiltersPanel
+          chips={activeFilters}
+          onRemove={handleRemoveChip}
+          onClearAll={handleClearFilters}
+          onApply={handleApplyFilters}
+        />
 
         {/* ── Sort & View toolbar ── */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -782,62 +842,35 @@ export default function ProductCategoryDemoPage() {
           </div>
         </div>
 
-        {/* ── Main content: Sidebar + Products ── */}
-        <div className="flex gap-6 items-start">
-          {/* Sidebar — desktop only */}
-          <aside className="hidden lg:block w-[260px] shrink-0">
-            <div className="sticky top-32 rounded-xl border border-secondary-200 bg-white p-4 shadow-sm max-h-[calc(100vh-9rem)] overflow-y-auto">
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-secondary-100">
-                <FunnelIcon className="w-4 h-4 text-secondary-500" />
-                <span className="text-sm font-semibold text-secondary-800">
-                  Bộ lọc tìm kiếm
-                </span>
-              </div>
-              <FilterSidebarContent
-                config={config}
-                filters={filters}
-                onChange={handleFilterChange}
-                onClear={handleClearFilters}
+        {/* ── Product listing (full-width, no sidebar) ── */}
+        <div className="min-w-0">
+          {paginatedProducts.length === 0 ? (
+            <EmptyState onClear={handleClearFilters} />
+          ) : viewMode === "grid" ? (
+            <ProductCardList
+              products={paginatedProducts}
+              itemsPerRow={ITEMS_PER_ROW}
+              onCompare={handleCompare}
+            />
+          ) : (
+            <div className="flex flex-col gap-3">
+              {paginatedProducts.map((product) => (
+                <ProductListCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                pageSize={ITEMS_PER_PAGE}
               />
             </div>
-          </aside>
-
-          {/* Product listing */}
-          <div className="flex-1 min-w-0">
-            {paginatedProducts.length === 0 ? (
-              <EmptyState onClear={handleClearFilters} />
-            ) : viewMode === "grid" ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
-                {paginatedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    {...product}
-                    onCompare={handleCompare}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {paginatedProducts.map((product) => (
-                  <ProductListCard key={product.id} product={product} />
-                ))}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-8 flex justify-center">
-                <Pagination
-                  page={page}
-                  totalPages={totalPages}
-                  onPageChange={setPage}
-                  showPageSize
-                  pageSize={ITEMS_PER_PAGE}
-                  pageSizeOptions={[12, 24, 48]}
-                />
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
@@ -869,7 +902,7 @@ export default function ProductCategoryDemoPage() {
           </div>
         }
       >
-        <FilterSidebarContent
+        <MobileFilterContent
           config={config}
           filters={filters}
           onChange={handleFilterChange}

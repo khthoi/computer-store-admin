@@ -19,6 +19,7 @@ export interface FilterDefinition {
   max?: number;
   step?: number;
   unit?: string;
+  description?: string;
 }
 
 export interface SubCategory {
@@ -165,6 +166,7 @@ export const CATEGORY_CONFIGS: Record<string, CategoryConfig> = {
         key: "discount",
         label: "Đang giảm giá",
         type: "toggle",
+        description: "Chỉ hiển thị sản phẩm còn hàng"
       },
       {
         key: "rating",

@@ -26,3 +26,6 @@ export type { CompareBarProps, CompareProduct } from "./CompareBar";
 
 export { ProductCardSkeleton } from "./ProductCardSkeleton";
 export type { ProductCardSkeletonProps } from "./ProductCardSkeleton";
+
+export { ProductCardList } from "./ProductCardList";
+export type { ProductCardListProps, ProductCardListItemsPerRow } from "./ProductCardList";

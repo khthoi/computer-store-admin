@@ -3,7 +3,7 @@ import { ProductCardSkeleton } from "@/src/components/product";
 
 export default function ProductsDemoLoading() {
   return (
-    <div className="py-6 space-y-6">
+    <div className="py-6 space-y-5">
       {/* Breadcrumb */}
       <Skeleton className="h-4 w-64" />
 
@@ -11,10 +11,10 @@ export default function ProductsDemoLoading() {
       <Skeleton className="h-8 w-48" />
 
       {/* Sub-categories */}
-      <div className="flex gap-4 overflow-hidden">
+      <div className="flex gap-3 overflow-hidden">
         {Array.from({ length: 8 }, (_, i) => (
           <div key={i} className="flex flex-col items-center gap-2 shrink-0">
-            <Skeleton className="h-20 w-20 rounded-lg" />
+            <Skeleton className="h-14 w-14 rounded-xl" />
             <Skeleton className="h-3 w-16" />
           </div>
         ))}
@@ -23,32 +23,30 @@ export default function ProductsDemoLoading() {
       {/* Description */}
       <Skeleton className="h-4 w-full max-w-xl" />
 
-      {/* Filter bar */}
-      <div className="flex gap-3">
-        <Skeleton className="h-9 w-28 rounded-lg" />
-        <Skeleton className="h-9 w-28 rounded-lg" />
-        <Skeleton className="h-9 w-28 rounded-lg" />
-      </div>
-
-      {/* Layout: sidebar + grid */}
-      <div className="flex gap-6">
-        {/* Sidebar skeleton */}
-        <div className="hidden lg:block w-[260px] shrink-0 space-y-4">
-          {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-5 w-32" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
+      {/* Horizontal filter bar */}
+      <div className="hidden lg:block rounded-xl border border-secondary-200 bg-white p-4">
+        <Skeleton className="h-4 w-32 mb-3" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="space-y-1">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-8 w-full rounded-md" />
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Product grid skeleton */}
-        <div className="flex-1">
-          <ProductCardSkeleton itemsPerView={6} />
+      {/* Sort bar */}
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-28" />
+        <div className="flex gap-3">
+          <Skeleton className="h-8 w-44 rounded-md" />
+          <Skeleton className="h-8 w-20 rounded-lg" />
         </div>
       </div>
+
+      {/* Product grid skeleton (full width, no sidebar) */}
+      <ProductCardSkeleton itemsPerView={4} />
     </div>
   );
 }
