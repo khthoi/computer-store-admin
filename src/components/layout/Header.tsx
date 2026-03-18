@@ -51,7 +51,7 @@ const ANNOUNCEMENTS = [
 function TopBar() {
   return (
     <div className="bg-primary-600 text-white">
-      <div className="mx-auto flex h-8 max-w-[1400px] items-center justify-between gap-4 px-4">
+      <div className="mx-auto flex h-8 max-w-[1450px] items-center justify-between gap-4 px-4">
         {/* Left: Announcement */}
         <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs">
           <TruckIcon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
@@ -488,7 +488,7 @@ export function Header({ cartCount = 0, wishlistCount = 0, compareCount = 0, use
          */}
         <div
           className={[
-            "mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 transition-all duration-300 ease-in-out relative",
+            "mx-auto flex max-w-[1450px] items-center justify-between gap-4 px-4 transition-all duration-300 ease-in-out relative",
             scrolled ? "h-14" : "h-16",
           ].join(" ")}
         >
