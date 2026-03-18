@@ -265,7 +265,7 @@ function ActionIcons({
           {wishlistCount > 0 && (
             <span
               aria-hidden="true"
-              className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full bg-accent-500 text-[9px] font-bold text-white"
+              className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full bg-error-500 text-[9px] font-bold text-white"
             >
               {wishlistCount > 9 ? "9+" : wishlistCount}
             </span>

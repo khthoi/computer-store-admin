@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -40,8 +41,6 @@ export interface ProductImageGalleryProps {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const FOCUSABLE =
-  'button:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
@@ -60,100 +59,157 @@ function Lightbox({
   onClose: () => void;
   onNavigate: (index: number) => void;
 }) {
-  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const touchStartX = useRef(0);
   const item = items[activeIndex];
+  const total = items.length;
 
+  const prev = useCallback(
+    () => onNavigate((activeIndex - 1 + total) % total),
+    [activeIndex, total, onNavigate]
+  );
+  const next = useCallback(
+    () => onNavigate((activeIndex + 1) % total),
+    [activeIndex, total, onNavigate]
+  );
+
+  // Lock body scroll
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = original; };
   }, []);
 
-  useEffect(() => {
-    const els = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [];
-    els[0]?.focus();
-  }, []);
+  // Focus close button on open
+  useEffect(() => { closeRef.current?.focus(); }, []);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Escape") { onClose(); return; }
-      if (e.key === "ArrowLeft") onNavigate(clamp(activeIndex - 1, 0, items.length - 1));
-      if (e.key === "ArrowRight") onNavigate(clamp(activeIndex + 1, 0, items.length - 1));
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
     },
-    [activeIndex, items.length, onClose, onNavigate]
+    [onClose, prev, next]
   );
 
   if (typeof document === "undefined") return null;
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-secondary-900/90 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image lightbox"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-secondary-950/95 backdrop-blur-sm"
       onKeyDown={handleKeyDown}
       onClick={onClose}
+      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+      onTouchEnd={(e) => {
+        const delta = touchStartX.current - e.changedTouches[0].clientX;
+        if (Math.abs(delta) > 50) delta > 0 ? next() : prev();
+      }}
     >
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Image lightbox"
-        className="relative flex max-h-[90vh] max-w-[90vw] items-center justify-center"
-        onClick={(e) => e.stopPropagation()}
+      {/* ── Counter — top-left ── */}
+      <span className="absolute top-4 left-5 z-20 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white select-none">
+        {activeIndex + 1} / {total}
+      </span>
+
+      {/* ── Close — top-right ── */}
+      <button
+        ref={closeRef}
+        type="button"
+        aria-label="Đóng lightbox"
+        onClick={onClose}
+        className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
-        {/* Close */}
+        <XMarkIcon className="w-6 h-6" aria-hidden="true" />
+      </button>
+
+      {/* ── Prev — left edge ── */}
+      {total > 1 && (
         <button
           type="button"
-          aria-label="Close lightbox"
-          onClick={onClose}
-          className="absolute -right-4 -top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          aria-label="Ảnh trước"
+          onClick={(e) => { e.stopPropagation(); prev(); }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         >
-          <XMarkIcon className="w-5 h-5" aria-hidden="true" />
+          <ChevronLeftIcon className="w-7 h-7" aria-hidden="true" />
         </button>
+      )}
 
-        {/* Media */}
-        {item.type === "video" ? (
-          <video
-            src={item.src}
-            controls
-            className="max-h-[80vh] max-w-full rounded-lg"
-          />
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.src}
-            alt={item.alt}
-            className="max-h-[80vh] max-w-full rounded-lg object-contain"
-          />
-        )}
+      {/* ── Next — right edge ── */}
+      {total > 1 && (
+        <button
+          type="button"
+          aria-label="Ảnh tiếp theo"
+          onClick={(e) => { e.stopPropagation(); next(); }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <ChevronRightIcon className="w-7 h-7" aria-hidden="true" />
+        </button>
+      )}
 
-        {/* Prev */}
-        {items.length > 1 && (
-          <>
-            <button
-              type="button"
-              aria-label="Previous image"
-              disabled={activeIndex === 0}
-              onClick={() => onNavigate(activeIndex - 1)}
-              className="absolute left-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/40 disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <ChevronLeftIcon className="w-5 h-5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              aria-label="Next image"
-              disabled={activeIndex === items.length - 1}
-              onClick={() => onNavigate(activeIndex + 1)}
-              className="absolute right-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/40 disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <ChevronRightIcon className="w-5 h-5" aria-hidden="true" />
-            </button>
-          </>
-        )}
-
-        {/* Counter */}
-        <p className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs text-white">
-          {activeIndex + 1} / {items.length}
-        </p>
+      {/* ── Media (animated) ── */}
+      <div
+        className="relative max-h-[85vh] max-w-[80vw] flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeIndex}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="flex items-center justify-center"
+          >
+            {item.type === "video" ? (
+              <video
+                src={item.src}
+                controls
+                className="max-h-[85vh] max-w-full rounded-xl shadow-2xl"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={item.src}
+                alt={item.alt}
+                className="max-h-[85vh] max-w-full rounded-xl object-contain shadow-2xl"
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
+
+      {/* ── Thumbnail strip — bottom ── */}
+      {total > 1 && (
+        <div
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2 rounded bg-black/40 px-3 py-2 backdrop-blur-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {items.map((it, idx) => (
+            <button
+              key={it.key}
+              type="button"
+              aria-label={it.alt}
+              aria-pressed={idx === activeIndex}
+              onClick={() => onNavigate(idx)}
+              className={[
+                "h-10 w-10 shrink-0 overflow-hidden rounded border-2 transition-all",
+                idx === activeIndex
+                  ? "border-white opacity-100"
+                  : "border-transparent opacity-50 hover:opacity-80",
+              ].join(" ")}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={it.thumbnailSrc ?? it.src}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>,
     document.body
   );

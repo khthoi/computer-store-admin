@@ -26,10 +26,15 @@ export interface ProductCarouselProps {
 // mobile(2) and sm(3) are fixed; lg(4) and xl(5) are fixed stepping-stones;
 // the 2xl column is the only breakpoint that changes with itemsPerView.
 
+// Each slide carries its own left padding (pl-3 = 12 px) instead of relying on
+// CSS `gap` on the flex container. The track has a matching negative left margin
+// (-ml-3) so the first slide still aligns to the left edge of the viewport.
+// This is the canonical Embla approach: padding-based gaps work correctly with
+// loop:true because cloned slides inherit the same padding.
 const SLIDE_CLASSES: Record<4 | 5 | 6, string> = {
-  4: "min-w-0 shrink-0 grow-0 h-full basis-[calc(50%-6px)] sm:basis-[calc(33.333%-8px)] lg:basis-[calc(25%-9px)] xl:basis-[calc(25%-9px)]",
-  5: "min-w-0 shrink-0 grow-0 h-full basis-[calc(50%-6px)] sm:basis-[calc(33.333%-8px)] lg:basis-[calc(25%-9px)] xl:basis-[calc(20%-10px)]",
-  6: "min-w-0 shrink-0 grow-0 h-full basis-[calc(50%-6px)] sm:basis-[calc(33.333%-8px)] lg:basis-[calc(25%-9px)] xl:basis-[calc(20%-10px)] 2xl:basis-[calc(16.667%-10px)]",
+  4: "min-w-0 shrink-0 grow-0 h-full pl-3 basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/4",
+  5: "min-w-0 shrink-0 grow-0 h-full pl-3 basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5",
+  6: "min-w-0 shrink-0 grow-0 h-full pl-3 basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 2xl:basis-1/6",
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -87,7 +92,8 @@ export function ProductCarousel({ products, itemsPerView = 6 }: ProductCarouselP
     <div className="relative group/carousel">
       {/* ── Viewport ── */}
       <div ref={emblaRef} className="overflow-hidden">
-        <div className="flex touch-pan-y items-stretch gap-3">
+        {/* -ml-3 offsets the first slide's pl-3 so content aligns to left edge */}
+        <div className="flex touch-pan-y items-stretch -ml-3">
           {products.map((product) => (
             <div
               key={product.id}
