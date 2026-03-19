@@ -74,10 +74,9 @@ function dominantSeverity(issues: CompatibilityIssue[]): CompatibilityIssueSever
 }
 
 function severityLabel(severity: CompatibilityIssueSeverity, count: number): string {
-  const noun = count === 1 ? "issue" : "issues";
-  if (severity === "error")   return `${count} compatibility ${noun} found`;
-  if (severity === "warning") return `${count} compatibility ${noun} to review`;
-  return `${count} compatibility ${noun}`;
+  if (severity === "error")   return `Phát hiện ${count} lỗi không tương thích`;
+  if (severity === "warning") return `Có ${count} cảnh báo tương thích cần kiểm tra`;
+  return `${count} vấn đề tương thích`;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -157,13 +156,13 @@ export function CompatibilityAlert({
               {errorCount > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-error-100 px-2 py-0.5 text-[10px] font-semibold text-error-700">
                   <XCircleIcon className="w-3 h-3" aria-hidden="true" />
-                  {errorCount} error{errorCount !== 1 ? "s" : ""}
+                  {errorCount} lỗi
                 </span>
               )}
               {warningCount > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-warning-100 px-2 py-0.5 text-[10px] font-semibold text-warning-700">
                   <ExclamationTriangleIcon className="w-3 h-3" aria-hidden="true" />
-                  {warningCount} warning{warningCount !== 1 ? "s" : ""}
+                  {warningCount} cảnh báo
                 </span>
               )}
             </div>
@@ -175,7 +174,7 @@ export function CompatibilityAlert({
           <button
             type="button"
             aria-expanded={expanded}
-            aria-label={expanded ? "Collapse issues" : "Expand issues"}
+            aria-label={expanded ? "Thu gọn" : "Mở rộng"}
             onClick={() => setExpanded((v) => !v)}
             className={[
               "flex h-6 w-6 items-center justify-center rounded text-secondary-500 transition-colors",
@@ -197,7 +196,7 @@ export function CompatibilityAlert({
         {dismissible && (
           <button
             type="button"
-            aria-label="Dismiss compatibility alerts"
+            aria-label="Đóng thông báo"
             onClick={handleDismiss}
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-secondary-500 transition-colors hover:bg-secondary-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
           >

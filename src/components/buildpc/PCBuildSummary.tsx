@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, type ReactNode } from "react";
 import {
   ShoppingCartIcon,
-  CheckCircleIcon,
   XCircleIcon,
-  ExclamationCircleIcon,
-  TrashIcon,
+  ArrowDownTrayIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon as OutlineWarningIcon,
 } from "@heroicons/react/24/outline";
 import {
   CheckBadgeIcon,
@@ -15,6 +14,7 @@ import {
 import { formatVND } from "@/src/lib/format";
 import type { CompatibilityStatus } from "./PCPartCard";
 import type { CompatibilityIssue } from "./CompatibilityAlert";
+import type { ReactNode } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ export interface BuildSlot {
   categoryLabel: string;
   /** Optional icon */
   icon?: ReactNode;
-  /** Selected part — null/undefined means slot is empty */
+  /** Selected part — null/undefined means empty slot */
   part?: {
     id: string;
     name: string;
@@ -40,48 +40,44 @@ export interface PCBuildSummaryProps {
   /** All component slots in the build */
   slots: BuildSlot[];
   /**
-   * List of detected compatibility issues to show in the summary header.
-   * Pass an empty array for a clean build.
+   * List of detected compatibility issues.
+   * Pass an empty array (default) for a clean build.
    */
   compatibilityIssues?: CompatibilityIssue[];
-  /** Called when the user clicks "Add All to Cart" */
+  /** Called when the user clicks "Thêm vào giỏ hàng" */
   onAddAllToCart?: () => void;
-  /** Called when the user removes a part via the trash icon */
-  onRemovePart?: (category: string) => void;
-  /** Shows loading spinner on the CTA button */
+  /** Shows loading spinner on the Add to Cart button */
   isAddingToCart?: boolean;
+  /** Called when the user clicks "Xuất cấu hình" */
+  onExportBuild?: () => void;
   /**
-   * Optional name for the build (e.g. "Gaming Build #1").
-   * Shown as the card heading.
+   * When true the Export button shows a "Đã lưu!" confirmation state.
+   * Reset to false externally after ~2 seconds.
    */
-  buildName?: string;
+  isBuildSaved?: boolean;
   className?: string;
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const COMPAT_ICON: Record<CompatibilityStatus, ReactNode> = {
-  compatible:   <CheckCircleIcon   className="w-4 h-4 text-success-500 shrink-0" aria-hidden="true" />,
-  incompatible: <XCircleIcon       className="w-4 h-4 text-error-500 shrink-0" aria-hidden="true" />,
-  warning:      <ExclamationCircleIcon className="w-4 h-4 text-warning-500 shrink-0" aria-hidden="true" />,
-  unchecked:    null,
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
- * PCBuildSummary — itemized bill-of-materials for the current PC build.
- * Shows all selected parts with prices, detects compatibility status,
- * calculates the total, and provides an "Add All to Cart" CTA.
+ * PCBuildSummary — compact horizontal bar summarising the current PC build.
+ *
+ * Shows: component count + compatibility badge (left) · total price (center) ·
+ * "Xuất cấu hình" + "Thêm vào giỏ hàng" CTA buttons (right).
+ *
+ * **Add-to-Cart is never blocked by compatibility issues.**
+ * A non-blocking warning is displayed when errors exist so the user can
+ * decide whether to proceed.
  *
  * ```tsx
  * <PCBuildSummary
- *   buildName="Gaming Build"
  *   slots={buildSlots}
  *   compatibilityIssues={issues}
  *   onAddAllToCart={handleAddAllToCart}
- *   onRemovePart={(cat) => removePart(cat)}
  *   isAddingToCart={isLoading}
+ *   onExportBuild={handleExport}
+ *   isBuildSaved={buildSaved}
  * />
  * ```
  */
@@ -89,275 +85,157 @@ export function PCBuildSummary({
   slots,
   compatibilityIssues = [],
   onAddAllToCart,
-  onRemovePart,
   isAddingToCart = false,
-  buildName,
+  onExportBuild,
+  isBuildSaved = false,
   className = "",
 }: PCBuildSummaryProps) {
-  const handleRemove = useCallback(
-    (category: string) => (e: React.MouseEvent) => {
-      e.stopPropagation();
-      onRemovePart?.(category);
-    },
-    [onRemovePart]
-  );
-
   const selectedSlots = slots.filter((s) => s.part != null);
-  const totalCost = selectedSlots.reduce((sum, s) => sum + (s.part?.price ?? 0), 0);
+  const totalCost     = selectedSlots.reduce((sum, s) => sum + (s.part?.price ?? 0), 0);
   const selectedCount = selectedSlots.length;
-  const totalSlots = slots.length;
+  const totalSlots    = slots.length;
+  const errorCount    = compatibilityIssues.filter((i) => i.severity === "error").length;
+  const warningCount  = compatibilityIssues.filter((i) => i.severity === "warning").length;
+  const isClean       = compatibilityIssues.length === 0;
 
-  const errorCount   = compatibilityIssues.filter((i) => i.severity === "error").length;
-  const warningCount = compatibilityIssues.filter((i) => i.severity === "warning").length;
-  const isClean      = compatibilityIssues.length === 0;
-  const canAddToCart = selectedCount > 0 && errorCount === 0 && !isAddingToCart;
+  // Add to cart is allowed even with compatibility errors — user sees a warning.
+  const canAddToCart  = selectedCount > 0 && !isAddingToCart;
 
   return (
-    <aside
-      aria-label="PC build summary"
+    <div
       className={[
-        "flex flex-col rounded-xl border border-secondary-200 bg-white overflow-hidden shadow-sm",
+        "flex flex-wrap items-center justify-between gap-4 rounded-xl border border-secondary-200 bg-white px-5 py-4 shadow-sm",
         className,
       ]
         .filter(Boolean)
         .join(" ")}
     >
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between border-b border-secondary-200 px-5 py-4">
-        <div>
-          <h2 className="text-base font-semibold text-secondary-900">
-            {buildName ?? "Build Summary"}
-          </h2>
-          <p className="mt-0.5 text-xs text-secondary-500">
-            {selectedCount} of {totalSlots} components selected
-          </p>
-        </div>
-
-        {/* Compatibility health indicator */}
-        {selectedCount > 0 && (
-          <div>
-            {isClean ? (
-              <span className="flex items-center gap-1.5 rounded-full bg-success-50 px-3 py-1 text-xs font-semibold text-success-700">
-                <CheckBadgeIcon className="w-4 h-4" aria-hidden="true" />
-                Compatible
-              </span>
-            ) : errorCount > 0 ? (
-              <span className="flex items-center gap-1.5 rounded-full bg-error-50 px-3 py-1 text-xs font-semibold text-error-700">
-                <XCircleIcon className="w-4 h-4" aria-hidden="true" />
-                {errorCount} error{errorCount !== 1 ? "s" : ""}
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 rounded-full bg-warning-50 px-3 py-1 text-xs font-semibold text-warning-700">
-                <ExclamationTriangleIcon className="w-4 h-4" aria-hidden="true" />
-                {warningCount} warning{warningCount !== 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Parts list ── */}
-      <div className="flex-1 overflow-y-auto">
-        <table className="w-full text-sm">
-          <caption className="sr-only">Selected PC components</caption>
-          <thead className="bg-secondary-50">
-            <tr className="border-b border-secondary-200">
-              <th scope="col" className="px-5 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-secondary-500">
-                Component
-              </th>
-              <th scope="col" className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-secondary-500">
-                Price
-              </th>
-              {onRemovePart && (
-                <th scope="col" className="w-10 px-3 py-2.5">
-                  <span className="sr-only">Remove</span>
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-secondary-100">
-            {slots.map((slot) => {
-              const hasPart = slot.part != null;
-              const compatIcon = hasPart && slot.part?.compatibilityStatus
-                ? COMPAT_ICON[slot.part.compatibilityStatus]
-                : null;
-
-              return (
-                <tr
-                  key={slot.category}
-                  className={[
-                    "transition-colors",
-                    hasPart ? "hover:bg-secondary-50/60" : "",
-                  ].join(" ")}
-                >
-                  {/* Category + part info */}
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      {/* Category icon */}
-                      {slot.icon && (
-                        <span className="shrink-0 w-4 h-4 text-secondary-400" aria-hidden="true">
-                          {slot.icon}
-                        </span>
-                      )}
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary-400">
-                          {slot.categoryLabel}
-                        </p>
-                        {hasPart ? (
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={slot.part!.thumbnail}
-                              alt={slot.part!.name}
-                              className="h-7 w-7 shrink-0 rounded border border-secondary-100 object-contain bg-secondary-50 p-0.5"
-                              loading="lazy"
-                            />
-                            <p className="truncate text-sm font-medium text-secondary-800">
-                              {slot.part!.name}
-                            </p>
-                            {compatIcon}
-                          </div>
-                        ) : (
-                          <p className="text-sm italic text-secondary-400">
-                            Not selected
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Price */}
-                  <td className="px-3 py-3 text-right">
-                    {hasPart ? (
-                      <span className="whitespace-nowrap text-sm font-semibold text-secondary-800">
-                        {formatVND(slot.part!.price)}
-                      </span>
-                    ) : (
-                      <span className="text-sm text-secondary-300">—</span>
-                    )}
-                  </td>
-
-                  {/* Remove button */}
-                  {onRemovePart && (
-                    <td className="px-3 py-3">
-                      {hasPart && (
-                        <button
-                          type="button"
-                          aria-label={`Remove ${slot.categoryLabel}`}
-                          onClick={handleRemove(slot.category)}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg text-secondary-300 transition-colors hover:bg-error-50 hover:text-error-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-400"
-                        >
-                          <TrashIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                        </button>
-                      )}
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ── Total + CTA ── */}
-      <div className="flex flex-col gap-3 border-t border-secondary-200 px-5 py-4">
-        {/* Progress bar */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 overflow-hidden rounded-full bg-secondary-100 h-1.5">
-            <div
-              className="h-full rounded-full bg-primary-500 transition-all duration-500"
-              style={{ width: `${(selectedCount / Math.max(1, totalSlots)) * 100}%` }}
-              aria-label={`${selectedCount} of ${totalSlots} components selected`}
-              role="progressbar"
-              aria-valuenow={selectedCount}
-              aria-valuemin={0}
-              aria-valuemax={totalSlots}
-            />
-          </div>
-          <span className="shrink-0 text-xs text-secondary-500">
+      {/* Left: component count + compatibility badge */}
+      <div className="flex items-center gap-3">
+        <p className="text-sm font-medium text-secondary-600 flex my-auto gap-1">
+          Linh kiện đã chọn:{" "}
+          <span className="font-bold text-secondary-900">
             {selectedCount}/{totalSlots}
           </span>
-        </div>
+        </p>
 
-        {/* Total row */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-secondary-700">
-            Estimated Total
-          </span>
-          <span className="text-xl font-bold text-primary-700">
-            {selectedCount > 0 ? formatVND(totalCost) : "—"}
-          </span>
-        </div>
+        {selectedCount > 0 && (
+          isClean ? (
+            <span className="flex items-center gap-1.5 rounded-full bg-success-50 px-2.5 py-1 text-xs font-semibold text-success-700">
+              <CheckBadgeIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              Tương thích
+            </span>
+          ) : errorCount > 0 ? (
+            <span className="flex items-center gap-1.5 rounded-full bg-error-50 px-2.5 py-1 text-xs font-semibold text-error-700">
+              <XCircleIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              {errorCount} lỗi
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 rounded-full bg-warning-50 px-2.5 py-1 text-xs font-semibold text-warning-700">
+              <ExclamationTriangleIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              {warningCount} cảnh báo
+            </span>
+          )
+        )}
+      </div>
 
-        {/* Incompatibility notice */}
+      {/* Center: total price */}
+      <p className="text-sm font-medium text-secondary-600 my-auto flex gap-1">
+        Tổng tiền:{" "}
+        <span className="font-bold text-primary-700">
+          {selectedCount > 0 ? formatVND(totalCost) : "—"}
+        </span>
+      </p>
+
+      {/* Right: non-blocking warning + action buttons */}
+      <div className="flex flex-col items-end gap-2">
+        {/* Non-blocking compatibility warning */}
         {errorCount > 0 && (
-          <p className="flex items-center gap-1.5 rounded-lg bg-error-50 px-3 py-2 text-xs font-medium text-error-700">
-            <XCircleIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
-            Resolve {errorCount} compatibility error{errorCount !== 1 ? "s" : ""} before adding to cart.
+          <p className="flex items-center gap-1 text-xs text-warning-600">
+            <OutlineWarningIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            Có {errorCount} lỗi tương thích cấu hình.
           </p>
         )}
 
-        {/* Add all to cart */}
-        <button
-          type="button"
-          disabled={!canAddToCart}
-          onClick={onAddAllToCart}
-          className={[
-            "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold transition-all duration-150",
-            canAddToCart
-              ? "bg-primary-600 text-white shadow-sm hover:bg-primary-700 active:bg-primary-800"
-              : "cursor-not-allowed bg-secondary-100 text-secondary-400",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1",
-          ].join(" ")}
-        >
-          {isAddingToCart ? (
-            <>
-              <span
-                className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
-                aria-hidden="true"
-              />
-              Adding to Cart…
-            </>
-          ) : (
-            <>
-              <ShoppingCartIcon className="w-4 h-4" aria-hidden="true" />
-              Add All to Cart
-              {selectedCount > 0 && (
-                <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-xs">
-                  {selectedCount}
-                </span>
+        <div className="flex items-center gap-2">
+          {/* Export / Save build */}
+          {onExportBuild && (
+            <button
+              type="button"
+              onClick={onExportBuild}
+              className={[
+                "flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1",
+                isBuildSaved
+                  ? "border-success-200 bg-success-50 text-success-700"
+                  : "border-secondary-200 bg-white text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900",
+              ].join(" ")}
+            >
+              {isBuildSaved ? (
+                <>
+                  <CheckCircleIcon className="h-4 w-4 text-success-500" aria-hidden="true" />
+                  Đã lưu!
+                </>
+              ) : (
+                <>
+                  <ArrowDownTrayIcon className="h-4 w-4" aria-hidden="true" />
+                  Xuất cấu hình
+                </>
               )}
-            </>
+            </button>
           )}
-        </button>
 
-        <p className="text-center text-xs text-secondary-400">
-          Parts will be added as individual items in your cart
-        </p>
+          {/* Add all to cart */}
+          <button
+            type="button"
+            disabled={!canAddToCart}
+            onClick={onAddAllToCart}
+            className={[
+              "flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-150",
+              canAddToCart
+                ? errorCount > 0
+                  ? "bg-warning-500 text-white shadow-sm hover:bg-warning-600 active:bg-warning-700"
+                  : "bg-primary-600 text-white shadow-sm hover:bg-primary-700 active:bg-primary-800"
+                : "cursor-not-allowed bg-secondary-100 text-secondary-400",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1",
+            ].join(" ")}
+          >
+            {isAddingToCart ? (
+              <>
+                <span
+                  className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+                  aria-hidden="true"
+                />
+                Đang thêm…
+              </>
+            ) : (
+              <>
+                <ShoppingCartIcon className="h-4 w-4" aria-hidden="true" />
+                Thêm vào giỏ hàng
+                {selectedCount > 0 && (
+                  <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-xs">
+                    {selectedCount}
+                  </span>
+                )}
+              </>
+            )}
+          </button>
+        </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
 /*
  * ─── Prop Table ───────────────────────────────────────────────────────────────
  *
- * Name                  Type                     Default          Description
+ * Name                  Type                     Default  Description
  * ──────────────────────────────────────────────────────────────────────────────
- * slots                 BuildSlot[]              required         All build component slots
- * compatibilityIssues   CompatibilityIssue[]     []               Detected issues (from validator)
- * onAddAllToCart        () => void               —                "Add All to Cart" callback
- * onRemovePart          (category: string)=>void —                Per-part remove callback
- * isAddingToCart        boolean                  false            Spinner on CTA button
- * buildName             string                   "Build Summary"  Card heading
- * className             string                   ""               Extra classes on root aside
- *
- * ─── BuildSlot ────────────────────────────────────────────────────────────────
- *
- * Name           Type              Required  Description
- * ──────────────────────────────────────────────────────────────────────────────
- * category       string            yes       Machine-readable key (e.g. "cpu")
- * categoryLabel  string            yes       Display label (e.g. "CPU")
- * icon           ReactNode         no        Icon displayed in the row
- * part           object | null     no        Selected part (null = empty slot)
+ * slots                 BuildSlot[]              required All build component slots
+ * compatibilityIssues   CompatibilityIssue[]     []       Detected issues
+ * onAddAllToCart        () => void               —        "Thêm vào giỏ" callback
+ * isAddingToCart        boolean                  false    Spinner on Add to Cart button
+ * onExportBuild         () => void               —        "Xuất cấu hình" callback
+ * isBuildSaved          boolean                  false    Shows "Đã lưu!" confirmation
+ * className             string                   ""       Extra classes on root div
  */

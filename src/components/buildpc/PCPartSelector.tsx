@@ -13,7 +13,8 @@ import {
   ExclamationCircleIcon,
   CpuChipIcon,
 } from "@heroicons/react/24/outline";
-import { formatVND } from "@/src/lib/format";
+import { Badge } from "@/src/components/ui/Badge";
+import { PriceTag } from "@/src/components/product/PriceTag";
 import type { CompatibilityStatus } from "./PCPartCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -24,6 +25,14 @@ export interface SelectedPartInfo {
   brand: string;
   thumbnail: string;
   price: number;
+  /** Original (pre-sale) price for the PriceTag discount display */
+  originalPrice?: number;
+  /** Warranty duration (e.g. "36 tháng") */
+  warranty?: string;
+  /** Remaining units shown as "Còn N sản phẩm" */
+  stockQuantity?: number;
+  /** Human-readable label of the chosen variant (e.g. "Hộp (Box)") */
+  selectedVariant?: string;
   compatibilityStatus?: CompatibilityStatus;
   compatibilityNote?: string;
 }
@@ -57,10 +66,10 @@ function CompatibilityChip({
   note?: string;
 }) {
   const config: Record<CompatibilityStatus, { icon: ReactNode; label: string; cls: string }> = {
-    compatible:   { icon: <CheckCircleIcon   className="w-3.5 h-3.5" aria-hidden="true" />, label: "Compatible",          cls: "bg-success-50 text-success-700 border-success-200" },
-    incompatible: { icon: <XCircleIcon       className="w-3.5 h-3.5" aria-hidden="true" />, label: "Incompatible",        cls: "bg-error-50 text-error-700 border-error-200" },
-    warning:      { icon: <ExclamationCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Check compatibility", cls: "bg-warning-50 text-warning-700 border-warning-200" },
-    unchecked:    { icon: <QuestionMarkCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Unchecked",         cls: "bg-secondary-50 text-secondary-500 border-secondary-200" },
+    compatible:   { icon: <CheckCircleIcon      className="w-3.5 h-3.5" aria-hidden="true" />, label: "Compatible",          cls: "bg-success-50 text-success-700 border-success-200"   },
+    incompatible: { icon: <XCircleIcon          className="w-3.5 h-3.5" aria-hidden="true" />, label: "Incompatible",        cls: "bg-error-50 text-error-700 border-error-200"         },
+    warning:      { icon: <ExclamationCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Check compatibility", cls: "bg-warning-50 text-warning-700 border-warning-200"   },
+    unchecked:    { icon: <QuestionMarkCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Unchecked",          cls: "bg-secondary-50 text-secondary-500 border-secondary-200" },
   };
   const { icon, label, cls } = config[status];
 
@@ -104,7 +113,8 @@ function SkeletonRow({ label }: { label: string }) {
 /**
  * PCPartSelector — single-slot row in the Build PC configurator.
  * Shows a placeholder when nothing is selected; shows the selected
- * part's thumbnail, name, price, compatibility, and Change/Remove actions.
+ * part's thumbnail, name, price (with discount), warranty, stock, compatibility,
+ * and Change/Remove actions.
  *
  * ```tsx
  * <PCPartSelector
@@ -185,9 +195,37 @@ export function PCPartSelector({
             <p className="truncate text-sm font-medium text-secondary-900">
               {selectedPart.name}
             </p>
-            <p className="text-sm font-bold text-primary-700">
-              {formatVND(selectedPart.price)}
-            </p>
+
+            {/* Selected variant */}
+            {selectedPart.selectedVariant && (
+              <span className="inline-flex w-fit items-center rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-medium text-primary-700 border border-primary-200">
+                {selectedPart.selectedVariant}
+              </span>
+            )}
+
+            {/* Price — uses PriceTag for discount display */}
+            <PriceTag
+              currentPrice={selectedPart.price}
+              originalPrice={selectedPart.originalPrice}
+              size="sm"
+            />
+
+            {/* Warranty + stock */}
+            {(selectedPart.warranty || (selectedPart.stockQuantity !== undefined && selectedPart.stockQuantity > 0)) && (
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                {selectedPart.warranty && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-secondary-400">Bảo hành:</span>
+                    <Badge variant="default" size="sm">{selectedPart.warranty}</Badge>
+                  </div>
+                )}
+                {selectedPart.stockQuantity !== undefined && selectedPart.stockQuantity > 0 && (
+                  <span className="text-[11px] text-secondary-400">
+                    Còn {selectedPart.stockQuantity} sản phẩm
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Compatibility chip */}
@@ -247,17 +285,17 @@ export function PCPartSelector({
 /*
  * ─── Prop Table ───────────────────────────────────────────────────────────────
  *
- * Name          Type                          Default  Description
+ * Name          Type                          Default      Description
  * ──────────────────────────────────────────────────────────────────────────────
- * category      string                        required Machine-readable category key
- * categoryLabel string                        required Human-readable label
+ * category      string                        required     Machine-readable category key
+ * categoryLabel string                        required     Human-readable label
  * icon          ReactNode                     CpuChipIcon  Icon next to category label
- * selectedPart  SelectedPartInfo | null       —        Currently selected part data
- * onSelect      (category: string) => void    —        Opens the part picker
- * onRemove      (category: string) => void    —        Removes the selected part
- * required      boolean                       false    Show asterisk on label
- * isLoading     boolean                       false    Show skeleton state
- * className     string                        ""       Extra classes on root div
+ * selectedPart  SelectedPartInfo | null       —            Currently selected part data
+ * onSelect      (category: string) => void    —            Opens the part picker
+ * onRemove      (category: string) => void    —            Removes the selected part
+ * required      boolean                       false        Show asterisk on label
+ * isLoading     boolean                       false        Show skeleton state
+ * className     string                        ""           Extra classes on root div
  *
  * ─── SelectedPartInfo ─────────────────────────────────────────────────────────
  *
@@ -267,7 +305,10 @@ export function PCPartSelector({
  * name                 string              yes       Display name
  * brand                string              yes       Brand
  * thumbnail            string              yes       Image URL
- * price                number              yes       Price (VND)
+ * price                number              yes       Sale price (VND)
+ * originalPrice        number              no        Pre-sale price for discount badge
+ * warranty             string              no        Warranty duration (e.g. "36 tháng")
+ * stockQuantity        number              no        Remaining units
  * compatibilityStatus  CompatibilityStatus no        Relative to current build
  * compatibilityNote    string              no        Chip label override
  */
