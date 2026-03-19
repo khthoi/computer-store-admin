@@ -223,10 +223,40 @@ export function CompareProvider({
   const addProduct = useCallback(
     (product: CompareProduct) => {
       // Always prefer the spec-rich version from the catalogue.
-      // This is the key fix for the remove-then-re-add data loss: the drawer
-      // creates products with specGroups:[] from CatalogueProduct, but the
-      // catalogue map holds the authoritative full version.
-      const fullProduct = catalogueMap.current.get(product.id) ?? product;
+      // For variant products (id = "base-id__variant-value"), if no
+      // variant-specific entry exists in the catalogue, fall back to the base
+      // product's spec data — remapping each spec-row values map so the
+      // variant's own ID is used as the key (required for CompareTable lookup).
+      const baseId = product.id.includes("__")
+        ? product.id.split("__")[0]
+        : product.id;
+      const catalogueEntry = catalogueMap.current.get(product.id);
+      const baseEntry =
+        !catalogueEntry && baseId !== product.id
+          ? catalogueMap.current.get(baseId)
+          : null;
+      const fullProduct: CompareProduct = catalogueEntry
+        ? catalogueEntry
+        : baseEntry
+          ? {
+              ...baseEntry,
+              id: product.id,
+              name: product.name,
+              currentPrice: product.currentPrice,
+              originalPrice: product.originalPrice,
+              discountPct: product.discountPct,
+              specGroups: baseEntry.specGroups.map((group) => ({
+                ...group,
+                rows: group.rows.map((row) => ({
+                  ...row,
+                  values: {
+                    ...row.values,
+                    [product.id]: row.values[baseId] ?? "",
+                  },
+                })),
+              })),
+            }
+          : product;
 
       if (state.compareList.some((p) => p.id === fullProduct.id)) return;
       if (state.compareList.length >= 4) {

@@ -60,6 +60,16 @@ export interface CompareProduct {
 
 // ─── Drawer catalogue item ─────────────────────────────────────────────────────
 
+/** A single selectable variant option shown in the drawer's variant Select. */
+export interface ProductVariant {
+  value: string;
+  label: string;
+  /** Override the base product's current price for this specific variant. */
+  currentPrice?: number;
+  /** Override the base product's original/list price for this specific variant. */
+  originalPrice?: number;
+}
+
 /** A lightweight product entry shown in the add-product drawer. */
 export interface CatalogueProduct {
   id: string;
@@ -72,4 +82,7 @@ export interface CatalogueProduct {
   thumbnailSrc: string;
   rating: number;
   reviewCount: number;
+  /** Selectable configurations (e.g. "16GB / 512GB SSD"). When absent, a
+   *  single "Mặc định" option is used so the Select always renders. */
+  variants?: ProductVariant[];
 }

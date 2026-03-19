@@ -1,24 +1,25 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import {
-  CheckIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-  StarIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
+import { useMemo, useState, type RefObject } from "react";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Drawer } from "@/src/components/ui/Drawer";
 import { Button } from "@/src/components/ui/Button";
 import { Input } from "@/src/components/ui/Input";
 import { Badge } from "@/src/components/ui/Badge";
-import { formatVND } from "@/src/lib/format";
+import { Select } from "@/src/components/ui/Select";
+import type { SelectOption } from "@/src/components/ui/Select";
+import { Tooltip } from "@/src/components/ui/Tooltip";
+import { PriceTag } from "@/src/components/product/PriceTag";
 import { useCompare } from "@/src/store/compare.store";
 import {
   CATEGORY_LABELS,
   type CatalogueProduct,
+  type CompareProduct,
 } from "@/src/components/compare-ui/types";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MAX_COMPARE = 4;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,18 +27,58 @@ export interface CompareProductDrawerProps {
   /** Full catalogue shown in the drawer — passed from the page */
   catalogue: CatalogueProduct[];
   /** Element to scroll into view when "Xem so sánh" is clicked */
-  tableRef?: React.RefObject<HTMLElement | null>;
+  tableRef?: RefObject<HTMLElement | null>;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const BRANDS = ["Tất cả", "Dell", "Apple", "Asus", "MSI", "HP", "Lenovo", "Acer"];
 
+/**
+ * Builds the stable compare-list ID for a product+variant pair.
+ * Single-option products (no variants, or "default" sentinel) keep the plain
+ * product ID for backwards compatibility.
+ */
+function makeVariantId(productId: string, variantValue: string): string {
+  return variantValue === "default" ? productId : `${productId}__${variantValue}`;
+}
+
+/**
+ * Builds a minimal CompareProduct shell for a variant selection.
+ * The store's catalogueMap enriches specGroups automatically on add.
+ */
+function buildVariantCompareProduct(
+  product: CatalogueProduct,
+  variantValue: string
+): CompareProduct {
+  const variant = product.variants?.find((v) => v.value === variantValue);
+  // Only append the variant label when there is more than one real variant
+  // (a lone "Mặc định" sentinel is invisible to the user).
+  const isMultiVariant = (product.variants?.length ?? 0) > 1;
+  return {
+    id: makeVariantId(product.id, variantValue),
+    name:
+      isMultiVariant && variant
+        ? `${product.name} · ${variant.label}`
+        : product.name,
+    brand: product.brand,
+    slug: product.slug,
+    category: product.category,
+    currentPrice: variant?.currentPrice ?? product.currentPrice,
+    originalPrice: variant?.originalPrice ?? product.originalPrice,
+    discountPct: 0, // computed by PriceTag / store from currentPrice + originalPrice
+    thumbnailSrc: product.thumbnailSrc,
+    rating: product.rating,
+    reviewCount: product.reviewCount,
+    specGroups: [], // enriched from productCatalogue via the store
+  };
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
- * CompareProductDrawer — right-side drawer for adding products to the
- * comparison list. Opens/closes via the CompareContext.
+ * CompareProductDrawer — left-side drawer for adding products / variants to
+ * the comparison list. Opens/closes via the CompareContext.
  */
 export function CompareProductDrawer({
   catalogue,
@@ -85,7 +126,7 @@ export function CompareProductDrawer({
       disabled={compareList.length < 2}
       onClick={handleViewCompare}
     >
-      Xem so sánh ({compareList.length}/4)
+      Xem so sánh ({compareList.length}/{MAX_COMPARE})
     </Button>
   );
 
@@ -98,7 +139,7 @@ export function CompareProductDrawer({
       title="Chọn sản phẩm để so sánh"
       footer={footer}
     >
-      {/* ── Drawer inner content (wider than xl Drawer's w-[30rem]) ── */}
+      {/* ── Drawer inner content ── */}
       <div className="flex flex-col gap-4">
         {/* Category lock indicator */}
         {activeCategory && (
@@ -120,11 +161,14 @@ export function CompareProductDrawer({
           </div>
         )}
 
-        {/* Selected count */}
+        {/* Selected count + limit hint */}
         <p className="text-sm text-secondary-500">
           Đã chọn:{" "}
           <strong className="text-secondary-800">{compareList.length}</strong>
-          /4 sản phẩm
+          /{MAX_COMPARE} sản phẩm
+          {compareList.length >= MAX_COMPARE && (
+            <span className="ml-1.5 text-error-600">(Đã đạt giới hạn)</span>
+          )}
         </p>
 
         {/* Search */}
@@ -185,19 +229,13 @@ export function CompareProductDrawer({
               <DrawerProductItem
                 key={p.id}
                 product={p}
-                isAdded={compareList.some((c) => c.id === p.id)}
                 isIncompatible={
                   activeCategory !== null && p.category !== activeCategory
                 }
-                onAdd={() =>
-                  addProduct({
-                    ...p,
-                    originalPrice: p.originalPrice,
-                    discountPct: 0,
-                    specGroups: [],
-                  })
-                }
-                onRemove={() => removeProduct(p.id)}
+                compareList={compareList}
+                maxCompare={MAX_COMPARE}
+                onAdd={addProduct}
+                onRemove={removeProduct}
               />
             ))
           )}
@@ -211,23 +249,94 @@ export function CompareProductDrawer({
 
 interface DrawerProductItemProps {
   product: CatalogueProduct;
-  isAdded: boolean;
   isIncompatible: boolean;
-  onAdd: () => void;
-  onRemove: () => void;
+  /** Current compare list — used to derive selection state and limit. */
+  compareList: CompareProduct[];
+  maxCompare: number;
+  /** Called with a fully-shaped CompareProduct when a variant is selected. */
+  onAdd: (cp: CompareProduct) => void;
+  /** Called with the variant's compare ID when a variant is deselected. */
+  onRemove: (id: string) => void;
 }
 
 function DrawerProductItem({
   product,
-  isAdded,
   isIncompatible,
+  compareList,
+  maxCompare,
   onAdd,
   onRemove,
 }: DrawerProductItemProps) {
+  const isAtLimit = compareList.length >= maxCompare;
+
+  // Canonical list of variants — fall back to a single "Mặc định" sentinel.
+  const variants = useMemo(
+    () =>
+      product.variants?.length
+        ? product.variants
+        : [{ value: "default", label: "Mặc định" }],
+    [product.variants]
+  );
+
+  // Derive which variants are currently selected from the compare list.
+  // This is the single source of truth — no local state required.
+  const selectedVariantValues = useMemo(
+    () =>
+      variants
+        .filter((v) =>
+          compareList.some(
+            (c) => c.id === makeVariantId(product.id, v.value)
+          )
+        )
+        .map((v) => v.value),
+    [compareList, product.id, variants]
+  );
+
+  const isAdded = selectedVariantValues.length > 0;
+
+  // Build Select options — disable un-selected options when at limit so the
+  // user can still uncheck what they've already picked, but cannot add more.
+  const variantOptions = useMemo<SelectOption[]>(
+    () =>
+      variants.map((v) => ({
+        value: v.value,
+        label: v.label,
+        disabled: isAtLimit && !selectedVariantValues.includes(v.value),
+      })),
+    [variants, isAtLimit, selectedVariantValues]
+  );
+
+  // Reflect the price of the first selected variant, or the base product price.
+  const firstSelectedVariant = product.variants?.find((v) =>
+    selectedVariantValues.includes(v.value)
+  );
+  const displayCurrentPrice =
+    firstSelectedVariant?.currentPrice ?? product.currentPrice;
+  const displayOriginalPrice =
+    firstSelectedVariant?.originalPrice ?? product.originalPrice;
+
+  const handleChange = (value: string | string[]) => {
+    const next = Array.isArray(value) ? value : value ? [value] : [];
+    const prev = selectedVariantValues;
+
+    // Add any newly selected variants
+    for (const v of next) {
+      if (!prev.includes(v)) {
+        onAdd(buildVariantCompareProduct(product, v));
+      }
+    }
+    // Remove any deselected variants
+    for (const v of prev) {
+      if (!next.includes(v)) {
+        onRemove(makeVariantId(product.id, v));
+      }
+    }
+  };
+
   return (
     <div
       className={[
-        "flex items-center gap-3 rounded-xl border p-3 transition-colors",
+        "flex items-start gap-3 rounded-xl border p-3 transition-colors",
         isIncompatible
           ? "cursor-not-allowed opacity-50 border-secondary-100 bg-secondary-50"
           : isAdded
@@ -240,17 +349,26 @@ function DrawerProductItem({
       <img
         src={product.thumbnailSrc}
         alt={product.name}
-        className="h-12 w-12 shrink-0 rounded-lg bg-secondary-50 object-contain p-0.5"
+        className="mt-0.5 h-12 w-12 shrink-0 rounded-lg bg-secondary-50 object-contain p-0.5"
         loading="lazy"
         decoding="async"
       />
 
       {/* Info */}
       <div className="min-w-0 flex-1">
-        <p className="line-clamp-2 text-xs font-medium text-secondary-800">
-          {product.name}
-        </p>
-        <div className="mt-0.5 flex items-center gap-1.5 flex-wrap">
+        {/* Product name — Tooltip + line-clamp-3 + opens product page in new tab */}
+        <Tooltip content={product.name} placement="top">
+          <a
+            href={`/products/${product.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="line-clamp-3 text-xs font-medium text-secondary-800 transition-colors hover:text-primary-700 hover:underline"
+          >
+            {product.name}
+          </a>
+        </Tooltip>
+
+        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
           <Badge variant="default" size="sm">
             {product.brand}
           </Badge>
@@ -258,38 +376,30 @@ function DrawerProductItem({
             {CATEGORY_LABELS[product.category]}
           </Badge>
         </div>
-        <p className="mt-1 text-sm font-semibold text-primary-700">
-          {formatVND(product.currentPrice)}
-        </p>
+
+        {/* Price — reflects first selected variant, or base price */}
+        <div className="mt-1.5">
+          <PriceTag
+            currentPrice={displayCurrentPrice}
+            originalPrice={displayOriginalPrice}
+            size="sm"
+          />
+        </div>
       </div>
 
-      {/* Action button */}
-      <div className="relative shrink-0">
-        {isIncompatible ? (
-          <div className="group relative">
-            <Button variant="secondary" size="sm" disabled>
-              Không cùng loại
-            </Button>
-          </div>
-        ) : isAdded ? (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onRemove}
-            leftIcon={<CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />}
-          >
-            Đã chọn
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onAdd}
-            leftIcon={<PlusIcon className="h-3.5 w-3.5" aria-hidden="true" />}
-          >
-            Thêm
-          </Button>
-        )}
+      {/* Variant select — multi-select, trigger always shows placeholder */}
+      <div className="w-[148px] shrink-0">
+        <Select
+          options={variantOptions}
+          value={selectedVariantValues}
+          onChange={handleChange}
+          multiple
+          showSelectedInTrigger={false}
+          placeholder="Chọn cấu hình"
+          size="sm"
+          disabled={isIncompatible}
+          dropdownWidth="280px"
+        />
       </div>
     </div>
   );
