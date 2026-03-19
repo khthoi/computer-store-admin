@@ -32,11 +32,11 @@ export function ComparePageClient({
   const hasEnough = compareList.length >= 2;
 
   return (
-    <div className="min-h-screen bg-secondary-50">
+    <div className="min-h-screen bg-secondary-50 max-w-[1400px] mx-auto flex flex-col">
       {/* ── Sticky compare bar ── */}
       <CompareBar />
 
-      <main className="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full px-4 py-8 sm:px-6 lg:px-8">
         {/* ── Page header ── */}
         <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>

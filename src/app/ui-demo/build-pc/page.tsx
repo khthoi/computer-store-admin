@@ -232,10 +232,10 @@ export default function BuildPCDemoPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-secondary-50">
+    <div className="min-h-screen bg-secondary-50 max-w-[1400px] mx-auto flex items-start flex-shrink-0 flex-col">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="border-b border-secondary-200 bg-white">
+      <header className="border-b border-secondary-200 bg-white w-full">
         <div className="mx-auto px-6 py-8">
           <Link
             href="/ui-demo"
@@ -279,7 +279,7 @@ export default function BuildPCDemoPage() {
       </header>
 
       {/* ── Main ───────────────────────────────────────────────────────────── */}
-      <main className="mx-auto px-6 py-8">
+      <main className="mx-auto px-6 py-8 w-full">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
 
           {/* ── Left: Part selector list ───────────────────────────────────── */}

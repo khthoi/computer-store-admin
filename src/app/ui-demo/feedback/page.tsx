@@ -80,6 +80,7 @@ export default function FeedbackPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [animatedOpen, setAnimatedOpen] = useState(false);
 
   // Drawer state
   const [rightDrawer, setRightDrawer]   = useState(false);
@@ -397,28 +398,97 @@ export default function FeedbackPage() {
         </Section>
 
         {/* ── 6. Modal ── */}
-        <Section title="Modal" description="Accessible dialog with focus trap, scroll lock, Escape key, backdrop click, and footer slot.">
-          <Card>
-            <div className="space-y-4">
+        <Section title="Modal" description="Accessible dialog with focus trap, scroll lock, Escape key, backdrop click, and footer slot. Supports optional Framer Motion enter/exit animation via the animated prop.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* animated = true */}
+            <Card>
+              <SubLabel>animated = true</SubLabel>
+              <p className="mb-4 text-sm text-secondary-500">
+                Overlay fades in; panel scales from 0.95 → 1.0 on open and reverses on close.
+              </p>
+              <Button variant="primary" onClick={() => setAnimatedOpen(true)}>
+                Open animated modal
+              </Button>
+            </Card>
+
+            {/* animated = false (default) */}
+            <Card>
+              <SubLabel>animated = false (default)</SubLabel>
+              <p className="mb-4 text-sm text-secondary-500">
+                Mounts and unmounts instantly — no transition overhead.
+              </p>
               <div className="flex flex-wrap gap-3">
-                <Button variant="primary" onClick={() => setModalOpen(true)}>
+                <Button variant="secondary" onClick={() => setModalOpen(true)}>
                   Open product modal
                 </Button>
                 <Button variant="danger" onClick={() => setConfirmOpen(true)}>
                   Open confirm modal
                 </Button>
               </div>
+            </Card>
+          </div>
 
-              <p className="text-sm text-secondary-500">
-                Press <kbd className="rounded border border-secondary-300 bg-secondary-100 px-1 py-0.5 text-xs font-mono">Esc</kbd> or click the backdrop to close.
-              </p>
+          <p className="mt-3 text-sm text-secondary-400">
+            Press <kbd className="rounded border border-secondary-300 bg-secondary-100 px-1 py-0.5 text-xs font-mono">Esc</kbd> or click the backdrop to close.
+          </p>
+
+          {/* Animated modal */}
+          <Modal
+            isOpen={animatedOpen}
+            onClose={() => setAnimatedOpen(false)}
+            title="Intel Core i9-14900K — 24 Cores"
+            size="lg"
+            animated
+            footer={
+              <>
+                <Button variant="ghost" onClick={() => setAnimatedOpen(false)}>Close</Button>
+                <Button variant="primary">Add to Cart</Button>
+              </>
+            }
+          >
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-secondary-100">
+                  <CpuChipIcon className="w-10 h-10 text-secondary-400" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-secondary-900">13,990,000₫</p>
+                  <p className="mt-0.5 text-sm text-secondary-500 line-through">15,490,000₫</p>
+                  <div className="mt-2 flex gap-2">
+                    <Badge variant="success" dot>In Stock</Badge>
+                    <Badge variant="primary">Best Seller</Badge>
+                  </div>
+                </div>
+              </div>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-secondary-100">
+                  {[
+                    ["Cores / Threads", "24C / 32T (8P + 16E)"],
+                    ["Base clock",      "3.2 GHz"],
+                    ["Boost clock",     "6.0 GHz"],
+                    ["TDP",             "125 W (PL1) / 253 W (PL2)"],
+                    ["Cache",           "36 MB L3"],
+                    ["Socket",          "LGA 1700"],
+                    ["Memory support",  "DDR4-3200 / DDR5-5600"],
+                  ].map(([label, val]) => (
+                    <tr key={label}>
+                      <td className="py-2 pr-4 font-medium text-secondary-600">{label}</td>
+                      <td className="py-2 text-secondary-800">{val}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Alert variant="info" icon={false}>
+                Compatible with Z690, Z790, B660, and B760 motherboards with LGA 1700 socket.
+              </Alert>
             </div>
-          </Card>
+          </Modal>
 
-          {/* Product detail modal */}
+          {/* Product detail modal (instant) */}
           <Modal
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
+            closeOnBackdrop={false}
             title="Intel Core i9-14900K — 24 Cores"
             size="lg"
             footer={
@@ -442,7 +512,6 @@ export default function FeedbackPage() {
                   </div>
                 </div>
               </div>
-
               <table className="w-full text-sm">
                 <tbody className="divide-y divide-secondary-100">
                   {[
@@ -461,14 +530,13 @@ export default function FeedbackPage() {
                   ))}
                 </tbody>
               </table>
-
               <Alert variant="info" icon={false}>
                 Compatible with Z690, Z790, B660, and B760 motherboards with LGA 1700 socket.
               </Alert>
             </div>
           </Modal>
 
-          {/* Confirm / delete modal */}
+          {/* Confirm / delete modal (instant) */}
           <Modal
             isOpen={confirmOpen}
             onClose={() => setConfirmOpen(false)}

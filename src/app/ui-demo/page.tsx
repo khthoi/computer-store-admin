@@ -103,10 +103,10 @@ const SECTIONS = [
 
 export default function UIDemoIndexPage() {
   return (
-    <div className="min-h-screen bg-secondary-50">
+    <div className="min-h-screen bg-secondary-50 max-w-[1400px] mx-auto flex items-center flex-shrink-0 flex-col">
       {/* ── Hero header ── */}
-      <header className="border-b border-secondary-200 bg-white">
-        <div className="mx-auto max-w-6xl px-6 py-12">
+      <header className="border-b border-secondary-200 bg-white w-full">
+        <div className="mx-auto px-6 py-12">
           <div className="flex items-center gap-3 mb-4">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white shadow-sm">
               <SparklesIcon className="w-5 h-5" aria-hidden="true" />

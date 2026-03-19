@@ -713,7 +713,7 @@ export default function ProductCategoryDemoPage() {
 
   return (
     <>
-      <div className="py-6 space-y-5">
+      <div className="py-6 space-y-5 max-w-[1400px] mx-auto flex flex-col">
         {/* ── Category switcher (demo only) ── */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-medium text-secondary-500 mr-1">

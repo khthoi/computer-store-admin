@@ -324,11 +324,87 @@ const MOCK_PRODUCT: ProductDetail = {
   ],
 };
 
+// ─── Mock recently viewed ─────────────────────────────────────────────────────
+
+const MOCK_RECENTLY_VIEWED: ProductCardProps[] = [
+  {
+    id: "macbook-pro-14",
+    name: "Apple MacBook Pro 14 M3 Pro 18GB/512GB",
+    brand: "Apple",
+    href: "/products/macbook-pro-14-m3",
+    thumbnail:
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=75",
+    price: 54_990_000,
+    rating: 4.9,
+    reviewCount: 512,
+    stockStatus: "in-stock",
+    badge: "Bán chạy",
+    productCode: "MRX43SA/A",
+  },
+  {
+    id: "lenovo-thinkpad-x1-carbon",
+    name: "Lenovo ThinkPad X1 Carbon Gen 11",
+    brand: "Lenovo",
+    href: "/products/lenovo-thinkpad-x1-carbon",
+    thumbnail:
+      "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=75",
+    price: 34_990_000,
+    originalPrice: 42_000_000,
+    rating: 4.7,
+    reviewCount: 203,
+    stockStatus: "in-stock",
+    productCode: "21HM0067VN",
+  },
+  {
+    id: "asus-rog-zephyrus-g15",
+    name: "ASUS ROG Zephyrus G15 GA503RM-HQ074W",
+    brand: "ASUS",
+    href: "/products/asus-rog-zephyrus-g15",
+    thumbnail:
+      "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400&q=75",
+    price: 29_990_000,
+    originalPrice: 35_990_000,
+    rating: 4.5,
+    reviewCount: 175,
+    stockStatus: "in-stock",
+    productCode: "GA503RM-HQ074W",
+  },
+  {
+    id: "hp-spectre-x360",
+    name: "HP Spectre x360 14-eu0013dx",
+    brand: "HP",
+    href: "/products/hp-spectre-x360",
+    thumbnail:
+      "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?w=400&q=75",
+    price: 31_990_000,
+    originalPrice: 38_500_000,
+    rating: 4.6,
+    reviewCount: 142,
+    stockStatus: "low-stock",
+    stockQuantity: 5,
+    productCode: "14-EU0013DX",
+  },
+  {
+    id: "asus-zenbook-pro-15",
+    name: "ASUS ZenBook Pro 15 OLED UM535Q",
+    brand: "ASUS",
+    href: "/products/asus-zenbook-pro-15",
+    thumbnail:
+      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=400&q=75",
+    price: 26_990_000,
+    originalPrice: 31_990_000,
+    rating: 4.3,
+    reviewCount: 89,
+    stockStatus: "in-stock",
+    productCode: "UM535QE-KY222W",
+  },
+];
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProductDetailDemoPage() {
   return (
-    <main className="min-h-screen bg-secondary-50 pb-24 lg:pb-0">
+    <main className="min-h-screen bg-secondary-50 pb-24 lg:pb-0 max-w-[1430px] mx-auto flex flex-col">
       {/* Hero — 2-column image + info */}
       <ProductHeroSection product={MOCK_PRODUCT} />
 
@@ -338,11 +414,8 @@ export default function ProductDetailDemoPage() {
       {/* Related products carousel */}
       <RelatedProductsSection products={MOCK_PRODUCT.relatedProducts} />
 
-      {/* Recently viewed — reads localStorage, client-only */}
-      <RecentlyViewedSection
-        currentProductId={MOCK_PRODUCT.id}
-        allProducts={MOCK_PRODUCT.relatedProducts}
-      />
+      {/* Recently viewed carousel */}
+      <RecentlyViewedSection products={MOCK_RECENTLY_VIEWED} />
     </main>
   );
 }

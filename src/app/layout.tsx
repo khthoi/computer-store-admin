@@ -69,7 +69,7 @@ export default function RootLayout({
          * Below 2xl: SideBanners children are hidden (display:none), the grid
          * declaration is inactive, and <main> fills the full viewport width.
          */}
-        <div className="2xl:grid 2xl:grid-cols-[240px_1fr_240px]">
+        <div className="2xl:grid 2xl:grid-cols-[120px_1fr_120px]">
           <SideBanners />
 
           <main

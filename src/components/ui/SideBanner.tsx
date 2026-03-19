@@ -56,7 +56,7 @@ export function SideBanner({
           alt={alt}
           fill
           sizes="800px"
-          quality={100}
+          quality={75}
           className="object-cover"
           draggable={false}
         />

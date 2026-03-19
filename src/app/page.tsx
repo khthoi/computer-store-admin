@@ -13,7 +13,7 @@ import {
   PhoneIcon,
 } from "@heroicons/react/24/solid";
 
-import { HeroSlider } from "@/src/components/home/HeroSlider";
+import { HeroSlider } from "@/src/components/home/HeroBanner";
 import { CategorySlider } from "@/src/components/home/CategorySlider";
 import type { ProductCardProps } from "@/src/components/product/ProductCard";
 import { ProductCarousel } from "@/src/components/product/ProductCarousel";
@@ -30,9 +30,9 @@ const TRUST_ITEMS = [
 
 function TrustBadges() {
   return (
-    <section aria-label="Cam kết dịch vụ" className="bg-white border-b border-secondary-100">
-      <div className="mx-auto max-w-12xl 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-2">
-        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-secondary-100">
+    <section aria-label="Cam kết dịch vụ" className="max-w-[1400px] bg-white border-b border-secondary-100 flex mx-auto items-center">
+      <div className="w-full 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-secondary-100 flex intem-center">
           {TRUST_ITEMS.map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex items-center gap-3 px-4 py-4 sm:px-6 sm:py-5">
               <div aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600">
@@ -860,8 +860,8 @@ function ProductSection({
   products: MockProduct[];
 }) {
   return (
-    <section aria-labelledby={`ps-${title}`} className="py-6 bg-secondary-50">
-      <div className="mx-auto max-w-12xl 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">
+    <section aria-labelledby={`ps-${title}`} className="py-6 bg-secondary-50 max-w-[1400px] mx-auto flex items-center">
+      <div className="w-full 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">
         <div className="mb-5 flex items-center justify-between">
           <h2 id={`ps-${title}`} className="text-lg font-bold text-secondary-900">
             {title}
@@ -883,8 +883,8 @@ function ProductSection({
 
 function FlashSaleSection() {
   return (
-    <section aria-labelledby="ps-flash" className="py-6 bg-secondary-50">
-      <div className="mx-auto max-w-12xl 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">
+    <section aria-labelledby="ps-flash" className="py-6 bg-secondary-50 max-w-[1400px] mx-auto flex items-center">
+      <div className="w-full 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">
         <div className="mb-5 flex items-center justify-between">
           <h2 id="ps-flash" className="text-lg font-bold text-secondary-900">
             Flash Sale — Giảm đến 20% 🔥

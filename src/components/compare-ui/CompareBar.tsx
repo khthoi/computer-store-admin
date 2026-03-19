@@ -45,7 +45,7 @@ export function CompareBar() {
       ref={barRef}
       className="sticky top-16 z-31 border-b border-secondary-200 bg-white shadow-sm"
     >
-      <div className="mx-auto flex max-w-screen-xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         {/* ── Left: selected products + empty slots ── */}
         <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
           <AnimatePresence mode="popLayout">
