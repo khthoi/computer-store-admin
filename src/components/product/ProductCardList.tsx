@@ -10,7 +10,12 @@ export interface ProductCardListProps {
   /** Array of product data. Each item may include its own event handlers. */
   products: ProductCardProps[];
   /**
-   * Number of product columns at the widest breakpoint.
+   * Display mode: grid layout (default) or horizontal list layout.
+   * @default "grid"
+   */
+  viewMode?: "grid" | "list";
+  /**
+   * Number of product columns at the widest breakpoint (grid mode only).
    * Responsive breakpoints are applied automatically.
    * @default 4
    */
@@ -73,6 +78,7 @@ const GAP_CLASSES: Record<NonNullable<ProductCardListProps["gap"]>, string> = {
  */
 export function ProductCardList({
   products,
+  viewMode = "grid",
   itemsPerRow = 4,
   gap = "md",
   onCompare,
@@ -81,6 +87,29 @@ export function ProductCardList({
   className = "",
 }: ProductCardListProps) {
   if (products.length === 0) return null;
+
+  const sharedHandlers = {
+    onCompare,
+    onAddToCart,
+    onWishlistToggle,
+  };
+
+  if (viewMode === "list") {
+    return (
+      <div className={["flex flex-col gap-3", className].filter(Boolean).join(" ")}>
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            {...product}
+            variant="list"
+            onCompare={sharedHandlers.onCompare ?? product.onCompare}
+            onAddToCart={sharedHandlers.onAddToCart ?? product.onAddToCart}
+            onWishlistToggle={sharedHandlers.onWishlistToggle ?? product.onWishlistToggle}
+          />
+        ))}
+      </div>
+    );
+  }
 
   // Merge grid and gap classes, overriding the default gap-3 from GRID_CLASSES
   // when a non-default gap is requested.
@@ -95,9 +124,9 @@ export function ProductCardList({
         <ProductCard
           key={product.id}
           {...product}
-          onCompare={onCompare ?? product.onCompare}
-          onAddToCart={onAddToCart ?? product.onAddToCart}
-          onWishlistToggle={onWishlistToggle ?? product.onWishlistToggle}
+          onCompare={sharedHandlers.onCompare ?? product.onCompare}
+          onAddToCart={sharedHandlers.onAddToCart ?? product.onAddToCart}
+          onWishlistToggle={sharedHandlers.onWishlistToggle ?? product.onWishlistToggle}
         />
       ))}
     </div>
@@ -110,7 +139,8 @@ export function ProductCardList({
  * Name             Type                              Default  Description
  * ──────────────────────────────────────────────────────────────────────────────
  * products         ProductCardProps[]                required  Product data array
- * itemsPerRow      3 | 4 | 5                         4         Max columns (responsive)
+ * viewMode         "grid" | "list"                   "grid"    Layout mode
+ * itemsPerRow      3 | 4 | 5 | 6                     4         Max columns (grid mode only)
  * gap              "sm" | "md" | "lg"                "md"      Grid gap size
  * onCompare        (id, variants) => void            —         Shared compare handler
  * onAddToCart      (id, variants) => void            —         Shared cart handler

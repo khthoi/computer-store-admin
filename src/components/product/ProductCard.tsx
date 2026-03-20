@@ -56,6 +56,12 @@ export interface ProductCardProps {
   onAddToCart?: (id: string, selectedVariants: Record<string, string>) => void;
   onCompare?: (id: string, selectedVariants: Record<string, string>) => void;
   onWishlistToggle?: (id: string, wishlisted: boolean, selectedVariants: Record<string, string>) => void;
+  /**
+   * Layout variant.
+   * - `"grid"` — vertical card (default)
+   * - `"list"` — horizontal row layout
+   */
+  variant?: "grid" | "list";
   className?: string;
 }
 
@@ -130,6 +136,7 @@ export const ProductCard = memo(function ProductCard({
   onAddToCart,
   onCompare,
   onWishlistToggle,
+  variant = "grid",
   className = "",
 }: ProductCardProps) {
   const [wishlisted, setWishlisted] = useState(isWishlisted);
@@ -188,6 +195,118 @@ export const ProductCard = memo(function ProductCard({
     },
     [drawerAction, id, wishlisted, onAddToCart, onCompare, onWishlistToggle]
   );
+
+  // ── List variant ─────────────────────────────────────────────────────────────
+
+  if (variant === "list") {
+    return (
+      <>
+        <article
+          className={[
+            "flex gap-4 rounded-xl border border-secondary-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md",
+            className,
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {/* Image */}
+          <a
+            href={href}
+            aria-label={name}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="relative block h-32 w-32 shrink-0 overflow-hidden rounded-lg bg-secondary-50"
+          >
+            <img
+              src={thumbnail}
+              alt={thumbnailAlt ?? name}
+              className="h-full w-full object-contain p-2 transition-transform duration-300 hover:scale-105"
+              loading="lazy"
+            />
+            {badge && (
+              <span className="absolute left-1 top-1 rounded bg-error-500 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none text-white">
+                {badge}
+              </span>
+            )}
+          </a>
+
+          {/* Info */}
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            {/* Brand + meta row */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex w-fit items-center rounded bg-secondary-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-secondary-600">
+                {brand}
+              </span>
+              {rating !== undefined && (
+                <RatingStars value={rating} count={reviewCount} size="sm" />
+              )}
+              {productCode && (
+                <Badge variant="default" size="sm" className="font-mono tracking-wide">
+                  {productCode}
+                </Badge>
+              )}
+            </div>
+
+            {/* Name */}
+            <Tooltip content={name} placement="top-start">
+              <a
+                href={href}
+                className="line-clamp-2 text-sm font-semibold text-secondary-900 transition-colors hover:text-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded"
+              >
+                {name}
+              </a>
+            </Tooltip>
+
+            {/* Price — pushed to bottom */}
+            <div className="mt-auto pt-1">
+              <PriceTag currentPrice={price} originalPrice={originalPrice} />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex shrink-0 flex-col items-end justify-between">
+            <StockBadge status={stockStatus} quantity={stockQuantity} size="sm" />
+            <div className="flex gap-2">
+              <IconActionButton label="So sánh" onClick={handleCompareClick}>
+                <ArrowsRightLeftIcon className="h-4 w-4" aria-hidden="true" />
+              </IconActionButton>
+              <IconActionButton
+                label={wishlisted ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+                onClick={handleWishlistClick}
+                active={wishlisted}
+              >
+                {wishlisted ? (
+                  <HeartSolidIcon className="h-4 w-4 text-error-500" aria-hidden="true" />
+                ) : (
+                  <HeartIcon className="h-4 w-4" aria-hidden="true" />
+                )}
+              </IconActionButton>
+              <IconActionButton
+                label={isOutOfStock ? "Hết hàng" : "Thêm vào giỏ"}
+                onClick={handleCartClick}
+                disabled={isOutOfStock}
+              >
+                <ShoppingCartIcon className="h-4 w-4" aria-hidden="true" />
+              </IconActionButton>
+            </div>
+          </div>
+        </article>
+
+        {drawerEverOpened && (
+          <ProductVariantDrawer
+            isOpen={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            product={{ id, name, brand, thumbnail, price, originalPrice }}
+            actionType={drawerAction}
+            variants={variants}
+            onConfirm={handleConfirm}
+          />
+        )}
+      </>
+    );
+  }
+
+  // ── Grid variant (default) ────────────────────────────────────────────────────
 
   return (
     <>

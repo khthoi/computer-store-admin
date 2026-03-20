@@ -386,6 +386,7 @@ const GPU_PRODUCTS: MockProduct[] = [
     rating: 5.0,
     reviewCount: 76,
     stockStatus: "in-stock",
+    stockQuantity: 5,
   },
   {
     id: "amd-radeon-rx-7600",

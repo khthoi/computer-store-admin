@@ -9,12 +9,7 @@ import {
   XMarkIcon,
   FunnelIcon,
   InboxIcon,
-  ShoppingCartIcon,
-  HeartIcon,
-  ArrowsRightLeftIcon,
-  CheckIcon,
 } from "@heroicons/react/24/outline";
-import { StarIcon } from "@heroicons/react/24/solid";
 
 import {
   Badge,
@@ -470,129 +465,6 @@ function MobileFilterContent({
   );
 }
 
-// ─── Product List View Card ──────────────────────────────────────────────────
-
-function ProductListCard({
-  product,
-}: {
-  product: (typeof CPU_INTEL_PRODUCTS)[number];
-}) {
-  return (
-    <div className="flex gap-4 rounded-xl border border-secondary-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
-      {/* Image */}
-      <div className="relative h-32 w-32 shrink-0 rounded-lg bg-secondary-50">
-        <Image
-          src={product.thumbnail}
-          alt={product.name}
-          fill
-          sizes="128px"
-          className="object-contain p-2"
-        />
-        {product.badge && (
-          <Badge
-            variant={
-              product.badge === "Hot"
-                ? "error"
-                : product.badge === "New"
-                  ? "info"
-                  : "warning"
-            }
-            size="sm"
-            className="absolute top-1 left-1"
-          >
-            {product.badge}
-          </Badge>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="flex flex-1 flex-col gap-1.5 min-w-0">
-        <div className="flex items-center gap-2">
-          {product.rating && (
-            <span className="flex items-center gap-0.5 text-xs text-warning-600">
-              <StarIcon className="w-3 h-3" />
-              {product.rating}
-            </span>
-          )}
-          {product.reviewCount && (
-            <span className="text-xs text-secondary-400">
-              ({product.reviewCount})
-            </span>
-          )}
-          {product.productCode && (
-            <Badge variant="default" size="sm">
-              Mã: {product.productCode}
-            </Badge>
-          )}
-        </div>
-
-        <h3 className="text-sm font-semibold text-secondary-900 line-clamp-2">
-          {product.name}
-        </h3>
-
-        <p className="text-xs text-secondary-500 line-clamp-1">
-          Thương hiệu: {product.brand} | Socket: LGA 1700
-        </p>
-
-        {/* Price */}
-        <div className="mt-auto flex items-baseline gap-2">
-          <span className="text-base font-bold text-primary-600">
-            {formatVND(product.price)}
-          </span>
-          {product.originalPrice && (
-            <>
-              <span className="text-xs text-secondary-400 line-through">
-                {formatVND(product.originalPrice)}
-              </span>
-              <Badge variant="error" size="sm">
-                -
-                {Math.round(
-                  ((product.originalPrice - product.price) /
-                    product.originalPrice) *
-                    100
-                )}
-                %
-              </Badge>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex shrink-0 flex-col items-end justify-between">
-        <Badge
-          variant={
-            product.stockStatus === "in-stock"
-              ? "success"
-              : product.stockStatus === "low-stock"
-                ? "warning"
-                : "error"
-          }
-          size="sm"
-          dot
-        >
-          {product.stockStatus === "in-stock"
-            ? "Sẵn hàng"
-            : product.stockStatus === "low-stock"
-              ? `Còn ${product.stockQuantity}`
-              : "Hết hàng"}
-        </Badge>
-        <div className="flex gap-2 mt-4">
-          <Button size="sm">
-            <ShoppingCartIcon className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="danger">
-            <HeartIcon className="w-4 h-4" />
-          </Button>
-          <Button size="sm" variant="outline">
-            <ArrowsRightLeftIcon className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Empty State ─────────────────────────────────────────────────────────────
 
 function EmptyState({ onClear }: { onClear: () => void }) {
@@ -846,18 +718,13 @@ export default function ProductCategoryDemoPage() {
         <div className="min-w-0">
           {paginatedProducts.length === 0 ? (
             <EmptyState onClear={handleClearFilters} />
-          ) : viewMode === "grid" ? (
+          ) : (
             <ProductCardList
               products={paginatedProducts}
+              viewMode={viewMode}
               itemsPerRow={ITEMS_PER_ROW}
               onCompare={handleCompare}
             />
-          ) : (
-            <div className="flex flex-col gap-3">
-              {paginatedProducts.map((product) => (
-                <ProductListCard key={product.id} product={product} />
-              ))}
-            </div>
           )}
 
           {/* Pagination */}
