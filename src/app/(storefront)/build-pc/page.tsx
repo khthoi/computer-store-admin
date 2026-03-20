@@ -65,7 +65,7 @@ const SLOT_CONFIGS: SlotConfig[] = [
   { key: "keyboard", label: "Keyboard", icon: "/svg/computer-components-keyboard.svg", required: false },
   { key: "mouse", label: "Mouse", icon: "/svg/computer-components-computer-mouse.svg", required: false },
   { key: "headphones", label: "Headphones", icon: "/svg/computer-components-earphones.svg", required: false },
-  { key: "mousepad", label: "Mouse Pad", icon: "/svg/computer-components-computer-mouse.svg", required: false },
+  { key: "mousepad", label: "Mouse Pad", icon: "/svg/computer-components-mousepad.svg", required: false },
   { key: "speakers", label: "Speakers", icon: "/svg/computer-components-audio-2.svg", required: false },
   { key: "chair", label: "Gaming Chair", icon: "/svg/computer-components-gaming-chair.svg", required: false },
 ];
@@ -113,6 +113,96 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
       warranty: "36 tháng",
       variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
       availability: "limited", stockQuantity: 4,
+    },
+    {
+      id: "cpu-5", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-6", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-7", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-8", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-9", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-10", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-11", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-12", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
+    },
+    {
+      id: "cpu-13", brand: "AMD", platform: "am5",
+      name: "CPU AMD Ryzen 5 7600X (4.7 GHz Upto 5.3GHz / 38MB / 6 Cores, 12 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-5-7600x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67743_cpu_amd_ryzen_5_7600x_4_7_ghz_upto_5_3ghz_38mb_6_cores_12_threads_105w_socket_am5.jpg",
+      price: 5_000_000, originalPrice: 5_500_000,
+      warranty: "36 tháng",
+      variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
+      availability: "in-stock", stockQuantity: 19,
     },
   ],
   gpu: [
@@ -666,8 +756,8 @@ export default function BuildPCPage() {
     <div className="min-h-screen bg-secondary-50">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="border-b border-secondary-200 bg-white">
-        <div className="mx-auto max-w-[1400px] px-6 py-8">
+      <header className="mt-3">
+        <div className="mx-auto max-w-[1400px] px-6 py-8 bg-white rounded-lg">
           <Link
             href="/"
             className="mb-4 inline-flex items-center gap-1.5 text-sm text-secondary-500 hover:text-secondary-700 transition-colors"

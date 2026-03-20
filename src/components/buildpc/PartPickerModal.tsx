@@ -12,12 +12,8 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  XMarkIcon,
-  MagnifyingGlassIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
+import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { Pagination } from "@/src/components/navigation/Pagination";
 import { Checkbox } from "@/src/components/ui/Checkbox";
 import { Select } from "@/src/components/ui/Select";
 import type { SelectOption } from "@/src/components/ui/Select";
@@ -452,29 +448,13 @@ export function PartPickerModal({
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="flex shrink-0 items-center gap-0.5">
-                      <button
-                        type="button"
-                        disabled={currentPage <= 1}
-                        onClick={() => setCurrentPage((p) => p - 1)}
-                        aria-label="Trang trước"
-                        className="flex h-7 w-7 items-center justify-center rounded text-secondary-500 transition-colors hover:bg-secondary-100 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                      >
-                        <ChevronLeftIcon className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                      <span className="min-w-[48px] text-center text-xs tabular-nums text-secondary-600">
-                        {currentPage} / {totalPages}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={currentPage >= totalPages}
-                        onClick={() => setCurrentPage((p) => p + 1)}
-                        aria-label="Trang sau"
-                        className="flex h-7 w-7 items-center justify-center rounded text-secondary-500 transition-colors hover:bg-secondary-100 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                      >
-                        <ChevronRightIcon className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                    </div>
+                    <Pagination
+                      size="sm"
+                      page={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                      siblingCount={5}
+                    />
                   )}
                 </div>
 

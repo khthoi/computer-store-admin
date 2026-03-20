@@ -11,8 +11,14 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type PaginationSizeOption = 10 | 20 | 50 | 100 | number;
+export type PaginationSize = "default" | "sm";
 
 export interface PaginationProps {
+  /**
+   * Visual size of the pagination controls.
+   * @default "default"
+   */
+  size?: PaginationSize;
   /** Current page (1-based) */
   page: number;
   /** Total number of pages */
@@ -72,12 +78,15 @@ function PageButton({
   current,
   disabled,
   onClick,
+  size = "default",
 }: {
   pageNum: number;
   current: boolean;
   disabled?: boolean;
   onClick: () => void;
+  size?: PaginationSize;
 }) {
+  const isSm = size === "sm";
   return (
     <button
       type="button"
@@ -86,7 +95,10 @@ function PageButton({
       disabled={disabled || current}
       onClick={onClick}
       className={[
-        "flex h-9 min-w-[2.25rem] items-center justify-center rounded px-2 text-sm font-medium transition-colors",
+        "flex items-center justify-center rounded font-medium transition-colors",
+        isSm
+          ? "h-7 min-w-[1.75rem] px-1.5 text-xs"
+          : "h-9 min-w-[2.25rem] px-2 text-sm",
         current
           ? "bg-primary-600 text-white"
           : "text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 disabled:pointer-events-none disabled:opacity-50",
@@ -126,9 +138,11 @@ export function Pagination({
   onPageSizeChange,
   showJumpTo = false,
   siblingCount = 7,
+  size = "default",
   className = "",
 }: PaginationProps) {
   const jumpId = useId();
+  const isSm = size === "sm";
 
   const goTo = useCallback(
     (p: number) => {
@@ -166,16 +180,20 @@ export function Pagination({
   const isLast = page === totalPages;
 
   const navBtnClass = [
-    "flex h-9 w-9 items-center justify-center rounded text-secondary-500 transition-colors",
+    "flex items-center justify-center rounded text-secondary-500 transition-colors",
+    isSm ? "h-7 w-7" : "h-9 w-9",
     "hover:bg-secondary-100 hover:text-secondary-800",
     "disabled:pointer-events-none disabled:opacity-40",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
   ].join(" ");
 
+  const iconClass = isSm ? "w-3.5 h-3.5" : "w-4 h-4";
+
   return (
     <div
       className={[
-        "flex flex-wrap items-center gap-3",
+        "flex flex-wrap items-center",
+        isSm ? "gap-1.5" : "gap-3",
         className,
       ]
         .filter(Boolean)
@@ -183,12 +201,12 @@ export function Pagination({
     >
       {/* Page size selector */}
       {showPageSize && (
-        <div className="flex items-center gap-2 text-sm text-secondary-600">
+        <div className={["flex items-center gap-2 text-secondary-600", isSm ? "text-xs" : "text-sm"].join(" ")}>
           <span>Rows per page:</span>
           <select
             value={pageSize}
             onChange={handlePageSizeChange}
-            className="rounded border border-secondary-200 bg-white py-1 pl-2 pr-6 text-sm text-secondary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            className={["rounded border border-secondary-200 bg-white py-1 pl-2 pr-6 text-secondary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500", isSm ? "text-xs" : "text-sm"].join(" ")}
           >
             {pageSizeOptions.map((opt) => (
               <option key={opt} value={opt}>
@@ -200,7 +218,7 @@ export function Pagination({
       )}
 
       {/* Nav controls */}
-      <nav aria-label="Pagination" className="flex items-center gap-1">
+      <nav aria-label="Pagination" className="flex items-center gap-0.5">
         {/* First page */}
         <button
           type="button"
@@ -209,7 +227,7 @@ export function Pagination({
           onClick={() => goTo(1)}
           className={navBtnClass}
         >
-          <ChevronDoubleLeftIcon className="w-4 h-4" aria-hidden="true" />
+          <ChevronDoubleLeftIcon className={iconClass} aria-hidden="true" />
         </button>
 
         {/* Previous page */}
@@ -220,7 +238,7 @@ export function Pagination({
           onClick={() => goTo(page - 1)}
           className={navBtnClass}
         >
-          <ChevronLeftIcon className="w-4 h-4" aria-hidden="true" />
+          <ChevronLeftIcon className={iconClass} aria-hidden="true" />
         </button>
 
         {/* Page buttons */}
@@ -229,7 +247,10 @@ export function Pagination({
             <span
               key={`ellipsis-${idx}`}
               aria-hidden="true"
-              className="flex h-9 w-6 items-end justify-center pb-1.5 text-secondary-400 text-sm select-none"
+              className={[
+                "flex w-6 items-end justify-center text-secondary-400 select-none",
+                isSm ? "h-7 pb-1 text-xs" : "h-9 pb-1.5 text-sm",
+              ].join(" ")}
             >
               …
             </span>
@@ -239,6 +260,7 @@ export function Pagination({
               pageNum={p}
               current={p === page}
               onClick={() => goTo(p)}
+              size={size}
             />
           )
         )}
@@ -251,7 +273,7 @@ export function Pagination({
           onClick={() => goTo(page + 1)}
           className={navBtnClass}
         >
-          <ChevronRightIcon className="w-4 h-4" aria-hidden="true" />
+          <ChevronRightIcon className={iconClass} aria-hidden="true" />
         </button>
 
         {/* Last page */}
@@ -262,13 +284,13 @@ export function Pagination({
           onClick={() => goTo(totalPages)}
           className={navBtnClass}
         >
-          <ChevronDoubleRightIcon className="w-4 h-4" aria-hidden="true" />
+          <ChevronDoubleRightIcon className={iconClass} aria-hidden="true" />
         </button>
       </nav>
 
       {/* Jump to page */}
       {showJumpTo && (
-        <div className="flex items-center gap-2 text-sm text-secondary-600">
+        <div className={["flex items-center gap-2 text-secondary-600", isSm ? "text-xs" : "text-sm"].join(" ")}>
           <label htmlFor={jumpId}>Go to:</label>
           <input
             id={jumpId}
@@ -277,7 +299,7 @@ export function Pagination({
             max={totalPages}
             placeholder={String(page)}
             onKeyDown={handleJumpKeyDown}
-            className="w-16 rounded border border-secondary-200 bg-white py-1 px-2 text-sm text-secondary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className={["rounded border border-secondary-200 bg-white py-1 px-2 text-secondary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none", isSm ? "w-14 text-xs" : "w-16 text-sm"].join(" ")}
           />
         </div>
       )}
@@ -299,5 +321,6 @@ export function Pagination({
  * onPageSizeChange   (size: number) => void  —        Size change callback
  * showJumpTo         boolean                 false    Show "Go to page" input
  * siblingCount       number                  7        Max visible page buttons
+ * size               "default"|"sm"          "default" Visual size of controls
  * className          string                  ""       Extra classes on root div
  */
