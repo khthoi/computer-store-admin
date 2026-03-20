@@ -37,6 +37,7 @@ import {
   TabPanel,
   Button,
 } from "@/src/components";
+import { Image } from "@/src/components/ui/Image";
 
 // ─── Demo helpers ─────────────────────────────────────────────────────────────
 
@@ -992,6 +993,49 @@ export default function FeedbackPage() {
                   </TabPanel>
                 ))}
               </Tabs>
+            </Card>
+          </div>
+        </Section>
+
+        {/* ── 12. Image ── */}
+        <Section title="Image" description="Wrapper around next/image with aspect-ratio containers, overlays, captions, and rounded corners.">
+          <div className="grid gap-5 sm:grid-cols-3">
+            <Card>
+              <SubLabel>Square ratio with overlay</SubLabel>
+              <Image
+                src="https://placehold.co/400x400/e0e7ff/3730a3?text=Image"
+                alt="Square demo"
+                ratio="square"
+                rounded="xl"
+                overlay={
+                  <div className="flex items-end p-3">
+                    <span className="rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white">
+                      ratio=&quot;square&quot;
+                    </span>
+                  </div>
+                }
+              />
+            </Card>
+
+            <Card>
+              <SubLabel>Video ratio</SubLabel>
+              <Image
+                src="https://placehold.co/800x450/fef3c7/b45309?text=Video+16%3A9"
+                alt="Video ratio demo"
+                ratio="video"
+                rounded="lg"
+              />
+            </Card>
+
+            <Card>
+              <SubLabel>Portrait ratio with caption</SubLabel>
+              <Image
+                src="https://placehold.co/300x400/fce7f3/9d174d?text=Portrait"
+                alt="Portrait ratio demo"
+                ratio="portrait"
+                rounded="md"
+                caption="ratio=&quot;portrait&quot; — aspect-[3/4]"
+              />
             </Card>
           </div>
         </Section>

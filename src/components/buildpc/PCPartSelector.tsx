@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, type ReactNode } from "react";
+import Image from "next/image";
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -15,6 +16,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Badge } from "@/src/components/ui/Badge";
 import { PriceTag } from "@/src/components/product/PriceTag";
+import { Tooltip } from "@/src/components/ui/Tooltip";
 import type { CompatibilityStatus } from "./PCPartCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -33,6 +35,8 @@ export interface SelectedPartInfo {
   stockQuantity?: number;
   /** Human-readable label of the chosen variant (e.g. "Hộp (Box)") */
   selectedVariant?: string;
+  /** Opens product detail in a new tab when the name is clicked */
+  href?: string;
   compatibilityStatus?: CompatibilityStatus;
   compatibilityNote?: string;
 }
@@ -42,8 +46,8 @@ export interface PCPartSelectorProps {
   category: string;
   /** Human-readable label shown as heading (e.g. "CPU", "Motherboard") */
   categoryLabel: string;
-  /** Icon rendered next to the category label */
-  icon?: ReactNode;
+  /** Icon rendered next to the category label. Pass a ReactNode or a string path to an SVG in /public. */
+  icon?: ReactNode | string;
   /** Currently selected part. Null/undefined renders the placeholder. */
   selectedPart?: SelectedPartInfo | null;
   /** Called when the user clicks "Select [category]" or "Change" */
@@ -66,10 +70,10 @@ function CompatibilityChip({
   note?: string;
 }) {
   const config: Record<CompatibilityStatus, { icon: ReactNode; label: string; cls: string }> = {
-    compatible:   { icon: <CheckCircleIcon      className="w-3.5 h-3.5" aria-hidden="true" />, label: "Compatible",          cls: "bg-success-50 text-success-700 border-success-200"   },
-    incompatible: { icon: <XCircleIcon          className="w-3.5 h-3.5" aria-hidden="true" />, label: "Incompatible",        cls: "bg-error-50 text-error-700 border-error-200"         },
-    warning:      { icon: <ExclamationCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Check compatibility", cls: "bg-warning-50 text-warning-700 border-warning-200"   },
-    unchecked:    { icon: <QuestionMarkCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Unchecked",          cls: "bg-secondary-50 text-secondary-500 border-secondary-200" },
+    compatible: { icon: <CheckCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Compatible", cls: "bg-success-50 text-success-700 border-success-200" },
+    incompatible: { icon: <XCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Incompatible", cls: "bg-error-50 text-error-700 border-error-200" },
+    warning: { icon: <ExclamationCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Check compatibility", cls: "bg-warning-50 text-warning-700 border-warning-200" },
+    unchecked: { icon: <QuestionMarkCircleIcon className="w-3.5 h-3.5" aria-hidden="true" />, label: "Unchecked", cls: "bg-secondary-50 text-secondary-500 border-secondary-200" },
   };
   const { icon, label, cls } = config[status];
 
@@ -165,7 +169,12 @@ export function PCPartSelector({
       {/* Category label column */}
       <div className="flex w-36 shrink-0 items-center gap-2">
         <span className="text-secondary-400" aria-hidden="true">
-          {icon ?? <CpuChipIcon className="w-5 h-5" />}
+          {typeof icon === "string" ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={icon} alt="" width={30} height={30} className="shrink-0 opacity-60" aria-hidden="true" />
+          ) : (
+            icon ?? <CpuChipIcon className="w-5 h-5" />
+          )}
         </span>
         <span className="text-sm font-semibold text-secondary-700">
           {categoryLabel}
@@ -178,23 +187,55 @@ export function PCPartSelector({
       {selectedPart ? (
         // ── Selected state ──────────────────────────────────────────────────
         <>
-          {/* Thumbnail */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={selectedPart.thumbnail}
-            alt={selectedPart.name}
-            className="h-12 w-12 shrink-0 rounded-lg border border-secondary-100 object-contain bg-secondary-50 p-1"
-            loading="lazy"
-          />
+          {/* Thumbnail — clickable when href is available */}
+          {selectedPart.href ? (
+            <a
+              href={selectedPart.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="shrink-0"
+            >
+              <Image
+                src={selectedPart.thumbnail}
+                alt={selectedPart.name}
+                width={108}
+                height={108}
+                className="h-27 w-27 rounded-lg object-contain transition-opacity hover:opacity-80"
+              />
+            </a>
+          ) : (
+            <Image
+              src={selectedPart.thumbnail}
+              alt={selectedPart.name}
+              width={108}
+              height={108}
+              className="h-27 w-27 shrink-0 rounded-lg object-contain"
+            />
+          )}
 
           {/* Part info */}
-          <div className="flex-1 min-w-0">
+          <div className="flex flex-1 min-w-0 flex-col gap-0.5">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary-400">
               {selectedPart.brand}
             </p>
-            <p className="truncate text-sm font-medium text-secondary-900">
-              {selectedPart.name}
-            </p>
+            <Tooltip content={selectedPart.name} placement="top-start">
+              {selectedPart.href ? (
+                <a
+                  href={selectedPart.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="line-clamp-3 w-max max-w-full text-sm font-medium text-secondary-900 transition-colors hover:text-primary-700 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                >
+                  {selectedPart.name}
+                </a>
+              ) : (
+                <p className="line-clamp-3 w-max max-w-full text-sm font-medium text-secondary-900">
+                  {selectedPart.name}
+                </p>
+              )}
+            </Tooltip>
 
             {/* Selected variant */}
             {selectedPart.selectedVariant && (
@@ -215,7 +256,7 @@ export function PCPartSelector({
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                 {selectedPart.warranty && (
                   <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-secondary-400">Bảo hành:</span>
+                    <span className="text-[11px] text-secondary-400">Bảo hành:</span>
                     <Badge variant="default" size="sm">{selectedPart.warranty}</Badge>
                   </div>
                 )}

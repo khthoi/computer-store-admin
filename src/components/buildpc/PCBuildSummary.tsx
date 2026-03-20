@@ -6,6 +6,9 @@ import {
   ArrowDownTrayIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon as OutlineWarningIcon,
+  PhotoIcon,
+  DocumentTextIcon,
+  TableCellsIcon,
 } from "@heroicons/react/24/outline";
 import {
   CheckBadgeIcon,
@@ -55,6 +58,12 @@ export interface PCBuildSummaryProps {
    * Reset to false externally after ~2 seconds.
    */
   isBuildSaved?: boolean;
+  /** Export as PNG image */
+  onExportPNG?: () => void;
+  /** Export as PDF document */
+  onExportPDF?: () => void;
+  /** Export as Excel spreadsheet */
+  onExportExcel?: () => void;
   className?: string;
 }
 
@@ -88,6 +97,9 @@ export function PCBuildSummary({
   isAddingToCart = false,
   onExportBuild,
   isBuildSaved = false,
+  onExportPNG,
+  onExportPDF,
+  onExportExcel,
   className = "",
 }: PCBuildSummaryProps) {
   const selectedSlots = slots.filter((s) => s.part != null);
@@ -158,6 +170,42 @@ export function PCBuildSummary({
         )}
 
         <div className="flex items-center gap-2">
+          {/* Compact export group: PNG / PDF / Excel */}
+          {(onExportPNG || onExportPDF || onExportExcel) && (
+            <div className="flex items-center gap-1">
+              {onExportPNG && (
+                <button
+                  type="button"
+                  onClick={onExportPNG}
+                  className="flex items-center gap-1 border border-secondary-200 bg-white text-secondary-600 hover:bg-secondary-50 rounded-xl px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                >
+                  <PhotoIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  PNG
+                </button>
+              )}
+              {onExportPDF && (
+                <button
+                  type="button"
+                  onClick={onExportPDF}
+                  className="flex items-center gap-1 border border-secondary-200 bg-white text-secondary-600 hover:bg-secondary-50 rounded-xl px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                >
+                  <DocumentTextIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  PDF
+                </button>
+              )}
+              {onExportExcel && (
+                <button
+                  type="button"
+                  onClick={onExportExcel}
+                  className="flex items-center gap-1 border border-secondary-200 bg-white text-secondary-600 hover:bg-secondary-50 rounded-xl px-3 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                >
+                  <TableCellsIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  Excel
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Export / Save build */}
           {onExportBuild && (
             <button

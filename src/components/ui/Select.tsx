@@ -140,7 +140,7 @@ function OptionItem({
       aria-disabled={option.disabled}
       onClick={() => !option.disabled && onSelect(option)}
       className={[
-        "flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-sm transition-colors",
+        "flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-sm outline-none transition-colors",
         isActive
           ? "bg-primary-50 text-primary-700"
           : "text-secondary-700 hover:bg-secondary-50",
@@ -529,7 +529,7 @@ export function Select({
               aria-label={label}
               tabIndex={-1}
               onKeyDown={handleDropdownKeyDown}
-              className="fixed z-[9999] rounded-md border border-secondary-200 bg-white shadow-lg"
+              className="fixed z-[9999] overflow-hidden rounded-md border border-secondary-200 bg-white shadow-lg"
               style={{
                 top: dropdownPos.flipUp ? undefined : `${dropdownPos.top}px`,
                 bottom: dropdownPos.flipUp
@@ -556,7 +556,7 @@ export function Select({
                 </div>
               )}
 
-              <ul role="presentation" className="max-h-60 overflow-auto py-1">
+              <ul role="presentation" className="max-h-60 overflow-auto">
                 {filtered.length === 0 ? (
                   <li className="px-3 py-2 text-sm text-secondary-400">
                     No results found

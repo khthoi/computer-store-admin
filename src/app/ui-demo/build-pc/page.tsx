@@ -30,6 +30,8 @@ interface MockProduct {
   name: string;
   brand: string;
   thumbnail: string;
+  /** Relative URL to the product detail page — pattern: /products/<slug> */
+  href: string;
   price: number;
   originalPrice?: number;
   /** Socket/platform key used for compatibility checks */
@@ -69,7 +71,8 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "cpu-1", brand: "Intel", platform: "lga1700",
       name: "Intel Core i9-14900K",
-      thumbnail: "https://placehold.co/80x80/dbeafe/1d4ed8?text=i9",
+      href: "/products/intel-core-i9-14900k",
+      thumbnail: "https://hanoicomputercdn.com/media/product/77007_cpu_intel_core_i9_14900k.jpg",
       price: 12_900_000, originalPrice: 13_900_000,
       warranty: "36 tháng",
       variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
@@ -78,7 +81,8 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "cpu-2", brand: "Intel", platform: "lga1700",
       name: "Intel Core i7-14700K",
-      thumbnail: "https://placehold.co/80x80/dbeafe/1d4ed8?text=i7",
+      href: "/products/intel-core-i7-14700k",
+      thumbnail: "https://hanoicomputercdn.com/media/product/77008_cpu_intel_core_i7_14700k.jpg",
       price: 8_900_000, originalPrice: 9_500_000,
       warranty: "36 tháng",
       variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
@@ -87,7 +91,8 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "cpu-3", brand: "AMD", platform: "am5",
       name: "AMD Ryzen 9 7950X",
-      thumbnail: "https://placehold.co/80x80/fee2e2/dc2626?text=R9",
+      href: "/products/amd-ryzen-9-7950x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67740_cpu_amd_ryzen_9_7950x_4_5_ghz_upto_5_7ghz_81mb_16_cores_32_threads_170w_socket_am5.jpg",
       price: 14_500_000, originalPrice: 15_900_000,
       warranty: "36 tháng",
       variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
@@ -95,8 +100,9 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     },
     {
       id: "cpu-4", brand: "AMD", platform: "am5",
-      name: "AMD Ryzen 7 7700X",
-      thumbnail: "https://placehold.co/80x80/fee2e2/dc2626?text=R7",
+      name: "CPU AMD Ryzen 7 7700X (4.5 GHz Upto 5.4GHz / 40MB / 8 Cores, 16 Threads / 105W / Socket AM5)",
+      href: "/products/amd-ryzen-7-7700x",
+      thumbnail: "https://hanoicomputercdn.com/media/product/67742_cpu_amd_ryzen_7_7700x_4_5_ghz_upto_5_4ghz_40mb_8_cores_16_threads_105w_socket_am5.jpg",
       price: 7_200_000, originalPrice: 7_800_000,
       warranty: "36 tháng",
       variants: [{ value: "box", label: "Hộp (Box)" }, { value: "tray", label: "Tray (OEM)" }],
@@ -107,6 +113,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "gpu-1", brand: "ASUS",
       name: "ASUS ROG STRIX RTX 4090 OC 24GB",
+      href: "/products/asus-rog-strix-rtx-4090-oc-24gb",
       thumbnail: "https://placehold.co/80x80/dcfce7/15803d?text=4090",
       price: 45_000_000, originalPrice: 48_000_000,
       warranty: "24 tháng",
@@ -115,6 +122,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "gpu-2", brand: "MSI",
       name: "MSI Gaming GeForce RTX 4080 Super 16GB",
+      href: "/products/msi-gaming-geforce-rtx-4080-super-16gb",
       thumbnail: "https://placehold.co/80x80/dcfce7/15803d?text=4080",
       price: 28_000_000, originalPrice: 30_000_000,
       warranty: "24 tháng",
@@ -123,6 +131,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "gpu-3", brand: "Sapphire",
       name: "Sapphire Nitro+ RX 7900 XTX 24GB",
+      href: "/products/sapphire-nitro-rx-7900-xtx-24gb",
       thumbnail: "https://placehold.co/80x80/fde8d8/c2410c?text=7900",
       price: 25_000_000, originalPrice: 27_000_000,
       warranty: "24 tháng",
@@ -131,6 +140,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "gpu-4", brand: "Gigabyte",
       name: "Gigabyte Aorus RTX 4070 Ti Super 16GB",
+      href: "/products/gigabyte-aorus-rtx-4070-ti-super-16gb",
       thumbnail: "https://placehold.co/80x80/dcfce7/15803d?text=4070",
       price: 19_000_000, originalPrice: 21_000_000,
       warranty: "24 tháng",
@@ -141,6 +151,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "mb-1", brand: "ASUS", platform: "lga1700",
       name: "ASUS ROG Maximus Z790 Hero",
+      href: "/products/asus-rog-maximus-z790-hero",
       thumbnail: "https://placehold.co/80x80/f1f5f9/334155?text=Z790",
       price: 18_000_000, originalPrice: 19_500_000,
       warranty: "36 tháng",
@@ -149,6 +160,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "mb-2", brand: "MSI", platform: "lga1700",
       name: "MSI MEG Z790 ACE",
+      href: "/products/msi-meg-z790-ace",
       thumbnail: "https://placehold.co/80x80/f1f5f9/334155?text=Z790",
       price: 14_500_000, originalPrice: 15_900_000,
       warranty: "36 tháng",
@@ -157,6 +169,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "mb-3", brand: "ASUS", platform: "am5",
       name: "ASUS ROG Crosshair X670E Hero",
+      href: "/products/asus-rog-crosshair-x670e-hero",
       thumbnail: "https://placehold.co/80x80/fee2e2/991b1b?text=X670",
       price: 16_000_000, originalPrice: 17_500_000,
       warranty: "36 tháng",
@@ -165,6 +178,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "mb-4", brand: "Gigabyte", platform: "am5",
       name: "Gigabyte X670E Aorus Master",
+      href: "/products/gigabyte-x670e-aorus-master",
       thumbnail: "https://placehold.co/80x80/fee2e2/991b1b?text=X670",
       price: 12_000_000, originalPrice: 13_200_000,
       warranty: "36 tháng",
@@ -175,6 +189,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ram-1", brand: "G.Skill",
       name: "G.Skill Trident Z5 DDR5-6400",
+      href: "/products/gskill-trident-z5-ddr5-6400",
       thumbnail: "https://placehold.co/80x80/fef3c7/b45309?text=DDR5",
       price: 4_800_000, originalPrice: 5_200_000,
       warranty: "36 tháng",
@@ -184,6 +199,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ram-2", brand: "Corsair",
       name: "Corsair Dominator Titanium DDR5-6000",
+      href: "/products/corsair-dominator-titanium-ddr5-6000",
       thumbnail: "https://placehold.co/80x80/fef3c7/b45309?text=DDR5",
       price: 5_200_000, originalPrice: 5_800_000,
       warranty: "36 tháng",
@@ -193,6 +209,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ram-3", brand: "Kingston",
       name: "Kingston Fury Beast DDR5-5600",
+      href: "/products/kingston-fury-beast-ddr5-5600",
       thumbnail: "https://placehold.co/80x80/fef3c7/b45309?text=DDR5",
       price: 2_100_000, originalPrice: 2_400_000,
       warranty: "36 tháng",
@@ -202,6 +219,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ram-4", brand: "TeamGroup",
       name: "TeamGroup T-Force Delta DDR5-6400",
+      href: "/products/teamgroup-t-force-delta-ddr5-6400",
       thumbnail: "https://placehold.co/80x80/fef3c7/b45309?text=DDR5",
       price: 4_200_000, originalPrice: 4_600_000,
       warranty: "36 tháng",
@@ -213,6 +231,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ssd-1", brand: "Samsung",
       name: "Samsung 990 Pro NVMe PCIe 4.0",
+      href: "/products/samsung-990-pro-nvme-pcie-4",
       thumbnail: "https://placehold.co/80x80/e0e7ff/3730a3?text=NVMe",
       price: 3_200_000, originalPrice: 3_500_000,
       warranty: "60 tháng",
@@ -222,6 +241,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ssd-2", brand: "Western Digital",
       name: "WD Black SN850X NVMe PCIe 4.0",
+      href: "/products/wd-black-sn850x-nvme-pcie-4",
       thumbnail: "https://placehold.co/80x80/e0e7ff/3730a3?text=NVMe",
       price: 2_900_000, originalPrice: 3_200_000,
       warranty: "60 tháng",
@@ -231,6 +251,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ssd-3", brand: "Seagate",
       name: "Seagate FireCuda 530 NVMe PCIe 4.0",
+      href: "/products/seagate-firecuda-530-nvme-pcie-4",
       thumbnail: "https://placehold.co/80x80/e0e7ff/3730a3?text=NVMe",
       price: 1_800_000, originalPrice: 1_999_000,
       warranty: "60 tháng",
@@ -240,6 +261,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "ssd-4", brand: "Crucial",
       name: "Crucial T700 NVMe PCIe 5.0",
+      href: "/products/crucial-t700-nvme-pcie-5",
       thumbnail: "https://placehold.co/80x80/e0e7ff/3730a3?text=NVMe",
       price: 4_100_000, originalPrice: 4_500_000,
       warranty: "60 tháng",
@@ -251,6 +273,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "psu-1", brand: "Corsair",
       name: "Corsair HX1200i 1200W 80+ Platinum",
+      href: "/products/corsair-hx1200i-1200w-80-plus-platinum",
       thumbnail: "https://placehold.co/80x80/fce7f3/9d174d?text=1200W",
       price: 5_500_000, originalPrice: 6_200_000,
       warranty: "84 tháng",
@@ -259,6 +282,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "psu-2", brand: "Seasonic",
       name: "Seasonic Prime TX-1000 1000W 80+ Titanium",
+      href: "/products/seasonic-prime-tx-1000-1000w-80-plus-titanium",
       thumbnail: "https://placehold.co/80x80/fce7f3/9d174d?text=1000W",
       price: 6_200_000, originalPrice: 6_800_000,
       warranty: "120 tháng",
@@ -267,6 +291,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "psu-3", brand: "EVGA",
       name: "EVGA SuperNOVA 850 G6 850W 80+ Gold",
+      href: "/products/evga-supernova-850-g6-850w-80-plus-gold",
       thumbnail: "https://placehold.co/80x80/fce7f3/9d174d?text=850W",
       price: 3_200_000, originalPrice: 3_600_000,
       warranty: "84 tháng",
@@ -275,6 +300,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "psu-4", brand: "be quiet!",
       name: "be quiet! Dark Power 13 1000W 80+ Titanium",
+      href: "/products/be-quiet-dark-power-13-1000w-80-plus-titanium",
       thumbnail: "https://placehold.co/80x80/fce7f3/9d174d?text=1000W",
       price: 5_800_000, originalPrice: 6_500_000,
       warranty: "60 tháng",
@@ -285,6 +311,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "case-1", brand: "Lian Li",
       name: "Lian Li PC-O11 Dynamic EVO XL",
+      href: "/products/lian-li-pc-o11-dynamic-evo-xl",
       thumbnail: "https://placehold.co/80x80/f0fdf4/15803d?text=Case",
       price: 3_800_000, originalPrice: 4_200_000,
       warranty: "24 tháng",
@@ -293,6 +320,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "case-2", brand: "Fractal Design",
       name: "Fractal Design Torrent Compact White",
+      href: "/products/fractal-design-torrent-compact-white",
       thumbnail: "https://placehold.co/80x80/f0fdf4/15803d?text=Case",
       price: 3_200_000, originalPrice: 3_500_000,
       warranty: "24 tháng",
@@ -301,6 +329,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "case-3", brand: "NZXT",
       name: "NZXT H9 Elite Matte Black",
+      href: "/products/nzxt-h9-elite-matte-black",
       thumbnail: "https://placehold.co/80x80/f0fdf4/15803d?text=Case",
       price: 4_800_000, originalPrice: 5_500_000,
       warranty: "24 tháng",
@@ -309,6 +338,7 @@ const MOCK_CATALOG: Record<string, MockProduct[]> = {
     {
       id: "case-4", brand: "be quiet!",
       name: "be quiet! Silent Base 802 Window Black",
+      href: "/products/be-quiet-silent-base-802-window-black",
       thumbnail: "https://placehold.co/80x80/f0fdf4/15803d?text=Case",
       price: 4_100_000, originalPrice: 4_600_000,
       warranty: "24 tháng",

@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Image from "next/image";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { Badge } from "@/src/components/ui/Badge";
 import { Select } from "@/src/components/ui/Select";
+import { Tooltip } from "@/src/components/ui/Tooltip";
 import { PriceTag } from "@/src/components/product/PriceTag";
 import type { CompatibilityStatus } from "@/src/components/buildpc/PCPartCard";
 
@@ -79,15 +81,31 @@ function AvailabilityBadge({
   );
 }
 
+// ─── Thumbnail ────────────────────────────────────────────────────────────────
+
+const THUMB_SIZE = 100; // px — matches h-25 w-25 (6.25rem at base-16)
+
+function Thumbnail({ src, alt }: { src: string; alt: string }) {
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={THUMB_SIZE}
+      height={THUMB_SIZE}
+      className="h-25 w-25 rounded-lg object-contain"
+    />
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 /**
  * PartPickerProductItem — rich horizontal product row for the part-picker modal.
  *
- * Layout: [thumbnail] [info: brand · name · warranty · availability · variant Select] [PriceTag · add icon]
+ * Layout: [thumbnail] [info: brand · name · warranty + variant Select (same row) · availability] [PriceTag · add icon]
  *
  * Variant / add-button logic:
- * - Select is shown whenever `variants` is defined, pre-filled from `selectedVariantValue`.
+ * - Select is shown on the same row as warranty, after the warranty badge.
  * - Button shows ✓  when the product is already in the build AND the local Select value
  *   matches the build's stored variant (or when there are no variants).
  * - Button shows +  when (a) product is not yet in the build, or (b) the user has changed
@@ -118,7 +136,7 @@ export function PartPickerProductItem({
   const hasVariants = variants !== undefined && variants.length > 0;
 
   // ✓ when: product is in the build AND variant matches (or there are no variants).
-  const buildVariant      = selectedVariantValue ?? "";
+  const buildVariant       = selectedVariantValue ?? "";
   const isVariantUnchanged = !hasVariants || selectedVariant === buildVariant;
   const showCheckmark      = isSelected && isVariantUnchanged;
 
@@ -135,8 +153,8 @@ export function PartPickerProductItem({
     <article
       className={[
         "flex items-start gap-4 py-4 transition-colors",
-        isSelected ? "bg-primary-50/40" : "",
-        isIncompatible ? "opacity-60" : "",
+        isSelected    ? "bg-primary-50/40" : "",
+        isIncompatible ? "opacity-60"       : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -151,69 +169,64 @@ export function PartPickerProductItem({
           aria-hidden="true"
           className="shrink-0"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={thumbnail}
-            alt={name}
-            className="h-20 w-20 rounded-lg border border-secondary-100 object-contain bg-secondary-50 p-1.5"
-            loading="lazy"
-          />
+          <Thumbnail src={thumbnail} alt={name} />
         </a>
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={thumbnail}
-          alt={name}
-          className="h-20 w-20 shrink-0 rounded-lg border border-secondary-100 object-contain bg-secondary-50 p-1.5"
-          loading="lazy"
-        />
+        <div className="shrink-0 flex my-auto">
+          <Thumbnail src={thumbnail} alt={name} />
+        </div>
       )}
 
-      {/* Info — brand, name, warranty, availability, variant Select */}
+      {/* Info — brand, name, warranty + variant Select (same row), availability */}
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary-400">
           {brand}
         </p>
 
-        {href ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="line-clamp-3 text-sm font-medium text-secondary-900 hover:text-primary-700 hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-          >
-            {name}
-          </a>
-        ) : (
-          <p className="line-clamp-3 text-sm font-medium text-secondary-900">
-            {name}
-          </p>
-        )}
+        <Tooltip content={name} placement="top-start">
+          {href ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="line-clamp-3 w-max max-w-full text-sm font-medium text-secondary-900 transition-colors hover:text-primary-700 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              {name}
+            </a>
+          ) : (
+            <p className="line-clamp-3 w-max max-w-full text-sm font-medium text-secondary-900">
+              {name}
+            </p>
+          )}
+        </Tooltip>
 
-        {/* Warranty */}
-        {warranty && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-secondary-400">Bảo hành:</span>
-            <Badge variant="default" size="sm" className="self-start">
-              {warranty}
-            </Badge>
+        {/* Warranty + variant Select — same row, visually balanced */}
+        {(warranty || hasVariants) && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            {warranty && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-secondary-400">Bảo hành:</span>
+                <Badge variant="default" size="sm" className="self-start">
+                  {warranty}
+                </Badge>
+              </div>
+            )}
+
+            {hasVariants && (
+              <div className="w-44">
+                <Select
+                  options={variants!.map((v) => ({ value: v.value, label: v.label }))}
+                  value={selectedVariant}
+                  onChange={(v) => setSelectedVariant(v as string)}
+                  placeholder="Chọn phiên bản"
+                  size="sm"
+                />
+              </div>
+            )}
           </div>
         )}
 
         <AvailabilityBadge availability={availability} stockQuantity={stockQuantity} />
-
-        {/* Variant selector — lives in the info column, separated from the action button */}
-        {hasVariants && (
-          <div className="mt-1 w-44">
-            <Select
-              options={variants!.map((v) => ({ value: v.value, label: v.label }))}
-              value={selectedVariant}
-              onChange={(v) => setSelectedVariant(v as string)}
-              placeholder="Chọn phiên bản"
-              size="sm"
-            />
-          </div>
-        )}
       </div>
 
       {/* Right column: price + icon-only action button */}
