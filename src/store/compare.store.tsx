@@ -9,11 +9,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+import { ToastMessage } from "@/src/components/ui/Toast";
 import type {
   CompareProduct,
   ProductCategory,
@@ -22,7 +18,6 @@ import type {
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
 export interface CompareToast {
-  id: string;
   message: string;
   type: "success" | "error";
 }
@@ -33,14 +28,14 @@ interface CompareState {
   compareList: CompareProduct[];
   activeCategory: ProductCategory | null;
   isDrawerOpen: boolean;
-  toasts: CompareToast[];
+  toast: CompareToast | null;
 }
 
 const INITIAL_STATE: CompareState = {
   compareList: [],
   activeCategory: null,
   isDrawerOpen: false,
-  toasts: [],
+  toast: null,
 };
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
@@ -51,8 +46,7 @@ type CompareAction =
   | { type: "CLEAR_ALL" }
   | { type: "OPEN_DRAWER" }
   | { type: "CLOSE_DRAWER" }
-  | { type: "ADD_TOAST"; payload: CompareToast }
-  | { type: "REMOVE_TOAST"; payload: string }
+  | { type: "SET_TOAST"; payload: CompareToast | null }
   | {
       type: "HYDRATE";
       payload: Pick<CompareState, "compareList" | "activeCategory">;
@@ -91,13 +85,8 @@ function compareReducer(
       return { ...state, isDrawerOpen: true };
     case "CLOSE_DRAWER":
       return { ...state, isDrawerOpen: false };
-    case "ADD_TOAST":
-      return { ...state, toasts: [...state.toasts, action.payload] };
-    case "REMOVE_TOAST":
-      return {
-        ...state,
-        toasts: state.toasts.filter((t) => t.id !== action.payload),
-      };
+    case "SET_TOAST":
+      return { ...state, toast: action.payload };
     case "HYDRATE":
       return { ...state, ...action.payload };
     default:
@@ -143,7 +132,6 @@ export function CompareProvider({
   productCatalogue?: CompareProduct[];
 }) {
   const [state, dispatch] = useReducer(compareReducer, INITIAL_STATE);
-  const toastCounter = useRef(0);
 
   // Stable lookup: product ID → full CompareProduct with specGroups.
   // Stored in a ref so it never triggers re-renders and is always current.
@@ -208,12 +196,7 @@ export function CompareProvider({
 
   const showToast = useCallback(
     (message: string, type: CompareToast["type"]) => {
-      const id = String(++toastCounter.current);
-      dispatch({ type: "ADD_TOAST", payload: { id, message, type } });
-      setTimeout(
-        () => dispatch({ type: "REMOVE_TOAST", payload: id }),
-        3500
-      );
+      dispatch({ type: "SET_TOAST", payload: { message, type } });
     },
     []
   );
@@ -301,37 +284,14 @@ export function CompareProvider({
     >
       {children}
 
-      {/* ── Toast stack (fixed top-right) ── */}
-      <div
-        className="pointer-events-none fixed top-6 right-6 z-[60] flex flex-col gap-2"
-        role="region"
-        aria-live="polite"
-        aria-label="So sánh thông báo"
-      >
-        <AnimatePresence>
-          {state.toasts.map((t) => (
-            <motion.div
-              key={t.id}
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className={[
-                "pointer-events-auto flex items-center gap-2 rounded-xl px-4 py-3",
-                "text-sm font-medium text-white shadow-xl",
-                t.type === "success" ? "bg-success-600" : "bg-error-600",
-              ].join(" ")}
-            >
-              {t.type === "success" ? (
-                <CheckCircleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
-              ) : (
-                <ExclamationCircleIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
-              )}
-              {t.message}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+      <ToastMessage
+        isVisible={state.toast !== null}
+        type={state.toast?.type ?? "success"}
+        message={state.toast?.message ?? ""}
+        position="top-right"
+        duration={3500}
+        onClose={() => dispatch({ type: "SET_TOAST", payload: null })}
+      />
     </CompareContext.Provider>
   );
 }

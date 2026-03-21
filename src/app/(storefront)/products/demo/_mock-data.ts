@@ -30,7 +30,7 @@ export const CPU_INTEL_PRODUCTS: MockProduct[] = [
     originalPrice: 5_999_000,
     rating: 5.0,
     reviewCount: 2,
-    stockStatus: "in-stock",
+    stockStatus: "out-of-stock",
     badge: "Sale",
   },
   {

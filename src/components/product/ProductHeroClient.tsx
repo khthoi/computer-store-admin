@@ -1,13 +1,13 @@
 "use client";
 
 import { useCallback, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   BoltIcon,
   ShoppingCartIcon,
-  CheckCircleIcon,
   ArrowsRightLeftIcon,
+  PhoneIcon,
 } from "@heroicons/react/24/outline";
+import { ToastMessage } from "@/src/components/ui/Toast";
 import { Button } from "@/src/components/ui/Button";
 import { Alert } from "@/src/components/ui/Alert";
 import { VariantSelector } from "@/src/components/product/VariantSelector";
@@ -16,6 +16,7 @@ import { QuantityStepper } from "@/src/components/product/QuantityStepper";
 import { WishlistShareBar } from "@/src/components/product/WishlistShareBar";
 import { TrustBadgesRow } from "@/src/components/product/TrustBadgesRow";
 import { StickyAddToCartBar } from "@/src/components/product/StickyAddToCartBar";
+import { ContactModal } from "@/src/components/product/ContactModal";
 import { formatVND } from "@/src/lib/format";
 import type { ProductDetail, VariantGroup } from "@/src/components/product/types";
 
@@ -47,6 +48,19 @@ function computePrice(
   return total;
 }
 
+/** Returns true when the currently selected option in any group has stock === 0 */
+function isVariantOutOfStock(
+  variantGroups: VariantGroup[],
+  selectedVariants: Record<string, string>
+): boolean {
+  return variantGroups.some((group) => {
+    const val = selectedVariants[group.key];
+    if (!val) return false;
+    const opt = group.options.find((o) => o.value === val);
+    return opt !== undefined && opt.stock === 0;
+  });
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ProductHeroClient({
@@ -71,15 +85,38 @@ export function ProductHeroClient({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartToast, setCartToast] = useState(false);
   const [isCompared, setIsCompared] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactToast, setContactToast] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   const isOutOfStock = product.stockStatus === "out-of-stock";
+  const isSelectedVariantOOS =
+    !isOutOfStock && isVariantOutOfStock(product.variantGroups, selectedVariants);
+
+  // Buttons disabled when product or selected variant has no stock
+  const isCartDisabled = isOutOfStock || isSelectedVariantOOS;
 
   // Compute live price based on selected variants
   const computedPrice = computePrice(
     product.currentPrice,
     product.variantGroups,
     selectedVariants
+  );
+
+  // Flat variant options passed to ContactModal:
+  // each VariantGroup option becomes one checkbox entry.
+  const flatVariantOptions = product.variantGroups.flatMap((group) =>
+    group.options.map((opt) => ({
+      value: `${group.key}:${opt.value}`,
+      label: group.options.length > 1
+        ? `${group.label}: ${opt.label}`
+        : opt.label,
+    }))
+  );
+
+  // Pre-select whichever options are currently active in the selectors
+  const defaultSelectedVariantValues = Object.entries(selectedVariants).map(
+    ([key, val]) => `${key}:${val}`
   );
 
   const handleVariantChange = useCallback(
@@ -90,19 +127,22 @@ export function ProductHeroClient({
   );
 
   const handleAddToCart = useCallback(async () => {
-    if (isOutOfStock || isAddingToCart) return;
+    if (isCartDisabled || isAddingToCart) return;
     setIsAddingToCart(true);
     await new Promise((r) => setTimeout(r, 800));
     setIsAddingToCart(false);
     setCartToast(true);
-    setTimeout(() => setCartToast(false), 3000);
-  }, [isOutOfStock, isAddingToCart]);
+  }, [isCartDisabled, isAddingToCart]);
 
   const handleBuyNow = useCallback(async () => {
-    if (isOutOfStock) return;
+    if (isCartDisabled) return;
     await handleAddToCart();
     // In a real app: redirect to checkout
-  }, [isOutOfStock, handleAddToCart]);
+  }, [isCartDisabled, handleAddToCart]);
+
+  const handleContactSuccess = useCallback(() => {
+    setContactToast(true);
+  }, []);
 
   return (
     <>
@@ -144,7 +184,7 @@ export function ProductHeroClient({
               ? undefined
               : product.discountPct
           }
-          showInstallment={!isOutOfStock}
+          showInstallment={!isCartDisabled}
           installmentMonths={12}
           size="lg"
         />
@@ -173,20 +213,27 @@ export function ProductHeroClient({
         ))}
 
         {/* Quantity stepper */}
-        {!isOutOfStock && (
+        {!isCartDisabled && (
           <QuantityStepper
             value={quantity}
             onChange={setQuantity}
             min={1}
             max={product.stockQuantity}
-            disabled={isOutOfStock}
+            disabled={false}
           />
         )}
 
-        {/* Out of stock alert */}
+        {/* Global out-of-stock alert */}
         {isOutOfStock && (
           <Alert variant="warning">
-            Sản phẩm tạm hết hàng. Đăng ký nhận thông báo khi có hàng.
+            Sản phẩm tạm hết hàng.
+          </Alert>
+        )}
+
+        {/* Selected variant out-of-stock alert */}
+        {isSelectedVariantOOS && (
+          <Alert variant="warning">
+            Cấu hình này hiện tạm hết hàng. Vui lòng chọn cấu hình khác hoặc đăng ký nhận thông tin.
           </Alert>
         )}
 
@@ -197,7 +244,7 @@ export function ProductHeroClient({
             size="lg"
             fullWidth
             leftIcon={<BoltIcon className="w-5 h-5" />}
-            disabled={isOutOfStock}
+            disabled={isCartDisabled}
             onClick={handleBuyNow}
             className="active:scale-[0.98]"
           >
@@ -208,13 +255,27 @@ export function ProductHeroClient({
             size="lg"
             fullWidth
             leftIcon={<ShoppingCartIcon className="w-5 h-5" />}
-            disabled={isOutOfStock}
+            disabled={isCartDisabled}
             isLoading={isAddingToCart}
             onClick={handleAddToCart}
             className="active:scale-[0.98]"
           >
             Thêm vào giỏ hàng
           </Button>
+
+          {/* Contact button — shown when product or selected variant is out-of-stock */}
+          {isCartDisabled && (
+            <Button
+              variant="secondary"
+              size="lg"
+              fullWidth
+              leftIcon={<PhoneIcon className="w-5 h-5" />}
+              onClick={() => setContactOpen(true)}
+              className="active:scale-[0.98]"
+            >
+              Đăng ký nhận thông tin
+            </Button>
+          )}
         </div>
 
         {/* Wishlist + Compare + Share */}
@@ -263,23 +324,33 @@ export function ProductHeroClient({
         ctaRef={ctaRef}
       />
 
-      {/* Cart success toast */}
-      <AnimatePresence>
-        {cartToast && (
-          <motion.div
-            initial={{ opacity: 0, y: -16, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -16, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            role="status"
-            aria-live="polite"
-            className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-success-600 px-4 py-3 text-sm font-medium text-white shadow-xl"
-          >
-            <CheckCircleIcon className="w-5 h-5 shrink-0" aria-hidden="true" />
-            Đã thêm vào giỏ hàng!
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Contact modal */}
+      <ContactModal
+        isOpen={contactOpen}
+        onClose={() => setContactOpen(false)}
+        productName={product.name}
+        variantOptions={flatVariantOptions}
+        defaultSelectedVariants={defaultSelectedVariantValues}
+        onSuccess={handleContactSuccess}
+      />
+
+      <ToastMessage
+        isVisible={cartToast}
+        type="success"
+        message="Đã thêm vào giỏ hàng!"
+        position="top-right"
+        duration={3000}
+        onClose={() => setCartToast(false)}
+      />
+
+      <ToastMessage
+        isVisible={contactToast}
+        type="success"
+        message="Đã gửi yêu cầu! Chúng tôi sẽ liên hệ bạn sớm."
+        position="top-right"
+        duration={4000}
+        onClose={() => setContactToast(false)}
+      />
     </>
   );
 }

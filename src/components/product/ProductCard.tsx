@@ -1,13 +1,16 @@
 "use client";
 
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   ShoppingCartIcon,
   HeartIcon,
   ArrowsRightLeftIcon,
+  PhoneIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
+import { ContactModal } from "./ContactModal";
+import { ToastMessage } from "@/src/components/ui/Toast";
 import { RatingStars } from "./RatingStars";
 import { StockBadge, type StockStatus } from "./StockBadge";
 import { PriceTag } from "./PriceTag";
@@ -196,6 +199,27 @@ export const ProductCard = memo(function ProductCard({
     [drawerAction, id, wishlisted, onAddToCart, onCompare, onWishlistToggle]
   );
 
+  // ── Contact modal + toast ────────────────────────────────────────────────────
+
+  const [contactOpen, setContactOpen] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+
+  const handleContactClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContactOpen(true);
+  }, []);
+
+  const handleContactSuccess = useCallback(() => {
+    setToastVisible(true);
+  }, []);
+
+  useEffect(() => {
+    if (!toastVisible) return;
+    const timer = setTimeout(() => setToastVisible(false), 3500);
+    return () => clearTimeout(timer);
+  }, [toastVisible]);
+
   // ── List variant ─────────────────────────────────────────────────────────────
 
   if (variant === "list") {
@@ -270,6 +294,11 @@ export const ProductCard = memo(function ProductCard({
               <IconActionButton label="So sánh" onClick={handleCompareClick}>
                 <ArrowsRightLeftIcon className="h-4 w-4" aria-hidden="true" />
               </IconActionButton>
+              {isOutOfStock && (
+                <IconActionButton label="Liên hệ" onClick={handleContactClick}>
+                  <PhoneIcon className="h-4 w-4" aria-hidden="true" />
+                </IconActionButton>
+              )}
               <IconActionButton
                 label={wishlisted ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
                 onClick={handleWishlistClick}
@@ -302,6 +331,21 @@ export const ProductCard = memo(function ProductCard({
             onConfirm={handleConfirm}
           />
         )}
+
+        <ContactModal
+          isOpen={contactOpen}
+          onClose={() => setContactOpen(false)}
+          productName={name}
+          onSuccess={handleContactSuccess}
+        />
+
+        <ToastMessage
+          isVisible={toastVisible}
+          type="success"
+          message="Đã đăng ký nhận thông tin liên hệ!"
+          position="top-right"
+          onClose={() => setToastVisible(false)}
+        />
       </>
     );
   }
@@ -421,6 +465,12 @@ export const ProductCard = memo(function ProductCard({
               <ArrowsRightLeftIcon className="h-4 w-4" aria-hidden="true" />
             </IconActionButton>
 
+            {isOutOfStock && (
+              <IconActionButton label="Liên hệ" onClick={handleContactClick}>
+                <PhoneIcon className="h-4 w-4" aria-hidden="true" />
+              </IconActionButton>
+            )}
+
             <IconActionButton
               label={isOutOfStock ? "Hết hàng" : "Thêm vào giỏ"}
               onClick={handleCartClick}
@@ -445,6 +495,21 @@ export const ProductCard = memo(function ProductCard({
           onConfirm={handleConfirm}
         />
       )}
+
+      <ContactModal
+        isOpen={contactOpen}
+        onClose={() => setContactOpen(false)}
+        productName={name}
+        onSuccess={handleContactSuccess}
+      />
+
+      <ToastMessage
+        isVisible={toastVisible}
+        type="success"
+        message="Đã đăng ký nhận thông tin liên hệ!"
+        position="top-right"
+        onClose={() => setToastVisible(false)}
+      />
     </>
   );
 });

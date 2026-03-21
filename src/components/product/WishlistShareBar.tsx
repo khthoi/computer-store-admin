@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { HeartIcon, ShareIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon } from "@heroicons/react/24/solid";
+import { ToastMessage, type ToastType } from "@/src/components/ui/Toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,11 +20,10 @@ export function WishlistShareBar({
   productName: _productName,
 }: WishlistShareBarProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
-  const showToast = useCallback((message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
+  const showToast = useCallback((message: string, type: ToastType = "success") => {
+    setToast({ message, type });
   }, []);
 
   const handleWishlist = useCallback(() => {
@@ -41,12 +41,12 @@ export function WishlistShareBar({
       await navigator.clipboard.writeText(window.location.href);
       showToast("Đã sao chép liên kết!");
     } catch {
-      showToast("Không thể sao chép liên kết");
+      showToast("Không thể sao chép liên kết", "error");
     }
   }, [showToast]);
 
   return (
-    <div className="relative">
+    <div>
       <div className="flex items-center gap-1">
         {/* Wishlist button */}
         <button
@@ -87,22 +87,14 @@ export function WishlistShareBar({
         </button>
       </div>
 
-      {/* Toast notification */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.2 }}
-            role="status"
-            aria-live="polite"
-            className="absolute bottom-full left-0 mb-2 z-20 whitespace-nowrap rounded-lg bg-secondary-900 px-3 py-2 text-xs text-white shadow-lg"
-          >
-            {toast}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ToastMessage
+        isVisible={toast !== null}
+        type={toast?.type ?? "success"}
+        message={toast?.message ?? ""}
+        position="top-right"
+        duration={3000}
+        onClose={() => setToast(null)}
+      />
     </div>
   );
 }

@@ -15,7 +15,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ModalSize = "sm" | "md" | "lg" | "xl" | "full";
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "full";
 
 export interface ModalProps {
   /** Controls visibility */
@@ -70,22 +70,23 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
 const SIZE: Record<ModalSize, string> = {
-  sm:   "max-w-sm",
-  md:   "max-w-md",
-  lg:   "max-w-lg",
-  xl:   "max-w-2xl",
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-2xl",
+  "2xl": "max-w-3xl",
   full: "max-w-full mx-4",
 };
 
 // ─── Framer Motion variants ───────────────────────────────────────────────────
 
 const OVERLAY_VARIANTS: Variants = {
-  hidden:  { opacity: 0 },
+  hidden: { opacity: 0 },
   visible: { opacity: 1 },
 };
 
 const PANEL_VARIANTS: Variants = {
-  hidden:  { opacity: 0, scale: 0.95 },
+  hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1 },
 };
 

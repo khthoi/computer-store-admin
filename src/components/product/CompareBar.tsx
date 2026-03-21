@@ -85,7 +85,7 @@ export function CompareBar({
         .filter(Boolean)
         .join(" ")}
     >
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         {/* Label */}
         <div className="flex shrink-0 items-center gap-2 text-sm font-medium text-secondary-700">
           <ScaleIcon className="w-5 h-5 text-primary-600" aria-hidden="true" />

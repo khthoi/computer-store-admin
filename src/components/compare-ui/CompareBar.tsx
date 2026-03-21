@@ -43,7 +43,7 @@ export function CompareBar() {
   return (
     <div
       ref={barRef}
-      className="fixed top-16 left-0 right-0 z-40 border-b border-secondary-200 bg-white shadow-sm"
+      className="w-full z-40 border-b border-secondary-200 bg-white shadow-sm mt-3"
     >
       <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         {/* ── Left: selected products + empty slots ── */}

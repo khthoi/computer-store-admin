@@ -9,6 +9,12 @@ import type { ComponentType, SVGProps } from "react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface TrustBadgesRowProps {
+  /**
+   * Layout direction.
+   * - `"horizontal"` (default) — 2-col grid on mobile, 4-col on sm+.
+   * - `"vertical"` — stacked column; all badges full-width.
+   */
+  orientation?: "horizontal" | "vertical";
   className?: string;
 }
 
@@ -26,11 +32,20 @@ const BADGES: Array<{
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TrustBadgesRow({ className = "" }: TrustBadgesRowProps) {
+export function TrustBadgesRow({
+  orientation = "horizontal",
+  className = "",
+}: TrustBadgesRowProps) {
+  const containerCls =
+    orientation === "vertical"
+      ? "flex flex-col gap-2"
+      : "grid grid-cols-2 sm:grid-cols-4 gap-3";
+
   return (
     <div
       className={[
-        "grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-primary-50 rounded-xl border border-primary-100",
+        containerCls,
+        "p-3 bg-primary-50 rounded-xl border border-primary-100",
         className,
       ]
         .filter(Boolean)

@@ -59,3 +59,6 @@ export type { PopoverProps, PopoverPlacement } from "./Popover";
 
 export { SideBanner } from "./SideBanner";
 export type { SideBannerProps } from "./SideBanner";
+
+export { ToastMessage } from "./Toast";
+export type { ToastMessageProps, ToastType, ToastPosition } from "./Toast";

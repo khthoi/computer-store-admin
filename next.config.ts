@@ -10,6 +10,38 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'placehold.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'product.hstatic.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.androidauthority.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.keychron.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.lg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn-files.hacom.vn',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'microless.com',
       }
     ],
   },

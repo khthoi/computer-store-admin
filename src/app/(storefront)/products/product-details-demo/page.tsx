@@ -21,8 +21,8 @@ const MOCK_PRODUCT: ProductDetail = {
   discountPct: 23,
   rating: 4.5,
   reviewCount: 128,
-  stockStatus: "low-stock",
-  stockQuantity: 3,
+  stockStatus: "out-of-stock",
+  stockQuantity: 0,
 
   images: [
     {
