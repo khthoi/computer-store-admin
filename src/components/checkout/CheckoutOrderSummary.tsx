@@ -62,7 +62,7 @@ export function CheckoutOrderSummary() {
 
       {/* ── Compact item list ──────────────────────────────────────────── */}
       <ul
-        className="mb-4 max-h-52 space-y-3 overflow-y-auto pr-1"
+        className="mb-4 max-h-70 space-y-3 overflow-y-auto pr-1"
         aria-label="Danh sách sản phẩm"
       >
         {items.map((item) => (
@@ -101,9 +101,16 @@ export function CheckoutOrderSummary() {
             </div>
 
             {/* Line price */}
-            <span className="text-xs font-semibold text-secondary-900 shrink-0">
-              {formatVND(item.currentPrice * item.quantity)}
-            </span>
+            <div className="shrink-0 text-right">
+              <p className="text-xs font-semibold text-secondary-900">
+                {formatVND(item.currentPrice * item.quantity)}
+              </p>
+              {item.originalPrice > item.currentPrice && (
+                <p className="text-[10px] text-secondary-400 line-through">
+                  {formatVND(item.originalPrice * item.quantity)}
+                </p>
+              )}
+            </div>
           </li>
         ))}
       </ul>

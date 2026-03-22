@@ -170,8 +170,7 @@ export function CheckoutPageInner() {
       directionRef.current = 1;
       const success = await submitOrder();
       if (success) {
-        // Brief pause so the success toast is readable, then go home.
-        setTimeout(() => router.push("/"), 2000);
+        router.push("/checkout/success");
       }
       return;
     }

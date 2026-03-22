@@ -10,13 +10,16 @@ import type { PaymentMethod } from "@/src/store/checkout.store";
 // Keys must match the `id` values in MOCK_PAYMENT_METHODS exactly:
 //   cod | bank-transfer | momo | zalopay
 
+const WIDTH_ICON_PAYMENT_METHOD = 35;
+const HEIGHT_ICON_PAYMENT_METHOD = 35;
+
 const ICON: Record<string, React.ReactNode> = {
   cod: (
     <Image
       src="/svg/payment-method-cash-on-delivery.svg"
       alt="Cash on Delivery"
-      width={45}
-      height={45}
+      width={WIDTH_ICON_PAYMENT_METHOD}
+      height={HEIGHT_ICON_PAYMENT_METHOD}
       className="object-contain"
     />
   ),
@@ -25,8 +28,8 @@ const ICON: Record<string, React.ReactNode> = {
     <Image
       src="/svg/payment-method-creditcard.svg"
       alt="Bank Transfer"
-      width={45}
-      height={45}
+      width={WIDTH_ICON_PAYMENT_METHOD}
+      height={HEIGHT_ICON_PAYMENT_METHOD}
       className="object-contain"
     />
   ),
@@ -34,8 +37,8 @@ const ICON: Record<string, React.ReactNode> = {
     <Image
       src="/svg/payment-method-MOMO.svg"
       alt="MoMo"
-      width={45}
-      height={45}
+      width={WIDTH_ICON_PAYMENT_METHOD}
+      height={HEIGHT_ICON_PAYMENT_METHOD}
       className="object-contain"
     />
   ),
@@ -43,8 +46,8 @@ const ICON: Record<string, React.ReactNode> = {
     <Image
       src="/svg/payment-method-ZaloPay.svg"
       alt="ZaloPay"
-      width={45}
-      height={45}
+      width={WIDTH_ICON_PAYMENT_METHOD}
+      height={HEIGHT_ICON_PAYMENT_METHOD}
       className="object-contain"
     />
   ),

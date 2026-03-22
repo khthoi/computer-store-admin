@@ -372,7 +372,7 @@ export function CheckoutProvider({
     try {
       // Mock 1.5 s API call
       await new Promise<void>((resolve) => setTimeout(resolve, 1500));
-      showToast("Đặt hàng thành công! Cảm ơn bạn đã mua hàng.", "success");
+      // Success UX is handled by /checkout/success — no toast needed here.
       return true;
     } catch {
       showToast("Có lỗi xảy ra. Vui lòng thử lại.", "error");
