@@ -4,7 +4,7 @@ import { useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
+export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl";
 export type AvatarStatus = "online" | "away" | "busy" | "offline";
 export type AvatarShape = "circle" | "square";
 
@@ -46,6 +46,10 @@ const SIZE: Record<AvatarSize, string> = {
   md: "size-10 text-sm",
   lg: "size-12 text-base",
   xl: "size-16 text-lg",
+  "2xl": "size-20 text-xl",
+  "3xl": "size-24 text-2xl",
+  "4xl": "size-32 text-3xl",
+  "5xl": "size-40 text-4xl",
 };
 
 const STATUS_DOT_SIZE: Record<AvatarSize, string> = {
@@ -54,6 +58,10 @@ const STATUS_DOT_SIZE: Record<AvatarSize, string> = {
   md: "size-2.5",
   lg: "size-3",
   xl: "size-3.5",
+  "2xl": "size-4",
+  "3xl": "size-5",
+  "4xl": "size-6",
+  "5xl": "size-7",
 };
 
 const STATUS_COLOR: Record<AvatarStatus, string> = {

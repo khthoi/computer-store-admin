@@ -12,6 +12,9 @@ export type { TextareaProps, TextareaSize } from "./Textarea";
 export { Select } from "./Select";
 export type { SelectProps, SelectOption, SelectOptionGroup, SelectOptions, SelectSize } from "./Select";
 
+export { DateInput } from "./DateInput";
+export type { DateInputProps, DateInputSize } from "./DateInput";
+
 export { Checkbox } from "./Checkbox";
 export type { CheckboxProps, CheckboxSize } from "./Checkbox";
 

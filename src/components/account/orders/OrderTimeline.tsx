@@ -125,11 +125,16 @@ function TimelineStep({ event, isLast, orderStatus, index }: StepProps) {
           {event.label}
         </p>
 
-        {event.timestamp && (
-          <p className="mt-0.5 text-xs text-secondary-400">
-            {formatTimestamp(event.timestamp)}
-          </p>
-        )}
+        {/* Always render — invisible when no timestamp so row height stays uniform,
+            keeping the connecting line the same length across all steps. */}
+        <p
+          className={[
+            "mt-0.5 text-xs text-secondary-400",
+            event.timestamp ? "" : "invisible",
+          ].filter(Boolean).join(" ")}
+        >
+          {event.timestamp ? formatTimestamp(event.timestamp) : "\u00A0"}
+        </p>
 
         {event.note && (
           <p className="mt-1 text-xs text-secondary-500 italic">{event.note}</p>
@@ -216,11 +221,14 @@ export function OrderTimeline({
                 <p className="text-sm font-semibold text-error-700">
                   {event.label}
                 </p>
-                {event.timestamp && (
-                  <p className="mt-0.5 text-xs text-secondary-400">
-                    {formatTimestamp(event.timestamp)}
-                  </p>
-                )}
+                <p
+                  className={[
+                    "mt-0.5 text-xs text-secondary-400",
+                    event.timestamp ? "" : "invisible",
+                  ].filter(Boolean).join(" ")}
+                >
+                  {event.timestamp ? formatTimestamp(event.timestamp) : "\u00A0"}
+                </p>
                 {event.note && (
                   <p className="mt-1 text-xs text-secondary-500 italic">
                     Lý do: {event.note}

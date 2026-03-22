@@ -203,7 +203,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
                   style={{ objectFit: "cover" }}
                   className="h-16 w-16 rounded-lg border border-secondary-100"
                 />
-                <span className="absolute -right-1.5 -top-1.5 flex min-w-[1.25rem] items-center justify-center rounded-full bg-secondary-600 px-1 py-px text-[10px] font-bold leading-none text-white">
+                <span className="absolute -top-1.5 -right-1.5 flex h-4.5 w-4.5 min-w-[1.125rem] items-center justify-center rounded-full bg-secondary-600 px-1 text-[10px] font-bold text-white leading-none">
                   {item.quantity}
                 </span>
               </div>

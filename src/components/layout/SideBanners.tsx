@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { SideBanner } from "@/src/components/ui/SideBanner";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -38,6 +39,7 @@ const RIGHT_BANNER = {
  * glides up smoothly instead of snapping behind the footer.
  */
 export function SideBanners() {
+  const pathname = usePathname();
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
@@ -83,6 +85,8 @@ export function SideBanners() {
       cancelAnimationFrame(rafRef.current);
     };
   }, []);
+
+  if (pathname.startsWith("/account")) return null;
 
   const colCls =
     "pointer-events-none fixed z-30 hidden 2xl:block";
