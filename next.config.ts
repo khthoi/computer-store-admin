@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "microless.com" },
       { protocol: "https", hostname: "cdn2.cellphones.com.vn" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
     qualities: [70, 75, 90],
     deviceSizes: [64, 128, 256, 384, 640],

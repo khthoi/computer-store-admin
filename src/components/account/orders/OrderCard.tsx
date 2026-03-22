@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowPathIcon,
   StarIcon,
   ArrowUturnLeftIcon,
   XCircleIcon,
@@ -13,14 +12,24 @@ import {
 import { Button } from "@/src/components/ui/Button";
 import { OrderStatusBadge } from "@/src/components/account/orders/OrderStatusBadge";
 import { OrderCancelModal } from "@/src/components/account/orders/OrderCancelModal";
+import { ReturnExpiredModal } from "@/src/components/account/orders/ReturnExpiredModal";
+import { ReviewExpiredModal } from "@/src/components/account/orders/ReviewExpiredModal";
+import { OrderReviewViewerModal } from "@/src/components/account/orders/OrderReviewViewerModal";
 import type { OrderSummary } from "@/src/app/(storefront)/account/orders/_mock_data";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Returns true when today is within `windowDays` days of `placedAt`. */
-function isWithinReturnWindow(placedAt: string, windowDays: number): boolean {
-  const placed = new Date(placedAt);
-  const deadline = new Date(placed);
+/**
+ * Returns true when today is within `windowDays` days of `deliveredAt`.
+ * Returns false when `deliveredAt` is undefined.
+ */
+function isWithinDeliveryWindow(
+  deliveredAt: string | undefined,
+  windowDays: number
+): boolean {
+  if (!deliveredAt) return false;
+  const delivered = new Date(deliveredAt);
+  const deadline = new Date(delivered);
   deadline.setDate(deadline.getDate() + windowDays);
   return new Date() <= deadline;
 }
@@ -52,10 +61,6 @@ const LINK_BTN_OUTLINE =
   LINK_BTN_BASE +
   " bg-transparent text-primary-600 border border-primary-400 hover:bg-primary-50 active:bg-primary-100 focus-visible:ring-primary-500";
 
-const LINK_BTN_PRIMARY =
-  LINK_BTN_BASE +
-  " bg-primary-600 text-white shadow-sm hover:bg-primary-700 active:bg-primary-800 focus-visible:ring-primary-500";
-
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 export interface OrderCardProps {
@@ -68,25 +73,28 @@ export interface OrderCardProps {
 /**
  * OrderCard — summary card for a single order shown in the orders list.
  *
- * Action buttons:
- * - canCancel  → "Hủy đơn" (pending only)
- * - canReturn  → "Đổi/Trả" (delivered + within return window)
- * - canReview  → "Đánh giá" (delivered + not yet reviewed)
- * - canReorder → "Mua lại" (delivered or cancelled)
+ * Action buttons (only shown for delivered orders with a `deliveredAt` date):
+ * - "Đổi/Trả": navigates within 7-day window; opens expiry modal after
+ * - "Đánh giá" / "Xem đánh giá": navigates / opens viewer within 15-day window
+ *   reviewing is always viewable; only submitting is time-gated
  */
 export function OrderCard({ order, onCancelSuccess }: OrderCardProps) {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [returnExpiredOpen, setReturnExpiredOpen] = useState(false);
+  const [reviewExpiredOpen, setReviewExpiredOpen] = useState(false);
+  const [reviewViewerOpen, setReviewViewerOpen] = useState(false);
 
   const canCancel = order.status === "pending";
-  const canReturn =
-    order.status === "delivered" &&
-    isWithinReturnWindow(order.placedAt, order.returnWindowDays);
-  const canReview = order.status === "delivered" && !order.reviewed;
-  const canReorder =
-    order.status === "delivered" || order.status === "cancelled";
 
-  const hasActions = canCancel || canReturn || canReview || canReorder;
+  // Delivered orders with a confirmed delivery date get time-gated action buttons
+  const hasDeliveredAt =
+    order.status === "delivered" && !!order.deliveredAt;
+  const returnWithinWindow = isWithinDeliveryWindow(order.deliveredAt, 7);
+  const reviewWithinWindow = isWithinDeliveryWindow(order.deliveredAt, 15);
+  const hasReview = !!order.review;
+
+  const hasActions = canCancel || hasDeliveredAt;
 
   const handleCancelConfirm = async (_reason: string) => {
     setIsCancelling(true);
@@ -181,6 +189,7 @@ export function OrderCard({ order, onCancelSuccess }: OrderCardProps) {
 
           {hasActions && (
             <div className="flex flex-wrap items-center gap-2">
+              {/* ── Cancel ────────────────────────────────────────────── */}
               {canCancel && (
                 <Button
                   variant="ghost"
@@ -192,39 +201,65 @@ export function OrderCard({ order, onCancelSuccess }: OrderCardProps) {
                 </Button>
               )}
 
-              {canReturn && (
-                <Link
-                  href={`/account/orders/${order.id}?action=return`}
-                  className={LINK_BTN_GHOST}
-                >
-                  <ArrowUturnLeftIcon className="h-4 w-4" />
-                  Đổi/Trả
-                </Link>
+              {/* ── Return ────────────────────────────────────────────── */}
+              {hasDeliveredAt && (
+                returnWithinWindow ? (
+                  <Link
+                    href={`/account/orders/${order.id}/returns/new`}
+                    className={LINK_BTN_GHOST}
+                  >
+                    <ArrowUturnLeftIcon className="h-4 w-4" />
+                    Đổi/Trả
+                  </Link>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setReturnExpiredOpen(true)}
+                  >
+                    <ArrowUturnLeftIcon className="h-4 w-4" />
+                    Đổi/Trả
+                  </Button>
+                )
               )}
 
-              {canReview && (
-                <Link
-                  href={`/account/orders/${order.id}?action=review`}
-                  className={LINK_BTN_OUTLINE}
-                >
-                  <StarIcon className="h-4 w-4" />
-                  Đánh giá
-                </Link>
-              )}
-
-              {canReorder && (
-                <Link
-                  href={`/account/orders/${order.id}?action=reorder`}
-                  className={LINK_BTN_PRIMARY}
-                >
-                  <ArrowPathIcon className="h-4 w-4" />
-                  Mua lại
-                </Link>
+              {/* ── Review ────────────────────────────────────────────── */}
+              {hasDeliveredAt && (
+                hasReview ? (
+                  // Always allow viewing the submitted review
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setReviewViewerOpen(true)}
+                  >
+                    <StarIcon className="h-4 w-4" />
+                    Xem đánh giá
+                  </Button>
+                ) : reviewWithinWindow ? (
+                  <Link
+                    href={`/account/orders/${order.id}?action=review`}
+                    className={LINK_BTN_OUTLINE}
+                  >
+                    <StarIcon className="h-4 w-4" />
+                    Đánh giá
+                  </Link>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setReviewExpiredOpen(true)}
+                  >
+                    <StarIcon className="h-4 w-4" />
+                    Đánh giá
+                  </Button>
+                )
               )}
             </div>
           )}
         </div>
       </article>
+
+      {/* ── Modals ─────────────────────────────────────────────────────────── */}
 
       {canCancel && (
         <OrderCancelModal
@@ -233,6 +268,26 @@ export function OrderCard({ order, onCancelSuccess }: OrderCardProps) {
           onConfirm={handleCancelConfirm}
           isLoading={isCancelling}
         />
+      )}
+
+      {hasDeliveredAt && (
+        <>
+          <ReturnExpiredModal
+            isOpen={returnExpiredOpen}
+            onClose={() => setReturnExpiredOpen(false)}
+          />
+          <ReviewExpiredModal
+            isOpen={reviewExpiredOpen}
+            onClose={() => setReviewExpiredOpen(false)}
+          />
+          {hasReview && order.review && (
+            <OrderReviewViewerModal
+              isOpen={reviewViewerOpen}
+              onClose={() => setReviewViewerOpen(false)}
+              review={order.review}
+            />
+          )}
+        </>
       )}
     </>
   );

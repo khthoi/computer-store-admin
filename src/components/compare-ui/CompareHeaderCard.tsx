@@ -117,7 +117,7 @@ export function CompareHeaderCard({
           <img
             src={product.thumbnailSrc}
             alt={product.name}
-            className="h-full w-full object-contain p-4"
+            className="h-full w-full object-contain p-0.5"
             loading="lazy"
             decoding="async"
           />

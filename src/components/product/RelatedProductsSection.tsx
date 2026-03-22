@@ -20,7 +20,7 @@ export function RelatedProductsSection({
         <h2 className="text-xl font-bold text-secondary-900 mb-5">
           Sản phẩm liên quan
         </h2>
-        <ProductCarousel products={products} itemsPerView={4} />
+        <ProductCarousel products={products} itemsPerView={5} />
       </div>
     </section>
   );

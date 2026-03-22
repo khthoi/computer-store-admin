@@ -27,11 +27,11 @@ export interface PointsData {
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
 export const MOCK_POINTS: PointsData = {
-  balance: 4_250,
-  tier: "Bạc",
+  balance: 6000,
+  tier: "Bạch Kim",
   tierProgressPercent: 72,
-  pointsToNextTier: 1_750,
-  nextTier: "Vàng",
+  pointsToNextTier: 2000,
+  nextTier: null,
   history: [
     {
       id: "pt-001",

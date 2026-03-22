@@ -69,10 +69,12 @@ export function HeroSlider() {
             <Image
               src={MAIN_BANNER.src}
               alt={MAIN_BANNER.alt}
-              fill
               priority
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1280px"
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+              fill
+              sizes="(max-width: 1400px) 100vw, 1400px"
+              quality={90}
+              unoptimized
+              className="object-obtain transition-transform duration-500 ease-out group-hover:scale-[1.02]"
             />
           </Link>
 
@@ -89,7 +91,7 @@ export function HeroSlider() {
                   src={banner.src}
                   alt={banner.alt}
                   fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  quality={90}
                   className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                 />
               </Link>

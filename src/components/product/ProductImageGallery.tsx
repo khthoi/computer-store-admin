@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   useCallback,
   useEffect,
@@ -288,15 +289,17 @@ export function ProductImageGallery({
             <PlayIcon className="absolute w-12 h-12 text-white drop-shadow-lg" aria-hidden="true" />
           </div>
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={activeItem.src}
             alt={activeItem.alt}
-            onLoad={() => setImgLoaded(true)}
+            fill
+            priority={activeIndex === 0}
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className={[
-              "h-full w-full object-contain p-6 transition-transform duration-300 group-hover:scale-110",
+              "object-contain p-6 transition-transform duration-300 group-hover:scale-110",
               imgLoaded ? "opacity-100" : "opacity-0",
             ].join(" ")}
+            onLoad={() => setImgLoaded(true)}
           />
         )}
 
@@ -344,12 +347,12 @@ export function ProductImageGallery({
                     />
                   </>
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={item.thumbnailSrc ?? item.src}
                     alt=""
-                    className="h-full w-full object-contain p-1"
-                    loading="lazy"
+                    fill
+                    sizes="64px"
+                    className="object-contain p-1"
                   />
                 )}
               </button>

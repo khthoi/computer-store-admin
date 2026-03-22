@@ -27,10 +27,10 @@ const MOCK_PRODUCT: ProductDetail = {
   images: [
     {
       key: "front",
-      src: "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&q=80",
+      src: "https://cdn-files.hacom.vn/hacom/cdn/web/19112025/laptop-dell-xps-13-9350-pp9h1-ltdl0646_0001_dell-2.jpg",
       alt: "Dell XPS 15 9530 - Mặt trước",
       thumbnailSrc:
-        "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=120&q=70",
+        "https://cdn-files.hacom.vn/hacom/cdn/web/19112025/laptop-dell-xps-13-9350-pp9h1-ltdl0646_0001_dell-2.jpg",
     },
     {
       key: "side",
@@ -398,6 +398,37 @@ const MOCK_RECENTLY_VIEWED: ProductCardProps[] = [
     stockStatus: "in-stock",
     productCode: "UM535QE-KY222W",
   },
+  {
+    id: "dell-xps-13-plus",
+    name: "Dell XPS 13 Plus 9320 - Core i7-1360P",
+    brand: "Dell",
+    href: "/products/dell-xps-13-plus",
+    thumbnail:
+      "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&q=75",
+    price: 22_490_000,
+    originalPrice: 27_990_000,
+    rating: 4.4,
+    reviewCount: 67,
+    stockStatus: "in-stock",
+    productCode: "XPS9320-7572SLV",
+    badge: "Mới",
+  },
+  {
+    id: "dell-xps-15-9530",
+    name: "Dell XPS 15 9530 - Laptop Cao Cấp Dành Cho Sáng Tạo Nội Dung",
+    brand: "Dell",
+    thumbnail:
+      "https://cdn-files.hacom.vn/hacom/cdn/web/19112025/laptop-dell-xps-13-9350-pp9h1-ltdl0646_0001_dell-2.jpg",
+    price: 28_990_000,
+    originalPrice: 37_490_000,
+    rating: 4.5,
+    reviewCount: 128,
+    stockStatus: "out-of-stock",
+    stockQuantity: 0,
+    productCode: "DELL-XPS15-9530-2024",
+    badge: "Mới",
+    href: "/products/dell-xps-15-9530",
+  }
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────

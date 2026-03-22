@@ -11,6 +11,18 @@ export interface OrderSummaryItem {
   quantity: number;
 }
 
+export interface OrderReview {
+  /** 1–5 */
+  rating: number;
+  comment: string;
+  /** Human-readable variant attributes */
+  variantLabel: string;
+  /** Product name for display */
+  productName: string;
+  /** ISO date string */
+  reviewedAt: string;
+}
+
 export interface OrderSummary {
   id: string;
   status: OrderStatus;
@@ -21,10 +33,16 @@ export interface OrderSummary {
   total: number;
   /** Total number of items across all line-items. */
   itemCount: number;
-  /** True if the user has already submitted a review for this order. */
-  reviewed: boolean;
-  /** How many days after delivery the return window is open. */
-  returnWindowDays: number;
+  /**
+   * ISO datetime string — when the order was delivered.
+   * Absent if not yet delivered.
+   */
+  deliveredAt?: string;
+  /**
+   * Review submitted by the user for this order.
+   * Absent if the user has not reviewed yet.
+   */
+  review?: OrderReview;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -52,7 +70,13 @@ const THUMB_CHAIR =
 
 // ─── Mock Orders (14 entries, today = 2026-03-22) ────────────────────────────
 // Tab counts: all=14, pending=2, confirmed+preparing=4, shipping=2,
-//             delivered=4, cancelled=2, return=0
+//             delivered=4, cancelled=2
+//
+// Delivered orders — deliveredAt offsets from 2026-03-22:
+//   DH-20555: 3 days ago (2026-03-19) → return ✓  review ✓
+//   DH-20391: 10 days ago (2026-03-12) → return ✗  review ✓
+//   DH-20480: 20 days ago (2026-03-02) → return ✗  review ✗
+//   DH-20420: 2 days ago (2026-03-20)  → return ✓  review ✓  (has review)
 
 export const MOCK_ORDERS: OrderSummary[] = [
   // ── pending (2) ────────────────────────────────────────────────────────────
@@ -70,8 +94,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 28_990_000,
     itemCount: 1,
-    reviewed: false,
-    returnWindowDays: 7,
   },
   {
     id: "DH-20598",
@@ -99,8 +121,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 13_860_000,
     itemCount: 4,
-    reviewed: false,
-    returnWindowDays: 7,
   },
 
   // ── confirmed (2) ──────────────────────────────────────────────────────────
@@ -124,8 +144,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 8_880_000,
     itemCount: 2,
-    reviewed: false,
-    returnWindowDays: 7,
   },
   {
     id: "DH-20585",
@@ -159,8 +177,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 63_350_000,
     itemCount: 6,
-    reviewed: false,
-    returnWindowDays: 7,
   },
 
   // ── preparing (2) ─────────────────────────────────────────────────────────
@@ -190,8 +206,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 9_530_000,
     itemCount: 3,
-    reviewed: false,
-    returnWindowDays: 7,
   },
   {
     id: "DH-20570",
@@ -225,8 +239,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 33_520_000,
     itemCount: 5,
-    reviewed: false,
-    returnWindowDays: 7,
   },
 
   // ── shipping (2) ──────────────────────────────────────────────────────────
@@ -244,8 +256,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 18_500_000,
     itemCount: 1,
-    reviewed: false,
-    returnWindowDays: 7,
   },
   {
     id: "DH-20483",
@@ -273,17 +283,16 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 69_760_000,
     itemCount: 7,
-    reviewed: false,
-    returnWindowDays: 7,
   },
 
-  // ── delivered (4) — 2 within return window, 2 outside ─────────────────────
+  // ── delivered (4) ─────────────────────────────────────────────────────────
 
-  // Within return window: delivered 2026-03-18, window closes 2026-03-25
+  // 3 days ago — both return (within 7d) and review (within 15d) allowed
   {
     id: "DH-20555",
     status: "delivered",
     placedAt: "2026-03-18",
+    deliveredAt: "2026-03-19",
     items: [
       {
         id: "item-22",
@@ -300,15 +309,14 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 7_280_000,
     itemCount: 2,
-    reviewed: false,
-    returnWindowDays: 7,
   },
 
-  // Outside return window: 2026-03-10 + 7d = 2026-03-17 (already expired)
+  // 10 days ago — return expired (>7d), review still allowed (<15d)
   {
     id: "DH-20391",
     status: "delivered",
     placedAt: "2026-03-10",
+    deliveredAt: "2026-03-12",
     items: [
       {
         id: "item-24",
@@ -343,15 +351,14 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 24_150_000,
     itemCount: 6,
-    reviewed: true,
-    returnWindowDays: 7,
   },
 
-  // Outside return window: 2026-02-28 + 7d = 2026-03-07 (expired)
+  // 20 days ago — both return and review expired
   {
     id: "DH-20480",
     status: "delivered",
     placedAt: "2026-02-28",
+    deliveredAt: "2026-03-02",
     items: [
       {
         id: "item-29",
@@ -362,15 +369,14 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 2_890_000,
     itemCount: 1,
-    reviewed: false,
-    returnWindowDays: 7,
   },
 
-  // Outside return window: 2026-02-15 + 7d = 2026-02-22 (expired)
+  // 2 days ago — both allowed; user has already left a review
   {
     id: "DH-20420",
     status: "delivered",
     placedAt: "2026-02-15",
+    deliveredAt: "2026-03-20",
     items: [
       {
         id: "item-30",
@@ -393,8 +399,14 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 18_520_000,
     itemCount: 4,
-    reviewed: true,
-    returnWindowDays: 7,
+    review: {
+      rating: 5,
+      comment:
+        "Điện thoại chính hãng, đóng gói cẩn thận, giao hàng đúng hẹn. Camera cực kỳ đẹp và pin trâu hơn mình nghĩ. Rất hài lòng!",
+      variantLabel: "256GB / Titan Đen",
+      productName: "iPhone 16 Pro Max 256GB",
+      reviewedAt: "2026-03-21",
+    },
   },
 
   // ── cancelled (2) ─────────────────────────────────────────────────────────
@@ -424,8 +436,6 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 9_070_000,
     itemCount: 3,
-    reviewed: false,
-    returnWindowDays: 7,
   },
   {
     id: "DH-20440",
@@ -441,7 +451,5 @@ export const MOCK_ORDERS: OrderSummary[] = [
     ],
     total: 3_290_000,
     itemCount: 1,
-    reviewed: false,
-    returnWindowDays: 7,
   },
 ];
