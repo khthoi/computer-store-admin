@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "cdn-files.hacom.vn" },
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "microless.com" },
+      { protocol: "https", hostname: "cdn2.cellphones.com.vn" },
     ],
     qualities: [70, 75, 90],
     deviceSizes: [64, 128, 256, 384, 640],

@@ -7,12 +7,14 @@ import {
   MapPinIcon,
   StarIcon,
   ShoppingBagIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import {
   UserIcon as UserIconSolid,
   MapPinIcon as MapPinIconSolid,
   StarIcon as StarIconSolid,
   ShoppingBagIcon as ShoppingBagIconSolid,
+  HeartIcon as HeartIconSolid,
 } from "@heroicons/react/24/solid";
 import { Avatar } from "@/src/components/ui/Avatar";
 import { Tabs } from "@/src/components/ui/Tabs";
@@ -57,6 +59,13 @@ const NAV_ITEMS: NavItem[] = [
     icon: <ShoppingBagIcon className="h-5 w-5" />,
     iconActive: <ShoppingBagIconSolid className="h-5 w-5" />,
   },
+  {
+    href: "/account/wishlist",
+    label: "Yêu thích",
+    tabValue: "wishlist",
+    icon: <HeartIcon className="h-5 w-5" />,
+    iconActive: <HeartIconSolid className="h-5 w-5" />,
+  },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -89,7 +98,7 @@ export function AccountSidebar() {
       <aside className="hidden lg:flex lg:w-60 lg:flex-col lg:gap-2 lg:shrink-0">
         {/* User card */}
         <div className="mb-2 flex items-center gap-3 rounded-2xl border border-secondary-200 bg-white px-4 py-4">
-          <Avatar name="Nguyễn Văn An" size="md" />
+          <Avatar name="Nguyễn Văn An" size="xl" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-secondary-900">
               Nguyễn Văn An
