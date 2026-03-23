@@ -62,7 +62,7 @@ export function ProductTabsSection({ product }: ProductTabsSectionProps) {
           <div
             role="tablist"
             aria-label="Thông tin sản phẩm"
-            className="flex overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            className="flex overflow-x-auto gap-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {tabs.map((tab) => {
               const isActive = tab.value === activeTab;

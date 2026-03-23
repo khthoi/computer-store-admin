@@ -232,7 +232,7 @@ export function Tabs({
           aria-orientation={orientation}
           onKeyDown={handleKeyDown}
           className={[
-            "flex",
+            "flex gap-1",
             isVertical ? "flex-col" : "flex-row",
             styles.list,
           ].join(" ")}

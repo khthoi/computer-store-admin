@@ -5,7 +5,8 @@
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
       "Bash(npx next:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(ls \"d:\\\\PC Store Online System\\\\computer-store-customer-frontend\\\\src\\\\components\\\\product\"\" 2>/dev/null || echo \"Directory not found \")"
     ]
   }
 }

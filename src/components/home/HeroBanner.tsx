@@ -55,7 +55,7 @@ const PROMO_BANNERS = [
  *   Tablet   → 2 promos per row
  *   Mobile   → 1 promo per row
  */
-export function HeroSlider() {
+export function HeroBanner() {
   return (
     <section aria-label="Banner khuyến mãi" className="bg-secondary-50 py-4 max-w-[1400px] mx-auto flex items-center">
       <div className="w-full 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0">

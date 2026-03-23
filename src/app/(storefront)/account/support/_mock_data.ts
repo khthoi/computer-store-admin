@@ -67,7 +67,7 @@ export const TICKET_CATEGORY_OPTIONS: SelectOption[] = [
 
 export const SUPPORT_TICKETS: SupportTicket[] = [
   // CS-10001 — in_progress, "return", linked to DH-20601
-  // 3 messages: customer → staff (with image attachment) → customer
+  // 4 messages with multiple image attachments on both sides
   {
     id: "CS-10001",
     subject: "Muốn đổi trả laptop vì sản phẩm bị lỗi màn hình",
@@ -81,20 +81,42 @@ export const SUPPORT_TICKETS: SupportTicket[] = [
         id: "msg-1001-1",
         role: "customer",
         content:
-          "Chào bộ phận hỗ trợ, tôi vừa nhận được laptop Dell XPS 15 từ đơn hàng DH-20601. Màn hình hiển thị bị đốm sáng ở góc trái, rất khó chịu khi sử dụng. Tôi muốn yêu cầu đổi trả sản phẩm. Nhờ bộ phận hỗ trợ hướng dẫn thủ tục giúp tôi với ạ.",
+          "Chào bộ phận hỗ trợ, tôi vừa nhận được laptop Dell XPS 15 từ đơn hàng DH-20601. Màn hình hiển thị bị đốm sáng ở góc trái, rất khó chịu khi sử dụng. Đính kèm ảnh chụp tình trạng màn hình. Tôi muốn yêu cầu đổi trả sản phẩm.",
         sentAt: "2026-03-20T08:30:00.000Z",
+        attachments: [
+          {
+            id: "att-1001-0a",
+            url: "https://hanoicomputercdn.com/media/product/79001_man_hinh_dell_ultrasharp_u2424h_850x850_4.jpg",
+            name: "man-hinh-loi-goc-trai.jpg",
+          },
+          {
+            id: "att-1001-0b",
+            url: "https://hanoicomputercdn.com/media/product/79001_man_hinh_dell_ultrasharp_u2424h_850x850_1.jpg",
+            name: "man-hinh-toan-canh.jpg",
+          },
+        ],
       },
       {
         id: "msg-1001-2",
         role: "staff",
         content:
-          "Chào bạn, cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi đã ghi nhận phản ánh của bạn về tình trạng màn hình. Bạn vui lòng xem qua ảnh hướng dẫn đính kèm và điền vào form đổi/trả trên trang web theo đường dẫn /account/returns. Đội ngũ kỹ thuật sẽ xem xét và liên hệ lại trong vòng 1–2 ngày làm việc.",
+          "Chào bạn, cảm ơn bạn đã liên hệ. Chúng tôi đã ghi nhận phản ánh và xác nhận đây là lỗi kỹ thuật. Bạn vui lòng xem qua ảnh hướng dẫn đính kèm và điền vào form đổi/trả tại /account/returns. Đội kỹ thuật sẽ liên hệ trong 1–2 ngày làm việc.",
         sentAt: "2026-03-21T09:20:00.000Z",
         attachments: [
           {
-            id: "att-1001-1",
+            id: "att-1001-1a",
             url: "https://hanoicomputercdn.com/media/product/79001_man_hinh_dell_ultrasharp_u2424h_850x850_4.jpg",
-            name: "huong-dan-doi-tra.jpg",
+            name: "huong-dan-doi-tra-buoc-1.jpg",
+          },
+          {
+            id: "att-1001-1b",
+            url: "https://hanoicomputercdn.com/media/product/79001_man_hinh_dell_ultrasharp_u2424h_850x850_1.jpg",
+            name: "huong-dan-doi-tra-buoc-2.jpg",
+          },
+          {
+            id: "att-1001-1c",
+            url: "https://hanoicomputercdn.com/media/product/79001_man_hinh_dell_ultrasharp_u2424h_850x850_4.jpg",
+            name: "huong-dan-dong-goi.jpg",
           },
         ],
       },
@@ -105,6 +127,41 @@ export const SUPPORT_TICKETS: SupportTicket[] = [
           "Cảm ơn bạn đã phản hồi. Tôi đã xem hướng dẫn và đã điền form đổi/trả rồi. Nhờ bộ phận xử lý nhanh giúp tôi, tôi cần laptop để làm việc gấp. Cảm ơn nhiều!",
         sentAt: "2026-03-22T14:15:00.000Z",
       },
+      {
+        id: "msg-1001-4",
+        role: "staff",
+        content:
+          "Chào bạn, chúng tôi đã nhận được thông tin và chuyển sang bộ phận xử lý đổi trả. Dự kiến trong 2–3 ngày làm việc sẽ có cập nhật mới. Chúng tôi sẽ thông báo ngay khi có tiến triển. Cảm ơn bạn đã kiên nhẫn! Nếu có thắc mắc gì thêm, đừng ngần ngại liên hệ lại nhé.",
+        sentAt: "2026-03-22T14:15:00.000Z",
+      },
+      {
+        id: "msg-1001-5",
+        role: "customer",
+        content:
+          "Cảm ơn bạn đã phản hồi. Tôi đã xem hướng dẫn và đã điền form đổi/trả rồi. Nhờ bộ phận xử lý nhanh giúp tôi, tôi cần laptop để làm việc gấp. Cảm ơn nhiều!",
+        sentAt: "2026-03-22T14:15:00.000Z",
+      },
+      {
+        id: "msg-1001-6",
+        role: "staff",
+        content:
+          "Chào bạn, chúng tôi đã nhận được thông tin và chuyển sang bộ phận xử lý đổi trả. Dự kiến trong 2–3 ngày làm việc sẽ có cập nhật mới. Chúng tôi sẽ thông báo ngay khi có tiến triển. Cảm ơn bạn đã kiên nhẫn! Nếu có thắc mắc gì thêm, đừng ngần ngại liên hệ lại nhé.",
+        sentAt: "2026-03-22T14:15:00.000Z",
+      },
+      {
+        id: "msg-1001-7",
+        role: "customer",
+        content: 
+          "Cảm ơn bạn đã phản hồi. Tôi đã xem hướng dẫn và đã điền form đổi/trả rồi. Nhờ bộ phận xử lý nhanh giúp tôi, tôi cần laptop để làm việc gấp. Cảm ơn nhiều!",
+        sentAt: "2026-03-22T14:15:00.000Z",
+      },
+      {
+        id: "msg-1001-8",
+        role: "staff",
+        content:
+          "Chào bạn, chúng tôi đã nhận được thông tin và chuyển sang bộ phận xử lý đổi trả. Dự kiến trong 2–3 ngày làm việc sẽ có cập nhật mới. Chúng tôi sẽ thông báo ngay khi có tiến triển. Cảm ơn bạn đã kiên nhẫn! Nếu có thắc mắc gì thêm, đừng ngần ngại liên hệ lại nhé.",
+        sentAt: "2026-03-22T14:15:00.000Z",
+      }
     ],
   },
 
@@ -137,22 +194,48 @@ export const SUPPORT_TICKETS: SupportTicket[] = [
   },
 
   // CS-10003 — in_progress, "defective"
-  // 1 message: customer only, no attachments, awaiting first staff reply
+  // 3 messages with photo evidence from customer
   {
     id: "CS-10003",
     subject: "Tai nghe Sony WH-1000XM5 mất tiếng ở tai phải sau 2 tuần sử dụng",
     category: "defective",
     orderId: undefined,
     status: "in_progress",
-    createdAt: "2026-03-23T07:00:00.000Z",
-    updatedAt: "2026-03-23T07:00:00.000Z",
+    createdAt: "2026-03-22T07:00:00.000Z",
+    updatedAt: "2026-03-23T08:45:00.000Z",
     messages: [
       {
         id: "msg-1003-1",
         role: "customer",
         content:
           "Tôi mua tai nghe Sony WH-1000XM5 được khoảng 2 tuần thì tai phải bắt đầu bị mất tiếng, đặc biệt khi xoay vị trí. Tai trái vẫn hoạt động bình thường. Sản phẩm vẫn còn bảo hành, nhờ bộ phận hỗ trợ tư vấn cách xử lý ạ.",
-        sentAt: "2026-03-23T07:00:00.000Z",
+        sentAt: "2026-03-22T07:00:00.000Z",
+      },
+      {
+        id: "msg-1003-2",
+        role: "staff",
+        content:
+          "Chào bạn, để chúng tôi có thể hỗ trợ nhanh hơn, bạn vui lòng chụp ảnh sản phẩm (đặc biệt phần tai phải và cổng kết nối) và gửi lại cho chúng tôi nhé. Đồng thời cho biết bạn đang dùng tai nghe qua Bluetooth hay dây?",
+        sentAt: "2026-03-22T10:30:00.000Z",
+      },
+      {
+        id: "msg-1003-3",
+        role: "customer",
+        content:
+          "Tôi dùng qua Bluetooth. Đính kèm ảnh sản phẩm và ảnh cổng kết nối như yêu cầu.",
+        sentAt: "2026-03-23T08:45:00.000Z",
+        attachments: [
+          {
+            id: "att-1003-1",
+            url: "https://hanoicomputercdn.com/media/product/79001_man_hinh_dell_ultrasharp_u2424h_850x850_4.jpg",
+            name: "sony-wh1000xm5-tai-phai.jpg",
+          },
+          {
+            id: "att-1003-2",
+            url: "https://hanoicomputercdn.com/media/product/79001_man_hinh_dell_ultrasharp_u2424h_850x850_1.jpg",
+            name: "sony-wh1000xm5-cong-usb.jpg",
+          },
+        ],
       },
     ],
   },

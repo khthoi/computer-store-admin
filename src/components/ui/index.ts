@@ -65,3 +65,6 @@ export type { SideBannerProps } from "./SideBanner";
 
 export { ToastMessage } from "./Toast";
 export type { ToastMessageProps, ToastType, ToastPosition } from "./Toast";
+
+export { Lightbox } from "./Lightbox";
+export type { LightboxProps, LightboxItem } from "./Lightbox";

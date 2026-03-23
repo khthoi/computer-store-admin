@@ -187,6 +187,7 @@ const MOCK_PRODUCT: ProductDetail = {
 
   reviews: [
     {
+      // ── rv-001: 5 stars · single seller response ──────────────────────────
       id: "rv-001",
       authorName: "Nguyễn V*** T***",
       rating: 5,
@@ -194,15 +195,26 @@ const MOCK_PRODUCT: ProductDetail = {
       content:
         "Mình dùng laptop này để edit video 4K và design. Màn hình OLED thực sự rất đẹp, màu sắc cực kỳ chính xác. Hiệu năng mạnh, không bị giật lag dù chạy nhiều ứng dụng nặng cùng lúc. Pin dùng được cả ngày làm việc. Rất hài lòng với sản phẩm!",
       images: [
-        "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=300&q=70",
-        "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&q=70",
+        "https://hanoicomputercdn.com/media/product/91358_laptop_asus_gaming_rog_strix_g615jpr_s5107w_0010_layer_2.jpg",
+        "https://hanoicomputercdn.com/media/product/91358_laptop_asus_gaming_rog_strix_g615jpr_s5107w_0009_layer_3.jpg",
       ],
       purchasedVariant: "RAM 16GB / SSD 512GB",
       helpfulCount: 24,
       createdAt: "2024-11-15T08:30:00Z",
       isVerifiedPurchase: true,
+      responses: [
+        {
+          id: "resp-001-1",
+          authorName: "TechStore Official",
+          role: "seller",
+          content:
+            "Cảm ơn bạn rất nhiều vì đánh giá tuyệt vời! Chúng tôi rất vui khi Dell XPS 15 đáp ứng tốt nhu cầu sáng tạo của bạn. Nếu cần hỗ trợ kỹ thuật hoặc tư vấn nâng cấp, đừng ngần ngại liên hệ với chúng tôi nhé!",
+          createdAt: "2024-11-16T09:00:00Z",
+        },
+      ],
     },
     {
+      // ── rv-002: 4 stars · no response (common case) ───────────────────────
       id: "rv-002",
       authorName: "Trần T*** M***",
       rating: 4,
@@ -214,8 +226,10 @@ const MOCK_PRODUCT: ProductDetail = {
       helpfulCount: 11,
       createdAt: "2024-10-22T14:15:00Z",
       isVerifiedPurchase: true,
+      // No responses — intentional: demonstrates the "no response" case
     },
     {
+      // ── rv-003: 3 stars · two responses (seller + follow-up from support) ─
       id: "rv-003",
       authorName: "Lê H*** A***",
       rating: 3,
@@ -223,12 +237,30 @@ const MOCK_PRODUCT: ProductDetail = {
       content:
         "Phần màn hình OLED là điểm sáng lớn nhất của máy, thực sự rất đẹp. Nhưng với mức giá này mình kỳ vọng thêm cổng kết nối và RAM cần tháo lắp được dễ dàng hơn. Bàn phím gõ dễ chịu. Giao hàng nhanh, đóng gói cẩn thận.",
       images: [
-        "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=300&q=70",
+        "https://hanoicomputercdn.com/media/product/91358_laptop_asus_gaming_rog_strix_g615jpr_s5107w_0005_layer_7.jpg",
       ],
       purchasedVariant: "RAM 16GB / SSD 512GB",
       helpfulCount: 7,
       createdAt: "2024-09-10T10:00:00Z",
       isVerifiedPurchase: true,
+      responses: [
+        {
+          id: "resp-003-1",
+          authorName: "TechStore Official",
+          role: "seller",
+          content:
+            "Cảm ơn bạn đã chia sẻ phản hồi chi tiết! Chúng tôi ghi nhận góp ý về cổng kết nối và thiết kế RAM. Dell XPS 15 sử dụng RAM hàn liền để tối ưu độ mỏng và hiệu suất — đây là đánh đổi về thiết kế. Chúng tôi sẽ chuyển phản hồi này đến đội ngũ sản phẩm.",
+          createdAt: "2024-09-11T10:30:00Z",
+        },
+        {
+          id: "resp-003-2",
+          authorName: "Nguyễn Hỗ Trợ",
+          role: "support",
+          content:
+            "Bạn ơi, nếu cần tư vấn thêm về cấu hình phù hợp hoặc muốn xem các dòng máy có khả năng nâng cấp RAM, đội CSKH sẵn sàng hỗ trợ qua chat hoặc hotline 1800-xxxx (miễn phí). Chúc bạn sử dụng vui!",
+          createdAt: "2024-09-11T14:05:00Z",
+        },
+      ],
     },
   ],
 

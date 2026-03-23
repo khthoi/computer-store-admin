@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PlayIcon, CheckCircleIcon, XCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { Modal } from "@/src/components/ui/Modal";
+import { Lightbox, type LightboxItem } from "@/src/components/ui/Lightbox";
 import { Tooltip } from "@/src/components/ui/Tooltip";
 import { ReturnStatusBadge } from "@/src/components/account/returns/ReturnStatusBadge";
 import {
@@ -242,7 +243,18 @@ export function ReturnRequestDetailCard({
   request,
   order,
 }: ReturnRequestDetailCardProps) {
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  // Images and videos are handled separately:
+  // - Images → Lightbox (full navigation between all image evidence)
+  // - Videos → Modal (Lightbox is image-only)
+  const imageUrls = request.evidenceUrls.filter((u) => !isVideo(u));
+  const lightboxItems: LightboxItem[] = imageUrls.map((src, i) => ({
+    key: `evidence-img-${i}`,
+    src,
+    alt: `Bằng chứng ${i + 1}`,
+  }));
+
+  const [lightboxImageIndex, setLightboxImageIndex] = useState<number | null>(null);
+  const [lightboxVideoUrl, setLightboxVideoUrl] = useState<string | null>(null);
 
   const resolvedReason =
     RETURN_REASON_OPTIONS.find((opt) => opt.value === request.reason)?.label ??
@@ -370,7 +382,14 @@ export function ReturnRequestDetailCard({
               <button
                 key={idx}
                 type="button"
-                onClick={() => setLightboxUrl(url)}
+                onClick={() => {
+                  if (isVideo(url)) {
+                    setLightboxVideoUrl(url);
+                  } else {
+                    // Find the index within image-only array for correct Lightbox navigation
+                    setLightboxImageIndex(imageUrls.indexOf(url));
+                  }
+                }}
                 className="relative aspect-square overflow-hidden rounded-lg border border-secondary-200 bg-secondary-100 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 aria-label={`Xem bằng chứng ${idx + 1}`}
               >
@@ -454,30 +473,31 @@ export function ReturnRequestDetailCard({
         </Link>
       </div>
 
-      {/* ── Lightbox modal ───────────────────────────────────────────────────── */}
+      {/* ── Image lightbox — full navigation across all image evidence ─────── */}
+      {lightboxImageIndex !== null && (
+        <Lightbox
+          items={lightboxItems}
+          activeIndex={lightboxImageIndex}
+          onClose={() => setLightboxImageIndex(null)}
+          onNavigate={setLightboxImageIndex}
+        />
+      )}
+
+      {/* ── Video modal — Lightbox is image-only; videos use Modal ───────── */}
       <Modal
-        isOpen={lightboxUrl !== null}
-        onClose={() => setLightboxUrl(null)}
+        isOpen={lightboxVideoUrl !== null}
+        onClose={() => setLightboxVideoUrl(null)}
         size="xl"
         animated
         hideCloseButton={false}
       >
-        {lightboxUrl && (
+        {lightboxVideoUrl && (
           <div className="flex items-center justify-center">
-            {isVideo(lightboxUrl) ? (
-              <video
-                src={lightboxUrl}
-                controls
-                className="max-h-[70vh] w-full rounded"
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={lightboxUrl}
-                alt="Bằng chứng"
-                className="max-h-[70vh] w-full rounded object-contain"
-              />
-            )}
+            <video
+              src={lightboxVideoUrl}
+              controls
+              className="max-h-[70vh] w-full rounded"
+            />
           </div>
         )}
       </Modal>

@@ -13,7 +13,7 @@ import {
   PhoneIcon,
 } from "@heroicons/react/24/solid";
 
-import { HeroSlider } from "@/src/components/home/HeroBanner";
+import { HeroBanner } from "@/src/components/home/HeroBanner";
 import { CategorySlider } from "@/src/components/home/CategorySlider";
 import type { ProductCardProps } from "@/src/components/product/ProductCard";
 import { ProductCarousel } from "@/src/components/product/ProductCarousel";
@@ -908,7 +908,7 @@ function FlashSaleSection() {
 export default function HomePage() {
   return (
     <>
-      <HeroSlider />
+      <HeroBanner />
       <TrustBadges />
       <CategorySlider />
       <FlashSaleSection />
