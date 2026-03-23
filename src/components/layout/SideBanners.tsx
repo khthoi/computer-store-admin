@@ -12,7 +12,7 @@ const FOOTER_GAP = 24;  // minimum gap between banner bottom and footer top (px)
 const LEFT_BANNER = {
   image: "/side-banner/side-banner1.jpg",
   alt: "Khuyến mãi đặc biệt",
-  href: "/khuyen-mai",
+  href: "/promotions",
 };
 
 const RIGHT_BANNER = {

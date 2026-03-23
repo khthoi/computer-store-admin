@@ -9,6 +9,7 @@ import {
   ShoppingBagIcon,
   HeartIcon,
   ArrowUturnLeftIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import {
   UserIcon as UserIconSolid,
@@ -17,6 +18,7 @@ import {
   ShoppingBagIcon as ShoppingBagIconSolid,
   HeartIcon as HeartIconSolid,
   ArrowUturnLeftIcon as ArrowUturnLeftIconSolid,
+  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
 } from "@heroicons/react/24/solid";
 import { Avatar } from "@/src/components/ui/Avatar";
 import { Tabs } from "@/src/components/ui/Tabs";
@@ -74,6 +76,13 @@ const NAV_ITEMS: NavItem[] = [
     tabValue: "wishlist",
     icon: <HeartIcon className="h-5 w-5" />,
     iconActive: <HeartIconSolid className="h-5 w-5" />,
+  },
+  {
+    href: "/account/support",
+    label: "Hỗ trợ",
+    tabValue: "support",
+    icon: <ChatBubbleLeftRightIcon className="h-5 w-5" />,
+    iconActive: <ChatBubbleLeftRightIconSolid className="h-5 w-5" />,
   },
 ];
 

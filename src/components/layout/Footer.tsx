@@ -113,7 +113,7 @@ export function Footer() {
     <footer className="bg-secondary-900 text-secondary-400">
 
       {/* ── Main footer grid ── */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <div className="mx-auto max-w-[1450px] flex px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 gap-y-10 gap-x-10 sm:grid-cols-2 lg:grid-cols-4">
 
           {/* ── Column 1: Store info ── */}
@@ -235,7 +235,7 @@ export function Footer() {
 
       {/* ── Bottom strip ── */}
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-5">
+        <div className="mx-auto max-w-[1450px] px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
 
             {/* Copyright + legal */}

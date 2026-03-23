@@ -178,7 +178,7 @@ export function Navbar({
         .filter(Boolean)
         .join(" ")}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
 
         {/* ── Logo ── */}
         <div className="shrink-0">{logo}</div>

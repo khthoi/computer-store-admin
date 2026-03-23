@@ -7,7 +7,7 @@ import Link from "next/link";
 const MAIN_BANNER = {
   src: "/image-slide/slide01.jpg",
   alt: "Khuyến mãi tháng 3 — Giảm đến 30%",
-  href: "/khuyen-mai",
+  href: "/promotions",
 };
 
 const PROMO_BANNERS = [
