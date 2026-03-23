@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ orderId: string }>;
-  searchParams: Promise<{ demo?: string }>;
+  searchParams: Promise<{ demo?: string; action?: string }>;
 }
 
 /**
@@ -24,7 +24,7 @@ interface Props {
  */
 export default async function OrderDetailPage({ params, searchParams }: Props) {
   const { orderId } = await params;
-  const { demo } = await searchParams;
+  const { demo, action } = await searchParams;
 
   const order =
     demo === "shipping"
@@ -36,5 +36,10 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
   // In a real app: fetch order by orderId from the API
   void orderId;
 
-  return <OrderDetailPageInner order={order} />;
+  return (
+    <OrderDetailPageInner
+      order={order}
+      initialReviewOpen={action === "review"}
+    />
+  );
 }

@@ -15,6 +15,8 @@ import { OrderCancelModal } from "@/src/components/account/orders/OrderCancelMod
 import { ReturnExpiredModal } from "@/src/components/account/orders/ReturnExpiredModal";
 import { ReviewExpiredModal } from "@/src/components/account/orders/ReviewExpiredModal";
 import { OrderReviewViewerModal } from "@/src/components/account/orders/OrderReviewViewerModal";
+import { RETURN_REQUESTS } from "@/src/app/(storefront)/account/returns/_mock_data";
+import { canOrderBeReturned } from "@/src/lib/returns/eligibility";
 import type { OrderSummary } from "@/src/app/(storefront)/account/orders/_mock_data";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -90,9 +92,20 @@ export function OrderCard({ order, onCancelSuccess }: OrderCardProps) {
   // Delivered orders with a confirmed delivery date get time-gated action buttons
   const hasDeliveredAt =
     order.status === "delivered" && !!order.deliveredAt;
-  const returnWithinWindow = isWithinDeliveryWindow(order.deliveredAt, 7);
-  const reviewWithinWindow = isWithinDeliveryWindow(order.deliveredAt, 15);
+  const returnWithinWindow = isWithinDeliveryWindow(
+    order.deliveredAt,
+    order.returnWindowDays ?? 7
+  );
+  const reviewWithinWindow = isWithinDeliveryWindow(
+    order.deliveredAt,
+    order.reviewWindowDays ?? 15
+  );
   const hasReview = !!order.review;
+
+  // Per-item eligibility: check if there's anything left to return
+  const orderRequests = RETURN_REQUESTS.filter((r) => r.orderId === order.id);
+  const hasExistingRequests = orderRequests.length > 0;
+  const hasEligibleItems = canOrderBeReturned(order, orderRequests);
 
   const hasActions = canCancel || hasDeliveredAt;
 
@@ -204,14 +217,29 @@ export function OrderCard({ order, onCancelSuccess }: OrderCardProps) {
               {/* ── Return ────────────────────────────────────────────── */}
               {hasDeliveredAt && (
                 returnWithinWindow ? (
-                  <Link
-                    href={`/account/orders/${order.id}/returns/new`}
-                    className={LINK_BTN_GHOST}
-                  >
-                    <ArrowUturnLeftIcon className="h-4 w-4" />
-                    Đổi/Trả
-                  </Link>
+                  hasEligibleItems ? (
+                    // Active: within window + eligible items remain
+                    <Link
+                      href={`/account/orders/${order.id}/returns/new`}
+                      className={LINK_BTN_GHOST}
+                    >
+                      <ArrowUturnLeftIcon className="h-4 w-4" />
+                      Đổi/Trả
+                    </Link>
+                  ) : (
+                    // Disabled: within window but all items already in active requests
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled
+                      title="Tất cả sản phẩm đã được yêu cầu trả hàng"
+                    >
+                      <ArrowUturnLeftIcon className="h-4 w-4" />
+                      Đổi/Trả
+                    </Button>
+                  )
                 ) : (
+                  // Expired window
                   <Button
                     variant="ghost"
                     size="sm"
@@ -253,6 +281,17 @@ export function OrderCard({ order, onCancelSuccess }: OrderCardProps) {
                     Đánh giá
                   </Button>
                 )
+              )}
+
+              {/* ── View existing return requests ──────────────────────── */}
+              {hasDeliveredAt && hasExistingRequests && (
+                <Link
+                  href="/account/returns"
+                  className={LINK_BTN_GHOST}
+                >
+                  <ArrowUturnLeftIcon className="h-4 w-4" />
+                  Xem yêu cầu trả hàng
+                </Link>
               )}
             </div>
           )}

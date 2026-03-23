@@ -5,11 +5,11 @@ import { InformationCircleIcon, PlayIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/src/components/ui/Button";
 import {
   RETURN_REASON_OPTIONS,
-} from "@/src/app/(storefront)/account/returns/new/_mock_data";
+} from "@/src/app/(storefront)/account/returns/_mock_data";
 import type {
-  ReturnableOrder,
   WizardState,
-} from "@/src/app/(storefront)/account/returns/new/_mock_data";
+} from "@/src/app/(storefront)/account/returns/_mock_data";
+import type { OrderSummary } from "@/src/app/(storefront)/account/orders/_mock_data";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ function formatDate(iso: string): string {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Step3Props {
-  order: ReturnableOrder;
+  order: OrderSummary;
   state: WizardState;
   isSubmitting: boolean;
   onSubmit: () => void;

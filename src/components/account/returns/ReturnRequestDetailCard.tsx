@@ -5,15 +5,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { PlayIcon, CheckCircleIcon, XCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 import { Modal } from "@/src/components/ui/Modal";
+import { Tooltip } from "@/src/components/ui/Tooltip";
 import { ReturnStatusBadge } from "@/src/components/account/returns/ReturnStatusBadge";
 import {
   RETURN_REASON_OPTIONS,
-} from "@/src/app/(storefront)/account/returns/new/_mock_data";
+} from "@/src/app/(storefront)/account/returns/_mock_data";
 import type {
-  SubmittedReturnRequest,
-  ReturnableOrder,
+  ReturnRequest,
   ReturnStatus,
-} from "@/src/app/(storefront)/account/returns/new/_mock_data";
+} from "@/src/app/(storefront)/account/returns/_mock_data";
+import type { OrderSummary } from "@/src/app/(storefront)/account/orders/_mock_data";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,7 +87,7 @@ function getStepStyle(
 }
 
 interface StatusTimelineProps {
-  request: SubmittedReturnRequest;
+  request: ReturnRequest;
 }
 
 function StatusTimeline({ request }: StatusTimelineProps) {
@@ -226,8 +227,8 @@ function StatusTimeline({ request }: StatusTimelineProps) {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ReturnRequestDetailCardProps {
-  request: SubmittedReturnRequest;
-  order: ReturnableOrder;
+  request: ReturnRequest;
+  order: OrderSummary;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -272,7 +273,14 @@ export function ReturnRequestDetailCard({
       <div className="rounded-xl border border-secondary-200 p-4">
         <p className="text-sm text-secondary-600">
           Đơn hàng:{" "}
-          <span className="font-semibold text-secondary-900">{order.id}</span>
+          <Tooltip content="Xem chi tiết đơn hàng" placement="top">
+            <a
+              href={`/account/orders/${order.id}`}
+              className="font-semibold text-secondary-900 hover:text-primary-600 hover:underline underline-offset-2 transition-colors duration-150"
+            >
+              {order.id}
+            </a>
+          </Tooltip>
         </p>
         <p className="mt-1 text-sm text-secondary-600">
           Ngày đặt:{" "}
@@ -288,7 +296,7 @@ export function ReturnRequestDetailCard({
           Sản phẩm trả hàng
         </p>
         <div className="flex flex-col gap-2">
-          {request.selectedItems.map((si) => {
+          {request.items.map((si) => {
             const item = order.items.find((i) => i.id === si.itemId);
             if (!item) return null;
             return (

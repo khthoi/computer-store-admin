@@ -15,6 +15,7 @@ import { OrderStatusBadge } from "@/src/components/account/orders/OrderStatusBad
 import { OrderTimeline } from "@/src/components/account/orders/OrderTimeline";
 import { OrderShippingCard } from "@/src/components/account/orders/OrderShippingCard";
 import { OrderCancelModal } from "@/src/components/account/orders/OrderCancelModal";
+import { OrderReviewModal } from "@/src/components/account/orders/OrderReviewModal";
 import { ToastMessage } from "@/src/components/ui/Toast";
 import type {
   OrderDetail,
@@ -207,6 +208,7 @@ function isWithinReturnWindow(placedAt: string, windowDays: number): boolean {
 
 export interface OrderDetailPageInnerProps {
   order: OrderDetail;
+  initialReviewOpen?: boolean;
 }
 
 /**
@@ -219,7 +221,10 @@ export interface OrderDetailPageInnerProps {
  * Both row-2 cards always have equal height regardless of content length,
  * because they share the same CSS grid row (align-items: stretch by default).
  */
-export function OrderDetailPageInner({ order }: OrderDetailPageInnerProps) {
+export function OrderDetailPageInner({
+  order,
+  initialReviewOpen = false,
+}: OrderDetailPageInnerProps) {
   // ── Optimistic cancel state ──────────────────────────────────────────────
   const [localStatus, setLocalStatus] = useState<OrderStatus>(order.status);
   const [localTimeline, setLocalTimeline] = useState<TimelineEvent[]>(order.timeline);
@@ -229,6 +234,8 @@ export function OrderDetailPageInner({ order }: OrderDetailPageInnerProps) {
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("Đơn hàng đã được hủy thành công.");
+  const [reviewModalOpen, setReviewModalOpen] = useState(initialReviewOpen);
 
   const canCancel = localStatus === "pending";
   const canReturn =
@@ -245,6 +252,7 @@ export function OrderDetailPageInner({ order }: OrderDetailPageInnerProps) {
         setLocalTimeline(buildCancelledTimeline(order.timeline, reason));
         setLocalCancelReason(reason);
         setCancelModalOpen(false);
+        setToastMessage("Đơn hàng đã được hủy thành công.");
         setToastVisible(true);
       } finally {
         setIsCancelling(false);
@@ -312,7 +320,11 @@ export function OrderDetailPageInner({ order }: OrderDetailPageInnerProps) {
             </Button>
           )}
           {canReview && (
-            <Button variant="primary" size="sm">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setReviewModalOpen(true)}
+            >
               Đánh giá sản phẩm
             </Button>
           )}
@@ -378,11 +390,23 @@ export function OrderDetailPageInner({ order }: OrderDetailPageInnerProps) {
         isLoading={isCancelling}
       />
 
-      {/* ── Cancellation success toast ───────────────────────────────────── */}
+      {/* ── Review modal ─────────────────────────────────────────────────── */}
+      <OrderReviewModal
+        isOpen={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        order={order}
+        onAllSubmitted={() => {
+          setReviewModalOpen(false);
+          setToastMessage("Cảm ơn! Đánh giá của bạn đã được ghi nhận.");
+          setToastVisible(true);
+        }}
+      />
+
+      {/* ── Success toast ─────────────────────────────────────────────────── */}
       <ToastMessage
         isVisible={toastVisible}
         type="success"
-        message="Đơn hàng đã được hủy thành công."
+        message={toastMessage}
         position="top-right"
         duration={4000}
         onClose={() => setToastVisible(false)}

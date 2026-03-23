@@ -29,6 +29,17 @@ export interface TimelineEvent {
   completed: boolean;
 }
 
+export interface ProductReview {
+  itemId: string;
+  /** 1–5 */
+  rating: number;
+  title?: string;
+  comment: string;
+  /** ISO date string */
+  reviewedAt: string;
+  status: "pending" | "approved";
+}
+
 export interface OrderDetailItem {
   id: string;
   name: string;
@@ -40,6 +51,7 @@ export interface OrderDetailItem {
   unitPrice: number;
   subtotal: number;
   originalUnitPrice?: number; // present when item was discounted
+  review?: ProductReview;
 }
 
 export interface ShippingInfo {
@@ -497,6 +509,16 @@ export const MOCK_ORDER_DELIVERED: OrderDetail = {
       quantity: 1,
       unitPrice: 3_290_000,
       subtotal: 3_290_000,
+      // Pre-existing approved review — card renders in success state immediately
+      review: {
+        itemId: "kb-keychron-q3__switch-brown__layout-tkl",
+        rating: 5,
+        title: "Bàn phím cơ xuất sắc",
+        comment:
+          "Chất lượng build rất tốt, gõ êm và thoải mái. Công tắc Brown vừa phải, phù hợp cả văn phòng lẫn gaming. Hoàn toàn xứng đáng với giá tiền.",
+        reviewedAt: "2026-03-22T10:00:00.000Z",
+        status: "approved",
+      },
     },
     {
       id: "mouse-logitech-g502x__color-white",

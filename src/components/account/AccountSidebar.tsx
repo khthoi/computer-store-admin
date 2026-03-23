@@ -8,6 +8,7 @@ import {
   StarIcon,
   ShoppingBagIcon,
   HeartIcon,
+  ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
 import {
   UserIcon as UserIconSolid,
@@ -15,6 +16,7 @@ import {
   StarIcon as StarIconSolid,
   ShoppingBagIcon as ShoppingBagIconSolid,
   HeartIcon as HeartIconSolid,
+  ArrowUturnLeftIcon as ArrowUturnLeftIconSolid,
 } from "@heroicons/react/24/solid";
 import { Avatar } from "@/src/components/ui/Avatar";
 import { Tabs } from "@/src/components/ui/Tabs";
@@ -58,6 +60,13 @@ const NAV_ITEMS: NavItem[] = [
     tabValue: "orders",
     icon: <ShoppingBagIcon className="h-5 w-5" />,
     iconActive: <ShoppingBagIconSolid className="h-5 w-5" />,
+  },
+  {
+    href: "/account/returns",
+    label: "Đổi/Trả hàng",
+    tabValue: "returns",
+    icon: <ArrowUturnLeftIcon className="h-5 w-5" />,
+    iconActive: <ArrowUturnLeftIconSolid className="h-5 w-5" />,
   },
   {
     href: "/account/wishlist",

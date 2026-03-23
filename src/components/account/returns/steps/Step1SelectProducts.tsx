@@ -5,10 +5,13 @@ import { Checkbox } from "@/src/components/ui/Checkbox";
 import { Input } from "@/src/components/ui/Input";
 import { Button } from "@/src/components/ui/Button";
 import type {
-  ReturnableOrder,
-  SelectedItem,
+  ReturnRequestItem,
   Step1Errors,
-} from "@/src/app/(storefront)/account/returns/new/_mock_data";
+} from "@/src/app/(storefront)/account/returns/_mock_data";
+import type {
+  OrderSummary,
+  OrderItem,
+} from "@/src/app/(storefront)/account/orders/_mock_data";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -23,9 +26,11 @@ function formatDate(iso: string): string {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Step1Props {
-  order: ReturnableOrder;
-  selectedItems: SelectedItem[];
-  onChange: (selectedItems: SelectedItem[]) => void;
+  order: OrderSummary;
+  /** Pre-filtered: only the items the user is still eligible to return */
+  eligibleItems: OrderItem[];
+  selectedItems: ReturnRequestItem[];
+  onChange: (selectedItems: ReturnRequestItem[]) => void;
   onNext: () => void;
   errors: Step1Errors;
 }
@@ -34,6 +39,7 @@ interface Step1Props {
 
 export function Step1SelectProducts({
   order,
+  eligibleItems,
   selectedItems,
   onChange,
   onNext,
@@ -50,9 +56,9 @@ export function Step1SelectProducts({
   }
 
   function handleQtyChange(itemId: string, rawValue: number) {
-    const item = order.items.find((i) => i.id === itemId);
+    const item = eligibleItems.find((i) => i.id === itemId);
     if (!item) return;
-    const qty = Math.max(1, Math.min(Math.floor(rawValue || 1), item.orderedQuantity));
+    const qty = Math.max(1, Math.min(Math.floor(rawValue || 1), item.quantity));
     onChange(
       selectedItems.map((si) =>
         si.itemId === itemId ? { ...si, returnQuantity: qty } : si
@@ -78,14 +84,14 @@ export function Step1SelectProducts({
         </p>
       </div>
 
-      {/* ── Product list ────────────────────────────────────────────────────── */}
+      {/* ── Product list (eligible items only) ──────────────────────────────── */}
       <div>
         <p className="mb-3 text-sm font-semibold text-secondary-700">
           Sản phẩm trong đơn hàng
         </p>
 
         <div className="flex flex-col gap-2">
-          {order.items.map((item) => {
+          {eligibleItems.map((item) => {
             const isChecked = selectedItems.some((si) => si.itemId === item.id);
             const currentSelected = selectedItems.find(
               (si) => si.itemId === item.id
@@ -144,7 +150,7 @@ export function Step1SelectProducts({
                         type="number"
                         size="sm"
                         min={1}
-                        max={item.orderedQuantity}
+                        max={item.quantity}
                         value={String(currentSelected?.returnQuantity ?? 1)}
                         onChange={(e) =>
                           handleQtyChange(item.id, Number(e.target.value))
@@ -152,7 +158,7 @@ export function Step1SelectProducts({
                       />
                     </div>
                     <span className="text-xs text-secondary-400">
-                      / {item.orderedQuantity}
+                      / {item.quantity}
                     </span>
                   </div>
                 )}

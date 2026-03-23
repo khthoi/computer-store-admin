@@ -8,12 +8,15 @@ import { Step1SelectProducts } from "./steps/Step1SelectProducts";
 import { Step2ReasonDetails } from "./steps/Step2ReasonDetails";
 import { Step3Confirmation } from "./steps/Step3Confirmation";
 import type {
-  ReturnableOrder,
-  SelectedItem,
+  ReturnRequestItem,
   WizardState,
   Step1Errors,
   Step2Errors,
-} from "@/src/app/(storefront)/account/returns/new/_mock_data";
+} from "@/src/app/(storefront)/account/returns/_mock_data";
+import type {
+  OrderSummary,
+  OrderItem,
+} from "@/src/app/(storefront)/account/orders/_mock_data";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -34,7 +37,9 @@ const INITIAL_STATE: WizardState = {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ReturnRequestPageInnerProps {
-  order: ReturnableOrder;
+  order: OrderSummary;
+  /** Only the items the user may still return (pre-filtered for eligibility) */
+  eligibleItems: OrderItem[];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -47,6 +52,7 @@ export interface ReturnRequestPageInnerProps {
  */
 export function ReturnRequestPageInner({
   order,
+  eligibleItems,
 }: ReturnRequestPageInnerProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitted, setSubmitted] = useState(false);
@@ -61,7 +67,7 @@ export function ReturnRequestPageInner({
 
   // ── State patchers ────────────────────────────────────────────────────────
 
-  const handleStep1Change = useCallback((selectedItems: SelectedItem[]) => {
+  const handleStep1Change = useCallback((selectedItems: ReturnRequestItem[]) => {
     setWizardState((prev) => ({ ...prev, selectedItems }));
   }, []);
 
@@ -89,7 +95,7 @@ export function ReturnRequestPageInner({
         return (
           !item ||
           si.returnQuantity < 1 ||
-          si.returnQuantity > item.orderedQuantity
+          si.returnQuantity > item.quantity
         );
       });
       if (hasQtyError) {
@@ -159,7 +165,7 @@ export function ReturnRequestPageInner({
   if (submitted) {
     return (
       <div className="rounded-2xl border border-secondary-200 bg-white">
-        <ReturnSuccessCard returnRequestId={returnRequestId} orderId={order.id} />
+        <ReturnSuccessCard returnRequestId={returnRequestId} />
       </div>
     );
   }
@@ -176,6 +182,7 @@ export function ReturnRequestPageInner({
       {step === 1 && (
         <Step1SelectProducts
           order={order}
+          eligibleItems={eligibleItems}
           selectedItems={wizardState.selectedItems}
           onChange={handleStep1Change}
           onNext={handleNextFromStep1}

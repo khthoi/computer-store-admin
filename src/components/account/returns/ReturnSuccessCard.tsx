@@ -4,10 +4,8 @@ import { CheckCircleIcon } from "@heroicons/react/24/solid";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ReturnSuccessCardProps {
-  /** e.g. "YC-284731" — displayed to the user */
+  /** e.g. "YC-284731" — displayed to the user and used in the tracking link */
   returnRequestId: string;
-  /** e.g. "DH-20555" — used for the "Theo dõi yêu cầu" link */
-  orderId: string;
 }
 
 // ─── Style helpers ────────────────────────────────────────────────────────────
@@ -23,7 +21,7 @@ const LINK_PRIMARY_MD =
  * ReturnSuccessCard — shown after a return request is submitted successfully.
  * Displays the generated request ID and navigation links.
  */
-export function ReturnSuccessCard({ returnRequestId, orderId }: ReturnSuccessCardProps) {
+export function ReturnSuccessCard({ returnRequestId }: ReturnSuccessCardProps) {
   return (
     <div className="flex flex-col items-center gap-4 py-20 px-6 text-center">
       {/* Icon */}
@@ -52,16 +50,16 @@ export function ReturnSuccessCard({ returnRequestId, orderId }: ReturnSuccessCar
       </p>
 
       {/* Primary CTA */}
-      <Link href={`/account/orders/returns/${orderId}`} className={LINK_PRIMARY_MD}>
+      <Link href={`/account/returns/${returnRequestId}`} className={LINK_PRIMARY_MD}>
         Theo dõi yêu cầu
       </Link>
 
       {/* Secondary link */}
       <Link
-        href="/account/orders"
+        href="/account/returns"
         className="text-sm text-primary-600 underline underline-offset-2 hover:text-primary-700"
       >
-        Về trang đơn hàng
+        Tất cả yêu cầu đổi/trả
       </Link>
     </div>
   );
