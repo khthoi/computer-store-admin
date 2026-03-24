@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/src/components/layout/Header";
 import { Footer } from "@/src/components/layout/Footer";
-import { SideBanners } from "@/src/components/layout/SideBanners";
+import { SideBannersConditional } from "@/src/components/layout/SideBannersConditional";
+import { ConnectedHeader } from "@/src/components/layout/ConnectedHeader";
+import { Providers } from "./providers";
 
 /**
  * CUSTOMER STOREFRONT — Root Layout
@@ -49,38 +50,27 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased bg-secondary-50">
-        {/*
-         * Header — sticky top bar + main header + category navbar.
-         * Pass cartCount and user from your auth/cart context here
-         * once those are wired up, e.g.:
-         *   cartCount={session?.cartCount}
-         *   user={session?.user ?? null}
-         */}
-        <Header cartCount={2} wishlistCount={2} compareCount={2} user={null} />
+        <Providers>
+          {/* ConnectedHeader reads from AuthProvider + CartProvider context */}
+          <ConnectedHeader />
 
-        {/*
-         * 3-column grid at 2xl+ (≥ 1536 px):
-         *   [240px side banner] [1fr main content] [240px side banner]
-         *
-         * SideBanners renders two <aside> fragments with explicit col-start-1
-         * and col-start-3 so CSS Grid places them correctly despite DOM order.
-         * <main> takes col-start-2 (the 1fr center column).
-         *
-         * Below 2xl: SideBanners children are hidden (display:none), the grid
-         * declaration is inactive, and <main> fills the full viewport width.
-         */}
-        <div className="2xl:grid 2xl:grid-cols-[120px_1fr_120px]">
-          <SideBanners />
+          {/*
+           * 3-column grid at 2xl+ (≥ 1536 px):
+           *   [240px side banner] [1fr main content] [240px side banner]
+           */}
+          <div className="2xl:grid 2xl:grid-cols-[120px_1fr_120px]">
+            <SideBannersConditional />
 
-          <main
-            id="main-content"
-            className="min-h-[calc(100vh-theme(spacing.40))] 2xl:col-start-2 min-w-0"
-          >
-            {children}
-          </main>
-        </div>
+            <main
+              id="main-content"
+              className="min-h-[calc(100vh-theme(spacing.40))] 2xl:col-start-2 min-w-0"
+            >
+              {children}
+            </main>
+          </div>
 
-        <Footer />
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

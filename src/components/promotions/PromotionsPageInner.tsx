@@ -26,7 +26,7 @@ export interface PromotionsPageInnerProps {
  * PromotionsPageInner — client root for /promotions.
  *
  * Layout sections (top to bottom):
- *  1. Hero banner + 4 sub-banners (mirrors HeroBanner on homepage)
+ *  1. PromotionHeroBanner — asymmetric hero + sub-banners (owns its own data)
  *  2. Flash Sale section (countdown + product carousel)
  *  3. Deals by category (line tab bar + per-category carousel)
  */

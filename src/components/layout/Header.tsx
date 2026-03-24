@@ -38,6 +38,8 @@ export interface HeaderProps {
   compareCount?: number;
   /** Authenticated user; null/undefined shows Sign In link */
   user?: HeaderUser | null;
+  /** Called when the user clicks "Đăng xuất" in the user menu */
+  onLogout?: () => void;
 }
 
 // ─── TopBar ───────────────────────────────────────────────────────────────────
@@ -80,9 +82,9 @@ function TopBar() {
             Đơn hàng của tôi
           </a>
           <span className="text-primary-400" aria-hidden="true">|</span>
-          <a href="/auth/login" className="text-primary-100 hover:text-white transition-colors">Đăng nhập</a>
+          <a href="/login" className="text-primary-100 hover:text-white transition-colors">Đăng nhập</a>
           <span className="text-primary-400" aria-hidden="true">/</span>
-          <a href="/auth/register" className="text-primary-100 hover:text-white transition-colors">Đăng ký</a>
+          <a href="/register" className="text-primary-100 hover:text-white transition-colors">Đăng ký</a>
         </nav>
       </div>
     </div>
@@ -214,7 +216,9 @@ function ActionIcons({
   user = null,
   compareCount = 0,
   compact = false,
-}: Pick<HeaderProps, "cartCount" | "wishlistCount" | "compareCount" | "user"> & { compact?: boolean }) {
+  onLogout,
+}: Pick<HeaderProps, "cartCount" | "wishlistCount" | "compareCount" | "user" | "onLogout"> & { compact?: boolean }) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const firstName = user?.name.split(" ").pop() ?? "";
 
   return (
@@ -275,16 +279,83 @@ function ActionIcons({
       </Link>
 
       {/* Account — always visible; critical action */}
-      <Link
-        href={user ? "/account" : "/auth/login"}
-        aria-label={user ? `Tài khoản: ${user.name}` : "Đăng nhập"}
-        className="hidden sm:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
-      >
-        <UserIcon className="w-5 h-5" />
-        <span className="text-[10px] font-medium leading-none max-w-[56px] truncate">
-          {user ? firstName : "Tài khoản"}
-        </span>
-      </Link>
+      {user ? (
+        <div className="relative hidden sm:block">
+          <button
+            type="button"
+            onClick={() => setUserMenuOpen((v) => !v)}
+            aria-label={`Tài khoản: ${user.name}`}
+            aria-expanded={userMenuOpen}
+            aria-haspopup="true"
+            className="flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded"
+          >
+            <UserIcon className="w-5 h-5" />
+            <span className="text-[10px] font-medium leading-none max-w-[56px] truncate">
+              {firstName}
+            </span>
+          </button>
+
+          {/* User dropdown */}
+          {userMenuOpen && (
+            <>
+              {/* Click-outside overlay */}
+              <div
+                className="fixed inset-0 z-10"
+                aria-hidden="true"
+                onClick={() => setUserMenuOpen(false)}
+              />
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-20 mt-2 w-48 rounded-lg border border-secondary-200 bg-white py-1 shadow-lg"
+              >
+                <div className="border-b border-secondary-100 px-4 py-2">
+                  <p className="text-sm font-semibold text-secondary-800 truncate">{user.name}</p>
+                  {user.email && (
+                    <p className="text-xs text-secondary-400 truncate">{user.email}</p>
+                  )}
+                </div>
+                <Link
+                  href="/account/profile"
+                  role="menuitem"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 hover:text-primary-600"
+                >
+                  Tài khoản của tôi
+                </Link>
+                <Link
+                  href="/account/orders"
+                  role="menuitem"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="block px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 hover:text-primary-600"
+                >
+                  Đơn hàng
+                </Link>
+                <div className="border-t border-secondary-100 mt-1 pt-1">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setUserMenuOpen(false); onLogout?.(); }}
+                    className="w-full px-4 py-2 text-left text-sm text-error-600 hover:bg-error-50 hover:text-error-700"
+                  >
+                    Đăng xuất
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <Link
+          href="/login"
+          aria-label="Đăng nhập"
+          className="hidden sm:flex flex-col items-center gap-0.5 text-secondary-500 transition-colors hover:text-primary-600"
+        >
+          <UserIcon className="w-5 h-5" />
+          <span className="text-[10px] font-medium leading-none max-w-[56px] truncate">
+            Tài khoản
+          </span>
+        </Link>
+      )}
 
       {/* Cart — always visible */}
       <Link
@@ -423,7 +494,7 @@ function CompactCategoryTrigger({
 const SCROLL_COMPACT = 200; // px → switch to compact
 const SCROLL_RESTORE = 120; // px → switch back to full
 
-export function Header({ cartCount = 0, wishlistCount = 0, compareCount = 0, user = null }: HeaderProps) {
+export function Header({ cartCount = 0, wishlistCount = 0, compareCount = 0, user = null, onLogout }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const rafRef = useRef<number>(0);
 
@@ -547,6 +618,7 @@ export function Header({ cartCount = 0, wishlistCount = 0, compareCount = 0, use
               compareCount={compareCount}
               user={user}
               compact={scrolled}
+              onLogout={onLogout}
             />
           </div>
 

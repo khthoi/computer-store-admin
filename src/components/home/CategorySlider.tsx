@@ -75,7 +75,7 @@ export function CategorySlider() {
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   return (
-    <section aria-labelledby="quick-cat-heading" className="py-6 bg-white border-b border-secondary-100 max-w-[1400px] mx-auto flex items-center">
+    <section aria-labelledby="quick-cat-heading" className="py-6 bg-white border-b border-secondary-100 rounded-md max-w-[1400px] mx-auto flex items-center">
       <div className="w-full 2xl:max-w-full px-4 sm:px-6 lg:px-8">
 
         {/* ── Header row ── */}

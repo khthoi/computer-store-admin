@@ -30,7 +30,7 @@ const TRUST_ITEMS = [
 
 function TrustBadges() {
   return (
-    <section aria-label="Cam kết dịch vụ" className="max-w-[1400px] bg-white border-b border-secondary-100 flex mx-auto items-center">
+    <section aria-label="Cam kết dịch vụ" className="max-w-[1400px] flex mx-auto items-center">
       <div className="w-full 2xl:max-w-full px-4 sm:px-6 lg:px-8 2xl:px-0 py-2">
         <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-secondary-100 flex intem-center">
           {TRUST_ITEMS.map(({ icon: Icon, title, desc }) => (
