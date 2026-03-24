@@ -4,16 +4,15 @@ import { useCallback, useRef, useState, type ReactNode } from "react";
 import {
   BoltIcon,
   ShoppingCartIcon,
-  ArrowsRightLeftIcon,
   PhoneIcon,
 } from "@heroicons/react/24/outline";
-import { ToastMessage } from "@/src/components/ui/Toast";
+import { useToast } from "@/src/components/ui/Toast";
 import { Button } from "@/src/components/ui/Button";
 import { Alert } from "@/src/components/ui/Alert";
 import { VariantSelector } from "@/src/components/product/VariantSelector";
 import { PriceTag } from "@/src/components/product/PriceTag";
 import { QuantityStepper } from "@/src/components/product/QuantityStepper";
-import { WishlistShareBar } from "@/src/components/product/WishlistShareBar";
+import { ProductActionsBar } from "@/src/components/product/ProductActionsBar";
 import { TrustBadgesRow } from "@/src/components/product/TrustBadgesRow";
 import { StickyAddToCartBar } from "@/src/components/product/StickyAddToCartBar";
 import { ContactModal } from "@/src/components/product/ContactModal";
@@ -83,11 +82,9 @@ export function ProductHeroClient({
   >(buildDefaults);
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [cartToast, setCartToast] = useState(false);
-  const [isCompared, setIsCompared] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
-  const [contactToast, setContactToast] = useState(false);
   const ctaRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
 
   const isOutOfStock = product.stockStatus === "out-of-stock";
   const isSelectedVariantOOS =
@@ -131,8 +128,8 @@ export function ProductHeroClient({
     setIsAddingToCart(true);
     await new Promise((r) => setTimeout(r, 800));
     setIsAddingToCart(false);
-    setCartToast(true);
-  }, [isCartDisabled, isAddingToCart]);
+    showToast("Đã thêm vào giỏ hàng!");
+  }, [isCartDisabled, isAddingToCart, showToast]);
 
   const handleBuyNow = useCallback(async () => {
     if (isCartDisabled) return;
@@ -141,8 +138,8 @@ export function ProductHeroClient({
   }, [isCartDisabled, handleAddToCart]);
 
   const handleContactSuccess = useCallback(() => {
-    setContactToast(true);
-  }, []);
+    showToast("Đã gửi yêu cầu! Chúng tôi sẽ liên hệ bạn sớm.", "success", 4000);
+  }, [showToast]);
 
   return (
     <>
@@ -279,34 +276,10 @@ export function ProductHeroClient({
         </div>
 
         {/* Wishlist + Compare + Share */}
-        <div className="flex items-center flex-wrap gap-1">
-          <WishlistShareBar
-            productId={product.id}
-            productName={product.name}
-          />
-          {/* Compare toggle */}
-          <div className="relative group/compare">
-            <button
-              type="button"
-              aria-label="So sánh sản phẩm"
-              aria-pressed={isCompared}
-              onClick={() => setIsCompared((p) => !p)}
-              className={[
-                "flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors",
-                isCompared
-                  ? "text-primary-600 bg-primary-50 hover:bg-primary-100"
-                  : "text-secondary-600 hover:text-primary-600 hover:bg-secondary-100",
-              ].join(" ")}
-            >
-              <ArrowsRightLeftIcon className="w-5 h-5" aria-hidden="true" />
-              So sánh
-            </button>
-            {/* Tooltip */}
-            <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-secondary-900 px-2 py-1 text-xs text-white opacity-0 group-hover/compare:opacity-100 transition-opacity z-20">
-              {isCompared ? "Đang so sánh" : "Thêm vào so sánh"}
-            </span>
-          </div>
-        </div>
+        <ProductActionsBar
+          productId={product.id}
+          productName={product.name}
+        />
 
         {/* Trust badges */}
         <TrustBadgesRow />
@@ -334,23 +307,6 @@ export function ProductHeroClient({
         onSuccess={handleContactSuccess}
       />
 
-      <ToastMessage
-        isVisible={cartToast}
-        type="success"
-        message="Đã thêm vào giỏ hàng!"
-        position="top-right"
-        duration={3000}
-        onClose={() => setCartToast(false)}
-      />
-
-      <ToastMessage
-        isVisible={contactToast}
-        type="success"
-        message="Đã gửi yêu cầu! Chúng tôi sẽ liên hệ bạn sớm."
-        position="top-right"
-        duration={4000}
-        onClose={() => setContactToast(false)}
-      />
     </>
   );
 }

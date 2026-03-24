@@ -16,14 +16,17 @@ import type { ReactNode } from "react";
 import { AuthProvider } from "@/src/store/auth.store";
 import { CartProvider } from "@/src/store/cart.store";
 import { AuthModalRoot } from "@/src/components/auth/AuthModal";
+import { ToastProvider } from "@/src/components/ui/Toast";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <CartProvider>
-        {children}
-        {/* Global auth modal — reads from AuthContext, no circular dep */}
-        <AuthModalRoot />
+        <ToastProvider>
+          {children}
+          {/* Global auth modal — reads from AuthContext, no circular dep */}
+          <AuthModalRoot />
+        </ToastProvider>
       </CartProvider>
     </AuthProvider>
   );

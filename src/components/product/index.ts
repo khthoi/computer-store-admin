@@ -38,6 +38,9 @@ export type { QuantityStepperProps } from "./QuantityStepper";
 export { TrustBadgesRow } from "./TrustBadgesRow";
 export type { TrustBadgesRowProps } from "./TrustBadgesRow";
 
+export { ProductActionsBar } from "./ProductActionsBar";
+export type { ProductActionsBarProps } from "./ProductActionsBar";
+
 export { WishlistShareBar } from "./WishlistShareBar";
 export type { WishlistShareBarProps } from "./WishlistShareBar";
 
