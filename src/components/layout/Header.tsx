@@ -1,21 +1,19 @@
 "use client";
 
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Bars3Icon,
   ChevronDownIcon,
   CpuChipIcon,
   HeartIcon,
-  MagnifyingGlassIcon,
   PhoneIcon,
   ArrowsRightLeftIcon,
   ShoppingCartIcon,
   TruckIcon,
   UserIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { SearchBar } from "@/src/components/search/SearchBar";
 import { FaFacebookF, FaYoutube, FaTiktok } from "react-icons/fa";
 import { Drawer } from "@/src/components/ui";
 import { SidebarMegaMenu } from "@/src/components/navigation";
@@ -91,70 +89,6 @@ function TopBar() {
   );
 }
 
-// ─── SearchBox ────────────────────────────────────────────────────────────────
-
-function SearchBox() {
-  const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState("");
-
-  function submit(q: string) {
-    const trimmed = q.trim();
-    if (trimmed) router.push(`/products?search=${encodeURIComponent(trimmed)}`);
-  }
-
-  function handleFormSubmit(e: FormEvent) {
-    e.preventDefault();
-    submit(query);
-  }
-
-  function clearQuery() {
-    setQuery("");
-    inputRef.current?.focus();
-  }
-
-  return (
-    <form
-      role="search"
-      aria-label="Tìm kiếm sản phẩm"
-      onSubmit={handleFormSubmit}
-      className="flex w-full mxx-auto max-w-md lg:max-w-lg 2xl:max-w-full"
-    >
-      <div className="relative flex w-full items-center">
-        <label htmlFor="site-search" className="sr-only">
-          Tìm kiếm
-        </label>
-        <input
-          ref={inputRef}
-          id="site-search"
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Nhập tên sản phẩm, từ khoá cần tìm..."
-          autoComplete="off"
-          className="peer w-full rounded-l-lg border border-r-0 border-secondary-300 bg-white py-2.5 pl-4 pr-8 text-sm text-secondary-900 placeholder-secondary-400 transition-shadow focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-200 [&::-webkit-search-cancel-button]:appearance-none"
-        />
-        {query && (
-          <button
-            type="button"
-            aria-label="Xóa tìm kiếm"
-            onClick={clearQuery}
-            className="absolute right-2 text-secondary-400 hover:text-secondary-600 transition-colors"
-          >
-            <XMarkIcon className="w-4 h-4" aria-hidden="true" />
-          </button>
-        )}
-      </div>
-      <button
-        type="submit"
-        aria-label="Tìm kiếm"
-        className="flex shrink-0 items-center gap-1.5 rounded-r-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
-      >
-        <MagnifyingGlassIcon className="w-4 h-4" aria-hidden="true" />
-      </button>
-    </form>
-  );
-}
 
 // ─── SocialIcons ──────────────────────────────────────────────────────────────
 // Inline SVG icons — same paths as Footer.tsx but used here without exporting.
@@ -601,7 +535,7 @@ export function Header({ cartCount = 0, wishlistCount = 0, compareCount = 0, use
 
           {/* ── Center zone: Search ── */}
           <div className="flex flex-1 justify-center px-2">
-            <SearchBox />
+            <SearchBar size="default" />
           </div>
 
           {/* ── Right zone: Social icons + separator + Action icons ── */}

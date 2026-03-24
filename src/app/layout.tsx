@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/src/components/layout/Footer";
+import { MainContent } from "@/src/components/layout/MainContent";
 import { SideBannersConditional } from "@/src/components/layout/SideBannersConditional";
 import { ConnectedHeader } from "@/src/components/layout/ConnectedHeader";
 import { Providers } from "./providers";
@@ -61,12 +62,7 @@ export default function RootLayout({
           <div className="2xl:grid 2xl:grid-cols-[120px_1fr_120px]">
             <SideBannersConditional />
 
-            <main
-              id="main-content"
-              className="min-h-[calc(100vh-theme(spacing.40))] 2xl:col-start-2 min-w-0"
-            >
-              {children}
-            </main>
+            <MainContent>{children}</MainContent>
           </div>
 
           <Footer />

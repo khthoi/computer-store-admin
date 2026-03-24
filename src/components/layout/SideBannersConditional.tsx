@@ -21,6 +21,9 @@ const SUPPRESSED_PREFIXES = [
   "/chinh-sach-doi-tra",
   "/faq",
   "/support/technical",
+  // Search results page: full-width filter + product grid layout leaves no
+  // room for fixed side banners without overlapping content at mid viewports.
+  "/search",
 ];
 
 /**
